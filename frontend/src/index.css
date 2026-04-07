@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+
+:root {
+  --color-primary: #13493C;     /* Main headings and focused input borders */
+  --color-secondary: #606C38;   /* Secondary buttons (like Google) and text links */
+  --color-bg: #FFFAE0;          /* The main global background color for the entire app */
+  --color-accent: #DDA15E;      /* Highlights or light accent elements */
+  --color-cta: #BC6C25;         /* Primary Call-to-Action buttons (Log In / Sign Up) */
+  --color-text: #13493C;        /* Main regular text and text typed inside inputs */
+  --color-muted-text: #606C38;  /* Sub-text, descriptions, and labels */
+  --color-border: #d8d0b0;      /* Standard borders for input fields */
+  --color-input-bg: #ffffff;    /* The background color of the input fields (White) */
+  --color-placeholder: #a8a8a8; /* The color of the placeholder text inside inputs */
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0px;
+  margin: 0px;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  height: 100vh;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}

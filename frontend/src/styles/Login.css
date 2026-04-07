@@ -1,0 +1,227 @@
+
+.login-main{
+    display: flex;
+    min-height: 100vh;
+  }
+  
+  .login-left{
+    flex: 1;
+    background-color: var(--color-bg);
+  
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+  }
+  
+  .login-left img{
+    width: 70%;
+    max-width: 350px;
+    height: auto;
+    object-fit: contain;
+  }
+  
+  .login-right{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .login-right-container{
+    width: 80%;
+    margin: 40px auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .login-right form{
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .login-logo{
+    align-self: center;
+    padding-top: 50px;
+  }
+  
+  .login-center{
+    margin: auto 0;
+  }
+  
+  .login-logo img{
+    width: 50px;
+  }
+  
+  .login-center h2{
+    font-size: 35px;
+    color: var(--color-primary);
+  }
+  
+  .login-center{
+    text-align: center;
+  }
+  
+  .login-center p{
+    font-weight: 400;
+    font-size: 20px;
+    margin-bottom: 40px;
+    color: var(--color-muted-text);
+  }
+  
+  form input[type='email'],
+  form input[type='password'],
+  form input[type='text']
+   {
+    width: 100%;
+    padding: 16px;
+    margin-bottom: 16px;
+    border: 0px;
+    background-color: var(--color-input-bg);
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text);
+    outline: none;
+    box-sizing: border-box;
+  }
+  
+  form input:focus {
+    border-bottom: 1px solid var(--color-primary);
+  }
+  
+  form input::placeholder {
+    color: var(--color-placeholder);
+  }
+  
+  .pass-input-div{
+    position: relative;
+  }
+  
+  .pass-input-div svg{
+    font-size: 20px;
+    position: absolute;
+    right: 10px;
+    bottom: 35px;
+    cursor: pointer;
+    outline: none;
+    color: var(--color-muted-text);
+  }
+  
+  form button[type='submit'] {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 30px;
+    font-weight: 600;
+  }
+  
+  
+  .login-center-options{
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .remember-div{
+    display:flex;
+    align-items: center;
+    column-gap: 5px;
+  }
+  
+  .remember-div label{
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 2px;
+  }
+  
+  .forgot-pass-link{
+    text-decoration: none;
+    font-size: 13px;
+    color: var(--color-secondary);
+  }
+  
+  .forgot-pass-link:hover{
+    text-decoration: underline;
+  }
+  
+  .login-center-buttons{
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+  }
+  
+  .login-center-buttons button:nth-child(1){
+    background: var(--color-cta);
+    color: white;
+    border: 3px solid var(--color-cta);
+    transition: background 300ms linear 0ms, color 300ms linear 0ms, border-color 300ms linear 0ms;
+  }
+  
+  .login-center-buttons button:nth-child(1):hover{
+    background-color: #9c581e; /* darker CTA */
+    border-color: #9c581e;
+  }
+  
+  .login-center-buttons button:nth-child(2){
+    background: var(--color-secondary);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    column-gap: 10px;
+    transition: background 300ms linear 0ms;
+  }
+  
+  .login-center-buttons button:nth-child(2) img{
+    width: 30px;
+  }
+  
+  .login-center-buttons button:nth-child(2):hover{
+    background: #4d572c; /* darker secondary */
+  }
+  
+  .login-bottom-p{
+    text-align: center;
+    font-size: 15px;
+    padding-bottom: 40px;
+  }
+  
+  .login-bottom-p a{
+    text-decoration: none;
+    font-weight: 600;
+    color: var(--color-secondary);
+  }
+  
+  .login-bottom-p a:hover{
+    text-decoration: underline;
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 900px) {
+    .login-main {
+      flex-direction: column;
+    }
+    
+    .login-left {
+      min-height: 300px;
+      flex: none;
+    }
+    
+    .login-left img {
+      max-width: 250px;
+    }
+    
+    .login-right {
+      flex: none;
+    }
+    
+    .login-right-container {
+      width: 90%;
+      margin: 40px auto;
+    }
+  }
+  
