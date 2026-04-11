@@ -221,49 +221,45 @@ export default function BrowseBooksPage() {
     <div style={{ marginTop: '52px' }}>
       <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.2rem', fontWeight: '700', color: 'var(--primary)', marginBottom: '16px' }}>Recommended for You</div>
       <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '8px' }}>
-        <div style={{ flex: '0 0 190px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} onClick={function(){}} onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80" style={{ width: '100%', height: '130px', objectFit: 'cover' }}/>
-          <div style={{ padding: '10px 12px' }}>
-            <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Atomic Habits</div>
-            <div style={{ fontSize: '.74rem', color: 'var(--muted)', margin: '2px 0' }}>by James Clear</div>
-            <div style={{ fontSize: '.78rem', fontWeight: '700', color: 'var(--cta)', marginTop: '4px' }}>Rs. 50/wk</div>
-          </div>
-        </div><div style={{ flex: '0 0 190px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} onClick={function(){}} onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80" style={{ width: '100%', height: '130px', objectFit: 'cover' }}/>
-          <div style={{ padding: '10px 12px' }}>
-            <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Deep Work</div>
-            <div style={{ fontSize: '.74rem', color: 'var(--muted)', margin: '2px 0' }}>by Cal Newport</div>
-            <div style={{ fontSize: '.78rem', fontWeight: '700', color: 'var(--cta)', marginTop: '4px' }}>Rs. 350</div>
-          </div>
-        </div><div style={{ flex: '0 0 190px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} onClick={function(){}} onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <img src="https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&q=80" style={{ width: '100%', height: '130px', objectFit: 'cover' }}/>
-          <div style={{ padding: '10px 12px' }}>
-            <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Sapiens</div>
-            <div style={{ fontSize: '.74rem', color: 'var(--muted)', margin: '2px 0' }}>by Yuval Noah Harari</div>
-            <div style={{ fontSize: '.78rem', fontWeight: '700', color: 'var(--secondary)', marginTop: '4px' }}>Free</div>
-          </div>
-        </div><div style={{ flex: '0 0 190px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} onClick={function(){}} onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80" style={{ width: '100%', height: '130px', objectFit: 'cover' }}/>
-          <div style={{ padding: '10px 12px' }}>
-            <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Rich Dad Poor Dad</div>
-            <div style={{ fontSize: '.74rem', color: 'var(--muted)', margin: '2px 0' }}>by Robert Kiyosaki</div>
-            <div style={{ fontSize: '.78rem', fontWeight: '700', color: 'var(--cta)', marginTop: '4px' }}>Rs. 40/wk</div>
-          </div>
-        </div><div style={{ flex: '0 0 190px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} onClick={function(){}} onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80" style={{ width: '100%', height: '130px', objectFit: 'cover' }}/>
-          <div style={{ padding: '10px 12px' }}>
-            <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>The Alchemist</div>
-            <div style={{ fontSize: '.74rem', color: 'var(--muted)', margin: '2px 0' }}>by Paulo Coelho</div>
-            <div style={{ fontSize: '.78rem', fontWeight: '700', color: 'var(--cta)', marginTop: '4px' }}>Rs. 30/wk</div>
-          </div>
-        </div><div style={{ flex: '0 0 190px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} onClick={function(){}} onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&q=80" style={{ width: '100%', height: '130px', objectFit: 'cover' }}/>
-          <div style={{ padding: '10px 12px' }}>
-            <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Introduction to Algebra</div>
-            <div style={{ fontSize: '.74rem', color: 'var(--muted)', margin: '2px 0' }}>by Michael Artin</div>
-            <div style={{ fontSize: '.78rem', fontWeight: '700', color: 'var(--cta)', marginTop: '4px' }}>Rs. 280</div>
-          </div>
-        </div>
+        {[
+          { title: "Atomic Habits", author: "James Clear", price: "Rs. 50/wk", img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80", color: "var(--cta)" },
+          { title: "Deep Work", author: "Cal Newport", price: "Rs. 350", img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80", color: "var(--cta)" },
+          { title: "Sapiens", author: "Yuval Noah Harari", price: "Free", img: "https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&q=80", color: "var(--secondary)" },
+          { title: "Rich Dad Poor Dad", author: "Robert Kiyosaki", price: "Rs. 40/wk", img: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80", color: "var(--cta)" },
+          { title: "The Alchemist", author: "Paulo Coelho", price: "Rs. 30/wk", img: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80", color: "var(--cta)" },
+          { title: "Introduction to Algebra", author: "Michael Artin", price: "Rs. 280", img: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&q=80", color: "var(--cta)" }
+        ].map((bk, idx) => (
+            <div key={idx} style={{ flex: '0 0 190px', background: 'var(--card-bg, #fff)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} 
+                 onMouseOver={(e)=>{e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'}} 
+                 onMouseOut={(e)=>{e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''}}>
+                <img src={bk.img} style={{ width: '100%', height: '130px', objectFit: 'cover' }} alt={bk.title} />
+                <div style={{ padding: '10px 12px' }}>
+                    <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bk.title}</div>
+                    <div style={{ fontSize: '.74rem', color: 'var(--muted)', margin: '2px 0' }}>by {bk.author}</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+                        <div style={{ fontSize: '.78rem', fontWeight: '700', color: bk.color }}>{bk.price}</div>
+                        <button style={{ 
+                            background: 'var(--primary)', 
+                            color: '#fff', 
+                            border: 'none', 
+                            borderRadius: '50%', 
+                            width: '28px', 
+                            height: '28px', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            cursor: 'pointer', 
+                            transition: 'transform 0.15s ease',
+                            boxShadow: '0 2px 8px rgba(19,73,60,0.2)'
+                        }} 
+                        onMouseOver={(e)=>e.currentTarget.style.transform='scale(1.1)'} 
+                        onMouseOut={(e)=>e.currentTarget.style.transform='scale(1)'}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        ))}
       </div>
     </div>
   </main>
