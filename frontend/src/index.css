@@ -433,3 +433,21 @@ body {
   .hero-content > *:nth-child(4) { animation-delay: .4s; }
   .hero-content > *:nth-child(5) { animation-delay: .5s; }
   .hero-visual { animation: fadeUp .8s ease .3s both; }
+
+.btn-mini-cart {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 2px 8px rgba(19,73,60,0.2);
+}
+.btn-mini-cart:hover {
+  transform: scale(1.1);
+}
