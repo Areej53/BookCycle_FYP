@@ -56,7 +56,6 @@ const Register = () => {
         };
         try {
           await api.post("/register", formData);
-          toast.success("Registration successfull");
           navigate("/login");
         } catch (err) {
           toast.error(getApiErrorMessage(err));
@@ -75,8 +74,7 @@ const Register = () => {
 
   useEffect(() => {
     if(token !== ""){
-      toast.success("You already logged in");
-      navigate("/dashboard");
+      navigate("/home");
     }
   }, []);
 

@@ -9,10 +9,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { api, getApiErrorMessage } from "../api/client";
 import { getStoredAuthToken } from "../utils/authStorage";
+import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [token, setToken] = useState(getStoredAuthToken);
+  const { login, token } = useAuth();
   const navigate = useNavigate();
 
 
@@ -29,9 +30,8 @@ const Login = () => {
       };
       try {
         const response = await api.post("/login", formData);
-        localStorage.setItem('auth', JSON.stringify(response.data.token));
-        toast.success("Login successfull");
-        navigate("/dashboard");
+        login(response.data.token);
+        navigate("/home");
       } catch (err) {
         console.log(err);
         toast.error(getApiErrorMessage(err));
@@ -43,8 +43,7 @@ const Login = () => {
 
   useEffect(() => {
     if(token !== ""){
-      toast.success("You already logged in");
-      navigate("/dashboard");
+      navigate("/home");
     }
   }, []);
 

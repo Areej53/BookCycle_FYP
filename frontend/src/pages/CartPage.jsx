@@ -1,7 +1,9 @@
 import React from 'react';
+import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 
 export default function CartPage() {
+    const { user } = useAuth();
     return (
         <div style={{ padding: '100px 5%', textAlign: 'center', minHeight: '60vh' }}>
             <h2>Your Cart</h2>
