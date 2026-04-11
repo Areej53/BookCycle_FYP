@@ -1,26 +1,109 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
+import { useAuth } from '../context/AuthContext';
 
 export default function HomePage() {
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [activeType, setActiveType] = useState('all');
+    const [activeSort, setActiveSort] = useState('recent');
+    const [activeCats, setActiveCats] = useState([]);
+    const [activeConds, setActiveConds] = useState([]);
+    const [priceRange, setPriceRange] = useState(1000);
+    const wrapperRef = useRef(null);
+
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+                setIsFilterOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [wrapperRef]);
+
+    const handleSearch = (e) => {
+        if (e.key === 'Enter' || e.type === 'click') {
+            applyFilters();
+            if (searchQuery.trim() || activeType !== 'all' || activeCats.length || activeConds.length || priceRange < 1000) {
+                const params = new URLSearchParams();
+                if (searchQuery) params.append('q', searchQuery);
+                if (activeType !== 'all') params.append('type', activeType);
+                if (activeSort !== 'recent') params.append('sort', activeSort);
+                if (priceRange < 1000) params.append('price', priceRange);
+                if (activeCats.length) params.append('cats', activeCats.join(','));
+                if (activeConds.length) params.append('conds', activeConds.join(','));
+                navigate(`/browse/search?${params.toString()}`);
+            }
+        }
+    };
+
+    const toggleCat = (cat) => setActiveCats(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]);
+    const toggleCond = (cond) => setActiveConds(prev => prev.includes(cond) ? prev.filter(c => c !== cond) : [...prev, cond]);
+    
+    const removeTag = (group, val) => {
+        if (group === 'type') setActiveType('all');
+        if (group === 'sort') setActiveSort('recent');
+        if (group === 'cat') toggleCat(val);
+        if (group === 'cond') toggleCond(val);
+    };
+
+    const clearFilters = () => {
+        setActiveType('all');
+        setActiveSort('recent');
+        setActiveCats([]);
+        setActiveConds([]);
+        setPriceRange(1000);
+        setSearchQuery('');
+        setIsFilterOpen(true);
+    };
+
+    const applyFilters = () => setIsFilterOpen(false);
+
+    const activeTags = [];
+    if (activeType !== 'all') activeTags.push({ group: 'type', val: activeType, label: activeType });
+    activeCats.forEach(cat => activeTags.push({ group: 'cat', val: cat, label: cat }));
+    activeConds.forEach(cond => activeTags.push({ group: 'cond', val: cond, label: cond }));
+    if (activeSort !== 'recent') activeTags.push({ group: 'sort', val: activeSort, label: activeSort });
     return (
         <div className="HomePage">
             
 
 
-<nav>
-  <Link to="#" className="logo">
+<nav style={{ 
+  position: 'sticky', top: 0, zIndex: 10000, 
+  background: 'var(--primary)', 
+  display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+  padding: '0 5%', height: '76px', 
+  boxShadow: '0 2px 20px rgba(19,73,60,.35)',
+  borderBottom: '1.5px solid rgba(221,161,94,.45)' 
+}}>
+  <Link to="/home" className="logo">
     <div className="logo-icon">
       <img src={IMAGES.img_0} alt="BookCycle logo"/>
     </div>
     BookCycle
   </Link>
-  <ul className="nav-links">
+
+  {user && (
+      <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', color: 'rgba(255,250,224,.9)', fontWeight: 600, fontSize: '1rem', letterSpacing: '0.03em' }}>
+        Hi, {user.name}
+      </div>
+  )}
+
+  <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '30px', margin: 0, padding: 0 }}>
     <li><Link to="/browse">Browse</Link></li>
-    <li><Link to="/browse">Rent</Link></li>
-    <li><Link to="/browse">Free Shelf</Link></li>
+    <li><Link to="/browse?tab=rent">Rent</Link></li>
+    <li><Link to="/browse?tab=share">Free Shelf</Link></li>
     <li><Link to="/seller">Sell</Link></li>
-    <li><Link to="/dashboard" className="nav-cta">Profile</Link></li>
+    {user ? (
+        <li><Link to="/logout" className="nav-cta">Logout</Link></li>
+    ) : (
+        <li><Link to="/login" className="nav-cta">Login</Link></li>
+    )}
   </ul>
 </nav>
 
@@ -30,35 +113,35 @@ export default function HomePage() {
     <div className="hero-eyebrow"><span></span>Islamabad's Book Community</div>
     <h1>Share, Rent, and<br /><em>Discover</em> Books</h1>
     <p className="hero-sub">Connect with book lovers across Islamabad. Rent, donate, or list your books — one platform for every bibliophile.</p>
-    <div className="search-wrapper" id="searchWrapper">
-      <div className="search-box" id="searchBox">
-        <input type="text" id="searchInput" placeholder="Search by title, author, or genre…" autocomplete="off"/>
-        <button onClick={function(){}}>Search</button>
+    <div className={`search-wrapper`} ref={wrapperRef} onClick={() => !isFilterOpen && setIsFilterOpen(true)}>
+      <div className={`search-box ${isFilterOpen ? 'open' : ''}`}>
+        <input type="text" placeholder="Search by title, author, or genre…" autoComplete="off" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={handleSearch} onFocus={() => setIsFilterOpen(true)}/>
+        <button onClick={(e) => { e.stopPropagation(); handleSearch(e); }}>Search</button>
       </div>
       
-      <div className="filter-panel" id="filterPanel">
+      <div className={`filter-panel ${isFilterOpen ? 'visible' : ''}`}>
 
         
         <div className="filter-row">
           <span className="filter-row-label">Type</span>
-          <span className="f-chip active" data-group="type" data-val="all" onClick={function(){}}>
+          <span className={`f-chip ${activeType === 'all' ? 'active' : ''}`} onClick={() => setActiveType('all')}>
             <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 12.5A5.5 5.5 0 118 2.5a5.5 5.5 0 010 11z"/><circle cx="8" cy="8" r="2.5"/></svg>
             All
           </span>
-          <span className="f-chip" data-group="type" data-val="rent" onClick={function(){}}>
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M5 7h6M5 10h4"/></svg>
+          <span className={`f-chip ${activeType === 'rent' ? 'active' : ''}`} onClick={() => setActiveType('rent')}>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M5 7h6M5 10h4"/></svg>
             Rent
           </span>
-          <span className="f-chip" data-group="type" data-val="free" onClick={function(){}}>
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v12M4 6h5.5a2.5 2.5 0 010 5H4"/></svg>
+          <span className={`f-chip ${activeType === 'free' ? 'active' : ''}`} onClick={() => setActiveType('free')}>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 2v12M4 6h5.5a2.5 2.5 0 010 5H4"/></svg>
             Free
           </span>
-          <span className="f-chip" data-group="type" data-val="buy" onClick={function(){}}>
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h2l2 7h6l1.5-5H6"/><circle cx="8" cy="13" r="1"/><circle cx="12" cy="13" r="1"/></svg>
+          <span className={`f-chip ${activeType === 'buy' ? 'active' : ''}`} onClick={() => setActiveType('buy')}>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 3h2l2 7h6l1.5-5H6"/><circle cx="8" cy="13" r="1"/><circle cx="12" cy="13" r="1"/></svg>
             Buy
           </span>
-          <span className="f-chip" data-group="type" data-val="donate" onClick={function(){}}>
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 13S3 9.5 3 6a5 5 0 0110 0c0 3.5-5 7-5 7z"/></svg>
+          <span className={`f-chip ${activeType === 'donate' ? 'active' : ''}`} onClick={() => setActiveType('donate')}>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 13S3 9.5 3 6a5 5 0 0110 0c0 3.5-5 7-5 7z"/></svg>
             Donate
           </span>
         </div>
@@ -66,21 +149,21 @@ export default function HomePage() {
         
         <div className="filter-row">
           <span className="filter-row-label">Category</span>
-          <span className="f-chip" data-group="cat" data-val="programming" onClick={function(){}}>💻 Programming</span>
-          <span className="f-chip" data-group="cat" data-val="science" onClick={function(){}}>🔬 Science</span>
-          <span className="f-chip" data-group="cat" data-val="literature" onClick={function(){}}>📖 Literature</span>
-          <span className="f-chip" data-group="cat" data-val="novels" onClick={function(){}}>📚 Novels</span>
-          <span className="f-chip" data-group="cat" data-val="islamic" onClick={function(){}}>🕌 Islamic</span>
-          <span className="f-chip" data-group="cat" data-val="psychology" onClick={function(){}}>🧠 Psychology</span>
+          <span className={`f-chip ${activeCats.includes('programming') ? 'active' : ''}`} onClick={() => toggleCat('programming')}>💻 Programming</span>
+          <span className={`f-chip ${activeCats.includes('science') ? 'active' : ''}`} onClick={() => toggleCat('science')}>🔬 Science</span>
+          <span className={`f-chip ${activeCats.includes('literature') ? 'active' : ''}`} onClick={() => toggleCat('literature')}>📖 Literature</span>
+          <span className={`f-chip ${activeCats.includes('novels') ? 'active' : ''}`} onClick={() => toggleCat('novels')}>📚 Novels</span>
+          <span className={`f-chip ${activeCats.includes('islamic') ? 'active' : ''}`} onClick={() => toggleCat('islamic')}>🕌 Islamic</span>
+          <span className={`f-chip ${activeCats.includes('psychology') ? 'active' : ''}`} onClick={() => toggleCat('psychology')}>🧠 Psychology</span>
         </div>
 
         
         <div className="filter-row">
           <span className="filter-row-label">Condition</span>
-          <span className="f-chip" data-group="cond" data-val="new" onClick={function(){}}>New</span>
-          <span className="f-chip" data-group="cond" data-val="good" onClick={function(){}}>Good</span>
-          <span className="f-chip" data-group="cond" data-val="fair" onClick={function(){}}>Fair</span>
-          <span className="f-chip" data-group="cond" data-val="worn" onClick={function(){}}>Worn</span>
+          <span className={`f-chip ${activeConds.includes('new') ? 'active' : ''}`} onClick={() => toggleCond('new')}>New</span>
+          <span className={`f-chip ${activeConds.includes('good') ? 'active' : ''}`} onClick={() => toggleCond('good')}>Good</span>
+          <span className={`f-chip ${activeConds.includes('fair') ? 'active' : ''}`} onClick={() => toggleCond('fair')}>Fair</span>
+          <span className={`f-chip ${activeConds.includes('worn') ? 'active' : ''}`} onClick={() => toggleCond('worn')}>Worn</span>
         </div>
 
         <div className="filter-divider"></div>
@@ -90,30 +173,43 @@ export default function HomePage() {
           <span className="filter-row-label">Price</span>
           <div className="price-range-wrap">
             <span style={{ fontSize: '.8rem', color: 'rgba(255,250,224,.5)' }}>Rs. 0</span>
-            <input type="range" id="priceRange" min="0" max="1000" value="500" step="50" oninput="updatePrice(this.value)"/>
-            <span className="price-val" id="priceVal">Up to Rs. 500</span>
+            <input type="range" min="0" max="1000" value={priceRange} step="50" onChange={(e) => setPriceRange(Number(e.target.value))}/>
+            <span className="price-val">{priceRange >= 1000 ? 'Any price' : `Up to Rs. ${priceRange}`}</span>
           </div>
         </div>
 
         
         <div className="filter-row">
           <span className="filter-row-label">Sort by</span>
-          <span className="f-chip active" data-group="sort" data-val="recent" onClick={function(){}}>Recently Added</span>
-          <span className="f-chip" data-group="sort" data-val="price-asc" onClick={function(){}}>Price: Low → High</span>
-          <span className="f-chip" data-group="sort" data-val="price-desc" onClick={function(){}}>Price: High → Low</span>
-          <span className="f-chip" data-group="sort" data-val="popular" onClick={function(){}}>Most Popular</span>
+          <span className={`f-chip ${activeSort === 'recent' ? 'active' : ''}`} onClick={() => setActiveSort('recent')}>Recently Added</span>
+          <span className={`f-chip ${activeSort === 'price-asc' ? 'active' : ''}`} onClick={() => setActiveSort('price-asc')}>Price: Low → High</span>
+          <span className={`f-chip ${activeSort === 'price-desc' ? 'active' : ''}`} onClick={() => setActiveSort('price-desc')}>Price: High → Low</span>
+          <span className={`f-chip ${activeSort === 'popular' ? 'active' : ''}`} onClick={() => setActiveSort('popular')}>Most Popular</span>
         </div>
 
         <div className="filter-divider"></div>
 
         <div className="filter-actions">
-          <span className="filter-clear" onClick={function(){}}>Clear all filters</span>
-          <button className="filter-apply" onClick={function(){}}>Apply Filters</button>
+          <span className="filter-clear" onClick={clearFilters}>Clear all filters</span>
+          <button className="filter-apply" onClick={(e) => { e.stopPropagation(); handleSearch({ type: 'click', stopPropagation: e.stopPropagation.bind(e) }); }}>Apply Filters</button>
         </div>
       </div>
 
       
-      <div className="active-filters" id="activeTags"></div>
+      <div className="active-filters">
+        {activeTags.map(tag => (
+          <span key={`${tag.group}-${tag.val}`} className="active-tag" style={{ textTransform: 'capitalize' }}>
+            {tag.label.replace('-', ' ')}
+            <button onClick={(e) => { e.stopPropagation(); removeTag(tag.group, tag.val); }}>×</button>
+          </span>
+        ))}
+        {priceRange < 1000 && (
+          <span className="active-tag">
+            Up to Rs. {priceRange}
+            <button onClick={(e) => { e.stopPropagation(); setPriceRange(1000); }}>×</button>
+          </span>
+        )}
+      </div>
     </div>
 
     <div className="hero-btns">
@@ -121,9 +217,9 @@ export default function HomePage() {
       <Link to="/seller/add" className="btn-outline">List Your Book</Link>
     </div>
     <div className="hero-stats">
-      <div className="stat"><div className="stat-num">2,400+</div><div className="stat-label">Books Available</div></div>
-      <div className="stat"><div className="stat-num">840+</div><div className="stat-label">Active Readers</div></div>
-      <div className="stat"><div className="stat-num">320+</div><div className="stat-label">Free Books</div></div>
+      <div className="stat"><div className="stat-num" style={{ color: 'var(--accent)', fontSize: '1.8rem', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>2,400+</div><div className="stat-label" style={{ color: 'rgba(255,250,224,.55)', fontSize: '.8rem' }}>Books Available</div></div>
+      <div className="stat"><div className="stat-num" style={{ color: 'var(--accent)', fontSize: '1.8rem', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>840+</div><div className="stat-label" style={{ color: 'rgba(255,250,224,.55)', fontSize: '.8rem' }}>Active Readers</div></div>
+      <div className="stat"><div className="stat-num" style={{ color: 'var(--accent)', fontSize: '1.8rem', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>320+</div><div className="stat-label" style={{ color: 'rgba(255,250,224,.55)', fontSize: '.8rem' }}>Free Books</div></div>
     </div>
   </div>
   <div className="hero-visual">
@@ -213,17 +309,75 @@ export default function HomePage() {
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
       <div><div className="section-label">✦ Explore</div><h2 className="section-title">Browse by <span>Category</span></h2></div>
+      <Link to="/browse" className="see-all">View All Genres</Link>
     </div>
-    <div style={{ background: 'var(--primary)', padding: '26px', borderRadius: '20px' }}>
-      <div className="categories-grid">
-        <div className="cat-card"><div className="cat-img"><img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=300&q=80" alt="Programming"/><div className="cat-overlay"><div className="cat-name">Programming</div><div className="cat-count">148 books</div></div></div></div>
-        <div className="cat-card"><div className="cat-img"><img src="https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=300&q=80" alt="Science"/><div className="cat-overlay"><div className="cat-name">Science</div><div className="cat-count">92 books</div></div></div></div>
-        <div className="cat-card"><div className="cat-img"><img src="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=300&q=80" alt="Literature"/><div className="cat-overlay"><div className="cat-name">Literature</div><div className="cat-count">215 books</div></div></div></div>
-        <div className="cat-card"><div className="cat-img"><img src="https://images.unsplash.com/photo-1444653614773-995cb1ef9efa?w=300&q=80" alt="Novels"/><div className="cat-overlay"><div className="cat-name">Novels</div><div className="cat-count">130 books</div></div></div></div>
-        <div className="cat-card"><div className="cat-img"><img src="https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=300&q=80" alt="Psychology"/><div className="cat-overlay"><div className="cat-name">Psychology</div><div className="cat-count">87 books</div></div></div></div>
-        <div className="cat-card"><div className="cat-img"><img src="https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=300&q=80" alt="Islamic"/><div className="cat-overlay"><div className="cat-name">Islamic</div><div className="cat-count">74 books</div></div></div></div>
-        <div className="cat-card"><div className="cat-img"><img src="https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=300&q=80" alt="Notes"/><div className="cat-overlay"><div className="cat-name">Notes</div><div className="cat-count">61 books</div></div></div></div>
-      </div>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '14px' }}>
+      <style>{`
+        .home-cat-card { border-radius: 14px; overflow: hidden; cursor: pointer; transition: transform .2s, box-shadow .2s; position: relative; }
+        .home-cat-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,.35); }
+        .home-cat-img { height: 118px; position: relative; overflow: hidden; }
+        .home-cat-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; filter: brightness(.72); }
+        .home-cat-card:hover .home-cat-img img { transform: scale(1.08); filter: brightness(.55); }
+        .home-cat-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(19,73,60,.88) 0%, transparent 55%); display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 10px 8px; }
+        .home-cat-name { font-weight: 700; font-size: .88rem; color: #fff; text-align: center; margin: 0; }
+        .home-cat-count { font-size: .72rem; color: rgba(255,255,255,.6); margin-top: 2px; }
+      `}</style>
+        <div className="home-cat-card" onClick={() => navigate('/browse/category/fiction')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&q=80" alt="Fiction"/></div>
+            <div className="home-cat-overlay">
+                <div className="home-cat-name">Fiction & Lit</div>
+                <div className="home-cat-count">420+ books</div>
+            </div>
+        </div>
+        <div className="home-cat-card" onClick={() => navigate('/browse/category/science')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=400&q=80" alt="Science"/></div>
+            <div className="home-cat-overlay">
+                <div className="home-cat-name">Science</div>
+                <div className="home-cat-count">210+ books</div>
+            </div>
+        </div>
+        <div className="home-cat-card" onClick={() => navigate('/browse/category/history')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=400&q=80" alt="History"/></div>
+            <div className="home-cat-overlay">
+                <div className="home-cat-name">History</div>
+                <div className="home-cat-count">185+ books</div>
+            </div>
+        </div>
+        <div className="home-cat-card" onClick={() => navigate('/browse/category/children')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80" alt="Children"/></div>
+            <div className="home-cat-overlay">
+                <div className="home-cat-name">Children's</div>
+                <div className="home-cat-count">150+ books</div>
+            </div>
+        </div>
+        <div className="home-cat-card" onClick={() => navigate('/browse/category/business')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&q=80" alt="Business"/></div>
+            <div className="home-cat-overlay">
+                <div className="home-cat-name">Business</div>
+                <div className="home-cat-count">310+ books</div>
+            </div>
+        </div>
+        <div className="home-cat-card" onClick={() => navigate('/browse/category/arts')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80" alt="Arts"/></div>
+            <div className="home-cat-overlay">
+                <div className="home-cat-name">Arts & Design</div>
+                <div className="home-cat-count">125+ books</div>
+            </div>
+        </div>
+        <div className="home-cat-card" onClick={() => navigate('/browse/category/philosophy')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80" alt="Philosophy"/></div>
+            <div className="home-cat-overlay">
+                <div className="home-cat-name">Philosophy</div>
+                <div className="home-cat-count">95+ books</div>
+            </div>
+        </div>
+        <div className="home-cat-card" onClick={() => navigate('/browse/category/tech')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=400&q=80" alt="Tech"/></div>
+            <div className="home-cat-overlay">
+                <div className="home-cat-name">Tech & Code</div>
+                <div className="home-cat-count">240+ books</div>
+            </div>
+        </div>
     </div>
   </div>
 
@@ -373,7 +527,7 @@ export default function HomePage() {
   <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
     <div style={{ textAlign: 'center', marginBottom: '48px' }}>
       <div className="section-label" style={{ background: 'rgba(255,250,224,.12)', color: 'var(--accent)', display: 'inline-flex', marginBottom: '12px' }}>✦ Why BookCycle</div>
-      <h2 className="section-title" style={{ fontSize: '2.2rem' }}>Why Join Our <span style={{ color: 'var(--accent)' }}>Community?</span></h2>
+      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.2rem', color: 'var(--bg)', marginBottom: '18px' }}>Why Join Our <span style={{ color: 'var(--accent)' }}>Community?</span></h2>
     </div>
     <div className="benefits-grid">
       <div className="benefit-card">
@@ -406,15 +560,15 @@ export default function HomePage() {
 </section>
 
 
-<footer>
+<footer style={{ background: '#0d2e26', color: 'rgba(255,250,224,.75)', padding: '60px 5% 30px' }}>
   <div className="footer-grid">
-    <div className="footer-brand">
-      <Link to="#" className="logo" style={{ display: 'inline-flex' }}>
-        <div className="logo-icon"><img src={IMAGES.img_0} alt="BookCycle logo"/></div>
+    <div className="footer-brand" style={{ display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'flex-start' }}>
+      <Link to="#" className="logo" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontFamily: "'Playfair Display', serif", fontSize: '1.8rem', fontWeight: 700, color: 'var(--bg)', textDecoration: 'none', lineHeight: 1 }}>
+        <div className="logo-icon" style={{ width: '64px', height: '64px' }}><img src={IMAGES.img_0} alt="BookCycle logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }}/></div>
         BookCycle
       </Link>
-      <p>Islamabad's community book platform. Share, rent, and discover books across the city. Making knowledge accessible to all.</p>
-      <div className="social-links">
+      <p style={{ fontSize: '.88rem', lineHeight: 1.7, maxWidth: '260px', marginTop: '14px' }}>Islamabad's community book platform. Share, rent, and discover books across the city. Making knowledge accessible to all.</p>
+      <div className="social-links" style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
         <Link to="#" className="social-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></Link>
         <Link to="#" className="social-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></Link>
         <Link to="#" className="social-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></Link>
@@ -422,47 +576,51 @@ export default function HomePage() {
       </div>
     </div>
     <div className="footer-col">
-      <h4>Platform</h4>
-      <ul>
-        <li><Link to="/browse">Browse Books</Link></li><li><Link to="/browse">Rent a Book</Link></li>
-        <li><Link to="/browse">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li>
-        <li><Link to="/dashboard">Profile</Link></li><li><Link to="#">Categories</Link></li>
+      <h4 style={{ color: 'var(--bg)', fontWeight: 700, fontSize: '.95rem', marginBottom: '18px' }}>Platform</h4>
+      <ul style={{ listStyle: 'none' }}>
+        <li style={{ marginBottom: '10px' }}><Link to="/browse" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Browse Books</Link></li>
+        <li style={{ marginBottom: '10px' }}><Link to="/browse" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Rent a Book</Link></li>
+        <li style={{ marginBottom: '10px' }}><Link to="/browse" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Free Shelf</Link></li>
+        <li style={{ marginBottom: '10px' }}><Link to="/seller" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Sell Your Book</Link></li>
       </ul>
     </div>
     <div className="footer-col">
-      <h4>Company</h4>
-      <ul>
-        <li><Link to="#">About Us</Link></li><li><Link to="#">How It Works</Link></li>
-        <li><Link to="#">Blog</Link></li><li><Link to="#">Press</Link></li><li><Link to="#">Careers</Link></li>
+      <h4 style={{ color: 'var(--bg)', fontWeight: 700, fontSize: '.95rem', marginBottom: '18px' }}>Company</h4>
+      <ul style={{ listStyle: 'none' }}>
+        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>About Us</Link></li>
+        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>How It Works</Link></li>
+        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Blog</Link></li>
+        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Press</Link></li>
+        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Careers</Link></li>
       </ul>
     </div>
     <div className="footer-col">
-      <h4>Contact</h4>
-      <ul>
-        <li>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,250,224,.45)" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          <Link to="#"><span className="__cf_email__" data-cfemail="2a424f4646456a48454541495349464f045a41">[email&#160;protected]</span></Link>
+      <h4 style={{ color: 'var(--bg)', fontWeight: 700, fontSize: '.95rem', marginBottom: '18px' }}>Contact</h4>
+      <ul style={{ listStyle: 'none' }}>
+        <li style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '10px' }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,250,224,.45)" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>contact@bookcycle.com</Link>
         </li>
-        <li>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,250,224,.45)" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.04 1.18 2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z"/></svg>
-          <Link to="#">+92 300 1234567</Link>
+        <li style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '10px' }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,250,224,.45)" strokeWidth="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.04 1.18 2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z"/></svg>
+          <Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>+92 300 1234567</Link>
         </li>
-        <li>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,250,224,.45)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          <Link to="#">F-7, Islamabad</Link>
+        <li style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '10px' }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,250,224,.45)" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>F-7, Islamabad</Link>
         </li>
-        <li style={{ marginTop: '12px' }}><Link to="#">Help Center</Link></li>
-        <li><Link to="#">Report an Issue</Link></li>
-        <li><Link to="#">Community Forum</Link></li>
+        <li style={{ marginTop: '12px', marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Help Center</Link></li>
+        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Report an Issue</Link></li>
+        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Community Forum</Link></li>
       </ul>
     </div>
   </div>
-  <div className="footer-bottom">
-    <p>© 2025 BookCycle. All rights reserved. Made with love in Islamabad.</p>
-    <div className="footer-policies">
-      <Link to="#">Privacy Policy</Link>
-      <Link to="#">Terms of Service</Link>
-      <Link to="#">Cookie Policy</Link>
+  <div className="footer-bottom" style={{ borderTop: '1px solid rgba(255,250,224,.1)', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <p style={{ fontSize: '.82rem' }}>© 2025 BookCycle. All rights reserved. Made with love in Islamabad.</p>
+    <div className="footer-policies" style={{ display: 'flex', gap: '24px' }}>
+      <Link to="#" style={{ color: 'rgba(255,250,224,.45)', textDecoration: 'none', fontSize: '.82rem' }}>Privacy Policy</Link>
+      <Link to="#" style={{ color: 'rgba(255,250,224,.45)', textDecoration: 'none', fontSize: '.82rem' }}>Terms of Service</Link>
+      <Link to="#" style={{ color: 'rgba(255,250,224,.45)', textDecoration: 'none', fontSize: '.82rem' }}>Cookie Policy</Link>
     </div>
   </div>
 </footer>

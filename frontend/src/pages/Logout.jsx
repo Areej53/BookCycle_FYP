@@ -1,13 +1,15 @@
 import React, { useEffect } from 'react'
 import "../styles/Logout.css";
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Logout = () => {
 
     const navigate = useNavigate();
+    const { logout } = useAuth();
     
     useEffect(() => {
-        localStorage.removeItem("auth");
+        logout();
         setTimeout(() => {
             navigate("/");
         }, 3000);

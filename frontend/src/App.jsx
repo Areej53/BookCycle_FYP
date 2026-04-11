@@ -1,6 +1,5 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import {
-  Dashboard,
   ForgotPassword,
   HomeLayout,
   Landing,
@@ -20,6 +19,7 @@ import {
   CartPage,
 } from "./pages";
 import { ToastContainer } from "react-toastify";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
@@ -47,10 +47,6 @@ const router = createBrowserRouter([
         element: <ResetPassword />,
       },
       {
-        path: "dashboard",
-        element: <Dashboard />,
-      },
-      {
         path: "logout",
         element: <Logout />,
       },
@@ -74,25 +70,35 @@ const router = createBrowserRouter([
         path: "book/:id",
         element: <BookDetailsPage />,
       },
+
       {
-        path: "sell",
-        element: <SellerAddBookPage />,
-      },
-      {
-        path: "sell/categories",
-        element: <SellerCategoriesPage />,
-      },
-      {
-        path: "sell/published",
-        element: <SellerPublishedPage />,
-      },
-      {
-        path: "sell/review",
-        element: <SellerReviewPage />,
-      },
-      {
-        path: "cart",
-        element: <CartPage />,
+        element: <ProtectedRoute />,
+        children: [
+          {
+            path: "seller",
+            element: <SellerAddBookPage />,
+          },
+          {
+            path: "seller/add",
+            element: <SellerAddBookPage />,
+          },
+          {
+            path: "seller/categories",
+            element: <SellerCategoriesPage />,
+          },
+          {
+            path: "seller/published",
+            element: <SellerPublishedPage />,
+          },
+          {
+            path: "seller/review",
+            element: <SellerReviewPage />,
+          },
+          {
+            path: "cart",
+            element: <CartPage />,
+          },
+        ],
       },
     ],
   },
