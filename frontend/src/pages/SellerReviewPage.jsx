@@ -19,26 +19,16 @@ export default function SellerReviewPage() {
         setError('');
         
         try {
-            const catMap = {
-                'Programming': 'Technology',
-                'Science': 'Academic',
-                'Novels': 'Fiction',
-                'Self-Development': 'Non-Fiction',
-                'Algebra': 'Academic',
-                'Mathematics': 'Academic',
-                'Physics': 'Academic'
-            };
-            const mappedCategory = catMap[sellerData.category] || 'Other';
-
             const payload = {
                 title: sellerData.title || 'Untitled',
                 author: sellerData.author || 'Unknown',
                 description: sellerData.description || 'No description provided.',
                 condition: sellerData.condition || 'Good',
-                category: mappedCategory,
+                category: sellerData.category || 'Programming',
                 exchangeType: sellerData.exchangeType || 'Sell',
                 price: sellerData.exchangeType === 'Sell' ? Number(sellerData.price) : (sellerData.exchangeType === 'Rent' ? Number(sellerData.rentWeek) : 0),
-                images: [] 
+                images: sellerData.images ? sellerData.images.map(img => img.base64 || img.preview) : [],
+                image: sellerData.images && sellerData.images.length > 0 ? (sellerData.images[0].base64 || sellerData.images[0].preview) : ''
             };
 
             const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };

@@ -1,4 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { api } from "../api/client";
+import { useNavigate } from "react-router-dom";
 import logoImg from "../assets/image.png";
 
 const styles = `
@@ -229,6 +231,58 @@ const FREE_BOOKS = [
 export default function Home({ onNavigate }) {
   const [showPopup, setShowPopup] = useState(false);
   const [toast, setToast] = useState({ show: false, msg: "" });
+  const [featuredBooks, setFeaturedBooks] = useState([]);
+  const [recentBooks, setRecentBooks] = useState([]);
+  const navigate = useNavigate();
+
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80';
+    if (imagePath.startsWith('http') || imagePath.startsWith('data:image')) return imagePath;
+    return `http://localhost:5000${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
+  };
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const [featRes, recentRes] = await Promise.all([
+          api.get('/books?limit=8'), // All or featured
+          api.get('/books?limit=8&sort=recent') // Newest 8
+        ]);
+        
+        const formatBooks = (booksArr, max) => {
+          return booksArr.slice(0, max).map(b => ({
+            id: b._id,
+            img: getImageUrl(b.image || (b.images && b.images[0])),
+            badge: b.exchangeType === 'Sell' ? 'buy' : b.exchangeType === 'Rent' ? 'rent' : 'free',
+            cat: b.category,
+            title: b.title,
+            author: b.author,
+            price: b.exchangeType === 'Share' ? 'free' : `Rs. ${b.price}`,
+            unit: b.exchangeType === 'Rent' ? '/wk' : '',
+            stars: '★★★★★'
+          }));
+        };
+
+        if (featRes.data.books && featRes.data.books.length > 0) {
+            setFeaturedBooks(formatBooks(featRes.data.books, 8));
+        } else {
+            setFeaturedBooks(FEATURED_BOOKS);
+        }
+
+        if (recentRes.data.books && recentRes.data.books.length > 0) {
+            setRecentBooks(formatBooks(recentRes.data.books, 8));
+        } else {
+            setRecentBooks(FEATURED_BOOKS);
+        }
+
+      } catch (error) {
+        console.error("Failed to fetch books", error);
+        setFeaturedBooks(FEATURED_BOOKS);
+        setRecentBooks(FEATURED_BOOKS);
+      }
+    };
+    fetchBooks();
+  }, []);
 
   const showToast = useCallback((msg) => {
     setToast({ show: true, msg });
@@ -307,8 +361,8 @@ export default function Home({ onNavigate }) {
               <button className="h-see-all">See all books →</button>
             </div>
             <div className="h-books-grid">
-              {FEATURED_BOOKS.map(b => (
-                <div key={b.id} className="h-bcard">
+              {featuredBooks.map(b => (
+                <div key={b.id} className="h-bcard" onClick={() => navigate(`/details?id=${b.id}`)}>
                   <div className="h-bcard-img">
                     <img src={b.img} alt={b.title} />
                     <span className={`h-badge h-badge-${b.badge}`}>{b.badge.charAt(0).toUpperCase() + b.badge.slice(1)}</span>
@@ -324,7 +378,47 @@ export default function Home({ onNavigate }) {
                     <div className="h-bstars">{b.stars}</div>
                     <div className="h-bactions">
                       <button className="h-btn-details">View Details</button>
-                      <button className="h-btn-cart" onClick={() => setShowPopup(true)}>
+                      <button className="h-btn-cart" onClick={(e) => { e.stopPropagation(); setShowPopup(true); }}>
+                        {b.badge === "free" ? "Request Free" : "Add to Cart"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Recently Added Books */}
+        <section className="h-section alt">
+          <div className="h-section-inner">
+            <div className="h-section-head">
+              <div>
+                <div className="h-section-tag">✦ Fresh Arrivals</div>
+                <h2 className="h-section-title">Recently <em>Added</em></h2>
+                <p className="h-section-sub" style={{ marginBottom: 0 }}>Be the first to buy, rent, or claim these new listings.</p>
+              </div>
+              <button className="h-see-all">See all new →</button>
+            </div>
+            <div className="h-books-grid">
+              {recentBooks.map(b => (
+                <div key={b.id} className="h-bcard" onClick={() => navigate(`/details?id=${b.id}`)}>
+                  <div className="h-bcard-img">
+                    <img src={b.img} alt={b.title} />
+                    <span className={`h-badge h-badge-${b.badge}`}>{b.badge.charAt(0).toUpperCase() + b.badge.slice(1)}</span>
+                  </div>
+                  <div className="h-bcard-body">
+                    <div className="h-bcat">{b.cat}</div>
+                    <div className="h-btitle">{b.title}</div>
+                    <div className="h-bauthor">by {b.author}</div>
+                    {b.price === "free"
+                      ? <div className="h-bprice free">🎁 Free Shelf</div>
+                      : <div className="h-bprice">{b.price}{b.unit && <span style={{ fontSize: ".72rem", color: "var(--muted)", fontWeight: 500 }}>{b.unit}</span>}</div>
+                    }
+                    <div className="h-bstars">{b.stars}</div>
+                    <div className="h-bactions">
+                      <button className="h-btn-details">View Details</button>
+                      <button className="h-btn-cart" onClick={(e) => { e.stopPropagation(); setShowPopup(true); }}>
                         {b.badge === "free" ? "Request Free" : "Add to Cart"}
                       </button>
                     </div>
@@ -336,7 +430,7 @@ export default function Home({ onNavigate }) {
         </section>
 
         {/* How it works */}
-        <section className="h-section alt">
+        <section className="h-section">
           <div className="h-section-inner">
             <div style={{ textAlign: "center", marginBottom: 40 }}>
               <div className="h-section-tag" style={{ textAlign: "center" }}>✦ Simple Process</div>
@@ -357,7 +451,7 @@ export default function Home({ onNavigate }) {
         </section>
 
         {/* Categories */}
-        <section className="h-section">
+        <section className="h-section alt">
           <div className="h-section-inner">
             <div className="h-section-head">
               <div>
@@ -381,7 +475,7 @@ export default function Home({ onNavigate }) {
         </section>
 
         {/* Free Shelf */}
-        <section className="h-section alt">
+        <section className="h-section">
           <div className="h-section-inner">
             <div className="h-free-box">
               <div>
@@ -405,7 +499,7 @@ export default function Home({ onNavigate }) {
         </section>
 
         {/* Value Props */}
-        <section className="h-section">
+        <section className="h-section alt">
           <div className="h-section-inner">
             <div style={{ textAlign: "center", marginBottom: 40 }}>
               <div className="h-section-tag" style={{ textAlign: "center" }}>✦ Why BookCycle</div>

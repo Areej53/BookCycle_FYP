@@ -1,15 +1,24 @@
-import React, { useContext, useState, useRef } from 'react';
+import React, { useContext, useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { SellerContext } from '../context/SellerContext';
 import { useAuth } from '../context/AuthContext';
+import { api, getApiErrorMessage } from '../api/client';
+import { toast } from 'react-toastify';
 
-export default function SellerAddBookPage() {
-    const { sellerData, updateSellerData } = useContext(SellerContext);
-    const { user } = useAuth();
+export default function SellerAddNotesPage() {
+    const { sellerData, updateSellerData, resetSellerData } = useContext(SellerContext);
+    const { user, token } = useAuth();
     const navigate = useNavigate();
     const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(false);
     const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        if (sellerData.category !== 'Notes') {
+            updateSellerData({ category: 'Notes' });
+        }
+    }, [sellerData.category, updateSellerData]);
 
     const handleChange = (e) => {
         updateSellerData({ [e.target.name]: e.target.value });
@@ -27,35 +36,38 @@ export default function SellerAddBookPage() {
     };
 
     const handleFileChange = async (e) => {
-        const files = Array.from(e.target.files);
-        const newImages = await Promise.all(files.map(file => {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    resolve({
-                        file,
-                        preview: reader.result,
-                        name: file.name,
-                        base64: reader.result
-                    });
-                };
-                reader.readAsDataURL(file);
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Ensure PDF validation
+        if (file.type !== 'application/pdf') {
+            toast.error("Only PDF files are supported.");
+            return;
+        }
+        
+        // Reject files >2MB
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error("File size exceeds 2MB limit.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            updateSellerData({ 
+                pdf: reader.result, 
+                pdfName: file.name 
             });
-        }));
-        updateSellerData({ images: [...(sellerData.images || []), ...newImages].slice(0, 6) });
+            if (errors.pdf) setErrors({ ...errors, pdf: null });
+        };
+        reader.readAsDataURL(file);
     };
 
-    const removeImage = (index) => {
-        const newImages = [...(sellerData.images || [])];
-        newImages.splice(index, 1);
-        updateSellerData({ images: newImages });
-    };
-
-    const handleNext = () => {
+    const handlePublish = async () => {
         const newErrors = {};
-        if (!sellerData.title?.trim()) newErrors.title = 'Title is required.';
-        if (!sellerData.author?.trim()) newErrors.author = 'Author is required.';
+        if (!sellerData.title?.trim()) newErrors.title = 'Notes Topic is required.';
+        if (!sellerData.author?.trim()) newErrors.author = 'Author/Creator is required.';
         if (!sellerData.description?.trim() || sellerData.description.length < 50) newErrors.description = 'Minimum 50 characters required.';
+        if (!sellerData.pdf) newErrors.pdf = 'PDF file is mandatory.';
         
         if (sellerData.exchangeType === 'Sell' && (!sellerData.price || sellerData.price <= 0)) newErrors.price = 'Sale price is required.';
         if (sellerData.exchangeType === 'Rent' && (!sellerData.rentWeek || sellerData.rentWeek <= 0)) newErrors.rentWeek = 'Rent per week is required.';
@@ -66,7 +78,35 @@ export default function SellerAddBookPage() {
             return;
         }
 
-        navigate('/seller/review');
+        setLoading(true);
+        try {
+            const payload = {
+                title: sellerData.title || 'Untitled',
+                subject: sellerData.subject || '',
+                author: sellerData.author || 'Unknown',
+                description: sellerData.description || 'No description provided.',
+                condition: sellerData.condition || 'Good', // Kept for backend constraints, or if removed from UI, default good
+                category: 'Notes',
+                exchangeType: sellerData.exchangeType || 'Sell',
+                price: sellerData.exchangeType === 'Sell' ? Number(sellerData.price) : (sellerData.exchangeType === 'Rent' ? Number(sellerData.rentWeek) : 0),
+                duration: sellerData.duration || '1 Month',
+                rentWeek: sellerData.rentWeek ? Number(sellerData.rentWeek) : 0,
+                rentMonth: sellerData.rentMonth ? Number(sellerData.rentMonth) : 0,
+                pdf: sellerData.pdf
+            };
+
+            const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
+            await api.post('/books', payload, axiosConfig);
+
+            toast.success("Successfully uploaded your Notes!");
+            resetSellerData();
+            navigate('/seller/published');
+        } catch (err) {
+            const msg = getApiErrorMessage(err);
+            toast.error(msg);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -87,53 +127,47 @@ export default function SellerAddBookPage() {
           <circle cx="20" cy="21" r="1"></circle>
           <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
         </svg>
-        <span className="cart-badge" style={{ position: 'absolute', top: '-6px', right: '-10px', background: 'var(--cta)', color: '#fff', fontSize: '0.65rem', fontWeight: 700, padding: '2px 6px', borderRadius: '10px' }}>3</span>
       </Link>
     </li><li><Link to="/seller"  className="nav-cta" >List a Book</Link></li></ul></nav>
 
-<div className="progress-wrap" style={{ marginTop: '20px' }}><div className="progress-steps"><div className="p-step done"><div className="p-num">✓</div>Categories</div><div className="p-line done"></div><div className="p-step active"><div className="p-num">2</div>Book Details</div><div className="p-line "></div><div className="p-step "><div className="p-num">3</div>Review</div><div className="p-line "></div><div className="p-step "><div className="p-num">4</div>Published!</div></div></div>
+<div className="progress-wrap" style={{ marginTop: '20px' }}>
+  <div className="progress-steps">
+    <div className="p-step done"><div className="p-num">✓</div>Categories</div>
+    <div className="p-line done"></div>
+    <div className="p-step active"><div className="p-num">2</div>Upload Notes</div>
+    <div className="p-line "></div>
+    <div className="p-step "><div className="p-num">3</div>Published!</div>
+  </div>
+</div>
 
 <div className="page-layout">
 <main>
 <div className="form-card">
   <div className="form-card-head">
-    <div className="fch-title">Add Your Book</div>
-    <div className="fch-sub">Provide complete details so buyers can trust your listing.</div>
+    <div className="fch-title">Upload Your Notes</div>
+    <div className="fch-sub">Provide complete details to share your educational materials.</div>
   </div>
   <div className="form-body">
 
-    <div className="section-title"><div className="st-icon">📄</div>Book Information</div>
+    <div className="section-title"><div className="st-icon">📄</div>Notes Information</div>
     <div className="form-grid">
       <div className="field span2">
-        <label>Book Title <span className="req">*</span></label>
-        <input type="text" name="title" value={sellerData.title} onChange={handleChange} placeholder="e.g. Atomic Habits" />
+        <label>Notes Topic / Title <span className="req">*</span></label>
+        <input type="text" name="title" value={sellerData.title} onChange={handleChange} placeholder="e.g. Data Structures Full Course Notes" />
         {errors.title && <span className="err-msg" style={{ display: 'block' }}>{errors.title}</span>}
       </div>
       <div className="field">
-        <label>Author <span className="req">*</span></label>
-        <input type="text" name="author" value={sellerData.author} onChange={handleChange} placeholder="e.g. James Clear" />
+        <label>Subject</label>
+        <input type="text" name="subject" value={sellerData.subject} onChange={handleChange} placeholder="e.g. Computer Science"/>
+      </div>
+      <div className="field">
+        <label>Author / Creator <span className="req">*</span></label>
+        <input type="text" name="author" value={sellerData.author} onChange={handleChange} placeholder="e.g. John Doe" />
         {errors.author && <span className="err-msg" style={{ display: 'block' }}>{errors.author}</span>}
       </div>
       <div className="field">
         <label>Category</label>
-        <select name="category" value={sellerData.category || 'Programming'} onChange={handleChange}>
-          <option value="Programming">Programming</option>
-          <option value="Science">Science</option>
-          <option value="Novels">Novels</option>
-          <option value="Self Development">Self Development</option>
-          <option value="Algebra">Algebra</option>
-          <option value="Mathematics">Mathematics</option>
-          <option value="Physics">Physics</option>
-          <option value="Notes">Notes</option>
-        </select>
-      </div>
-      <div className="field">
-        <label>Subject / Topic</label>
-        <input type="text" name="subject" value={sellerData.subject} onChange={handleChange} placeholder="e.g. Data Structures"/>
-      </div>
-      <div className="field">
-        <label>Edition / Year</label>
-        <input type="text" name="edition" value={sellerData.edition} onChange={handleChange} placeholder="e.g. 3rd Edition / 2022"/>
+        <input type="text" value="Notes" readOnly style={{ background: '#f5f5f5', color: '#666' }} />
       </div>
       <div className="field">
         <label>Language</label>
@@ -236,51 +270,50 @@ export default function SellerAddBookPage() {
 
     {sellerData.exchangeType === 'Share' && (
         <div className="pricing-section show free-info" style={{ marginBottom: '24px', display:'block' }}>
-        🎁 This book will be listed FREE on the Knowledge Shelf. No price needed.
+        🎁 These notes will be listed FREE on the Knowledge Shelf. No price needed.
         </div>
     )}
 
     <div className="section-title"><div className="st-icon">📝</div>Description</div>
     <div className="field">
-      <label>Book Description <span className="req">*</span></label>
-      <textarea name="description" value={sellerData.description} onChange={handleChange} rows="4" placeholder="Describe the book — content, condition, why someone should read it…"></textarea>
+      <label>Notes Description <span className="req">*</span></label>
+      <textarea name="description" value={sellerData.description} onChange={handleChange} rows="4" placeholder="Describe the notes — content, what chapters it covers, why it's useful…"></textarea>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '3px' }}>
         {errors.description && <span className="err-msg" style={{ display: 'block' }}>{errors.description}</span>}
         <span className="char-counter" style={{ marginLeft: 'auto' }}>{(sellerData.description || '').length} / 500 (min 50)</span>
       </div>
     </div>
 
-    <div className="section-title"><div className="st-icon">🖼</div>Book Images</div>
-    <div className="dropzone" onClick={() => fileInputRef.current.click()}>
-      <input type="file" ref={fileInputRef} multiple accept="image/*" style={{ display: 'none' }} onChange={handleFileChange}/>
-      <div className="dz-icon">📤</div>
-      <div className="dz-title">Click to browse images here</div>
-      <div className="dz-sub">JPG, PNG up to 5MB · Max 6</div>
-    </div>
-    
-    {(sellerData.images && sellerData.images.length > 0) && (
-      <div style={{ display: 'flex', gap: '10px', marginTop: '10px', flexWrap: 'wrap' }}>
-        {sellerData.images.map((img, idx) => (
-          <div key={idx} style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)' }}>
-            <img src={img.preview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            <button onClick={(e) => { e.stopPropagation(); removeImage(idx); }} style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', fontSize: '10px' }}>✕</button>
+    <div className="section-title"><div className="st-icon">📁</div>Upload PDF <span className="req">*</span></div>
+    <div className="dropzone" onClick={() => fileInputRef.current.click()} style={{ background: sellerData.pdf ? '#eaf5f0' : '' }}>
+      <input type="file" ref={fileInputRef} accept=".pdf,application/pdf" style={{ display: 'none' }} onChange={handleFileChange}/>
+      {sellerData.pdf ? (
+          <div>
+              <div className="dz-icon" style={{ color: 'var(--primary)', fontSize: '2rem' }}>✓</div>
+              <div className="dz-title" style={{ color: 'var(--primary)' }}>{sellerData.pdfName || 'PDF Selected'}</div>
+              <div className="dz-sub">Click to change file (Max 2MB)</div>
           </div>
-        ))}
-      </div>
-    )}
+      ) : (
+          <div>
+              <div className="dz-icon">📤</div>
+              <div className="dz-title">Click to select PDF here</div>
+              <div className="dz-sub">PDF format only · Max 2MB</div>
+          </div>
+      )}
+    </div>
+    {errors.pdf && <span className="err-msg" style={{ display: 'block', marginTop: '5px' }}>{errors.pdf}</span>}
 
     <div className="form-actions" style={{ marginTop: '30px' }}>
       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-        <button className="btn-back" onClick={() => navigate('/seller')}>← Back</button>
+        <button className="btn-back" onClick={() => navigate('/seller/categories')}>← Back</button>
       </div>
-      <button className="btn-next-form" onClick={handleNext}>Next: Review Listing →</button>
+      <button className="btn-next-form" onClick={handlePublish} disabled={loading}>{loading ? 'Publishing...' : 'Publish Notes ✓'}</button>
     </div>
   </div>
 </div>
 </main>
 <aside className="sidebar">
-  <div className="steps-widget"><div className="sw-head">Your Progress</div><div className="sw-body"><div className="sw-item"><div className="sw-num done">✓</div><div><div className="sw-label ">Select Categories</div><div className="sw-sub">Choose what you want to sell</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num active">2</div><div><div className="sw-label ">Add Book Details</div><div className="sw-sub">Fill in book info & images</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num ">3</div><div><div className="sw-label upcoming">Review Listing</div><div className="sw-sub">Preview before going live</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num ">4</div><div><div className="sw-label upcoming">Published!</div><div className="sw-sub">Your book is now live</div></div></div></div></div>
-  
+  <div className="steps-widget"><div className="sw-head">Your Progress</div><div className="sw-body"><div className="sw-item"><div className="sw-num done">✓</div><div><div className="sw-label ">Select Categories</div><div className="sw-sub">Choose what you want to sell</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num active">2</div><div><div className="sw-label ">Upload Notes</div><div className="sw-sub">Add details & PDF file</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num ">3</div><div><div className="sw-label upcoming">Published!</div><div className="sw-sub">Your notes are live</div></div></div></div></div>
 </aside>
 </div>
 <footer className="footer"><div className="footer-grid"><div><Link to="/" className="footer-brand"><div className="f-logo"><img src={IMAGES.img_0} alt="BookCycle"/></div><span className="f-brand-name">BookCycle</span></Link><p className="f-desc">Islamabad's community book platform. Share, rent, and discover books across the city.</p></div><div className="f-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div></div></footer>
