@@ -20,6 +20,7 @@ import {
 } from "./pages";
 import { ToastContainer } from "react-toastify";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { SellerProvider } from "./context/SellerContext";
 
 const router = createBrowserRouter([
   {
@@ -76,7 +77,7 @@ const router = createBrowserRouter([
         children: [
           {
             path: "seller",
-            element: <SellerAddBookPage />,
+            element: <SellerCategoriesPage />,
           },
           {
             path: "seller/add",
@@ -108,10 +109,10 @@ function App() {
 
 
   return (
-    <>
+    <SellerProvider>
         <RouterProvider router={router} />
         <ToastContainer position='top-center' />
-    </>
+    </SellerProvider>
   )
 }
 
