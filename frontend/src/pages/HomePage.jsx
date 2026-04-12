@@ -39,7 +39,7 @@ export default function HomePage() {
     const [activeSort, setActiveSort] = useState('recent');
     const [activeCats, setActiveCats] = useState([]);
     const [activeConds, setActiveConds] = useState([]);
-    const [priceRange, setPriceRange] = useState(1000);
+    const [priceRange, setPriceRange] = useState(5000);
     const wrapperRef = useRef(null);
     const [featuredBooks, setFeaturedBooks] = useState([]);
     const [recentBooks, setRecentBooks] = useState([]);
@@ -96,12 +96,12 @@ export default function HomePage() {
     const handleSearch = (e) => {
         if (e.key === 'Enter' || e.type === 'click') {
             applyFilters();
-            if (searchQuery.trim() || activeType !== 'all' || activeCats.length || activeConds.length || priceRange < 1000) {
+            if (searchQuery.trim() || activeType !== 'all' || activeCats.length || activeConds.length || priceRange < 5000 || activeSort !== 'recent') {
                 const params = new URLSearchParams();
                 if (searchQuery) params.append('q', searchQuery);
                 if (activeType !== 'all') params.append('type', activeType);
                 if (activeSort !== 'recent') params.append('sort', activeSort);
-                if (priceRange < 1000) params.append('price', priceRange);
+                if (priceRange < 5000) params.append('price', priceRange);
                 if (activeCats.length) params.append('cats', activeCats.join(','));
                 if (activeConds.length) params.append('conds', activeConds.join(','));
                 navigate(`/browse/search?${params.toString()}`);
@@ -124,7 +124,7 @@ export default function HomePage() {
         setActiveSort('recent');
         setActiveCats([]);
         setActiveConds([]);
-        setPriceRange(1000);
+        setPriceRange(5000);
         setSearchQuery('');
         setIsFilterOpen(true);
     };
@@ -198,17 +198,13 @@ export default function HomePage() {
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M5 7h6M5 10h4"/></svg>
             Rent
           </span>
-          <span className={`f-chip ${activeType === 'free' ? 'active' : ''}`} onClick={() => setActiveType('free')}>
+          <span className={`f-chip ${activeType === 'share' ? 'active' : ''}`} onClick={() => setActiveType('share')}>
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 2v12M4 6h5.5a2.5 2.5 0 010 5H4"/></svg>
             Free
           </span>
-          <span className={`f-chip ${activeType === 'buy' ? 'active' : ''}`} onClick={() => setActiveType('buy')}>
+          <span className={`f-chip ${activeType === 'sell' ? 'active' : ''}`} onClick={() => setActiveType('sell')}>
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 3h2l2 7h6l1.5-5H6"/><circle cx="8" cy="13" r="1"/><circle cx="12" cy="13" r="1"/></svg>
             Buy
-          </span>
-          <span className={`f-chip ${activeType === 'donate' ? 'active' : ''}`} onClick={() => setActiveType('donate')}>
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 13S3 9.5 3 6a5 5 0 0110 0c0 3.5-5 7-5 7z"/></svg>
-            Donate
           </span>
         </div>
 
@@ -245,9 +241,10 @@ export default function HomePage() {
         <div className="filter-row">
           <span className="filter-row-label">Condition</span>
           <span className={`f-chip ${activeConds.includes('new') ? 'active' : ''}`} onClick={() => toggleCond('new')}>New</span>
+          <span className={`f-chip ${activeConds.includes('like new') ? 'active' : ''}`} onClick={() => toggleCond('like new')}>Like New</span>
           <span className={`f-chip ${activeConds.includes('good') ? 'active' : ''}`} onClick={() => toggleCond('good')}>Good</span>
           <span className={`f-chip ${activeConds.includes('fair') ? 'active' : ''}`} onClick={() => toggleCond('fair')}>Fair</span>
-          <span className={`f-chip ${activeConds.includes('worn') ? 'active' : ''}`} onClick={() => toggleCond('worn')}>Worn</span>
+          <span className={`f-chip ${activeConds.includes('poor') ? 'active' : ''}`} onClick={() => toggleCond('poor')}>Poor</span>
         </div>
 
         <div className="filter-divider"></div>
@@ -257,8 +254,8 @@ export default function HomePage() {
           <span className="filter-row-label">Price</span>
           <div className="price-range-wrap">
             <span style={{ fontSize: '.8rem', color: 'rgba(255,250,224,.5)' }}>Rs. 0</span>
-            <input type="range" min="0" max="1000" value={priceRange} step="50" onChange={(e) => setPriceRange(Number(e.target.value))}/>
-            <span className="price-val">{priceRange >= 1000 ? 'Any price' : `Up to Rs. ${priceRange}`}</span>
+            <input type="range" min="0" max="5000" value={priceRange} step="50" onChange={(e) => setPriceRange(Number(e.target.value))}/>
+            <span className="price-val">{priceRange >= 5000 ? 'Any price' : `Up to Rs. ${priceRange}`}</span>
           </div>
         </div>
 
@@ -287,10 +284,10 @@ export default function HomePage() {
             <button onClick={(e) => { e.stopPropagation(); removeTag(tag.group, tag.val); }}>×</button>
           </span>
         ))}
-        {priceRange < 1000 && (
+        {priceRange < 5000 && (
           <span className="active-tag">
             Up to Rs. {priceRange}
-            <button onClick={(e) => { e.stopPropagation(); setPriceRange(1000); }}>×</button>
+            <button onClick={(e) => { e.stopPropagation(); setPriceRange(5000); }}>×</button>
           </span>
         )}
       </div>
@@ -696,7 +693,7 @@ export default function HomePage() {
         <Link to="#" className="f-soc"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></Link>
       </div>
     </div>
-    <div className="footer-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/browse?tab=rent">Rent a Book</Link></li><li><Link to="/browse?tab=free">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div>
+    <div className="footer-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/browse?tab=rent">Rent a Book</Link></li><li><Link to="/browse?tab=share">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div>
     <div className="footer-col"><h4>Company</h4><ul><li><Link to="#">About Us</Link></li><li><Link to="#">How It Works</Link></li><li><Link to="#">Blog</Link></li><li><Link to="#">Careers</Link></li></ul></div>
     <div className="footer-col"><h4>Contact</h4><ul><li><Link to="#">contact@bookcycle.com</Link></li><li><Link to="#">+92 300 1234567</Link></li><li><Link to="#">F-7, Islamabad</Link></li><li><Link to="#">Help Center</Link></li></ul></div>
   </div>
