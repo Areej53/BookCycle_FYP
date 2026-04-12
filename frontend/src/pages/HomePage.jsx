@@ -164,8 +164,6 @@ export default function HomePage() {
 
   <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '30px', margin: 0, padding: 0 }}>
     <li><Link to="/browse">Browse</Link></li>
-    <li><Link to="/browse?tab=rent">Rent</Link></li>
-    <li><Link to="/browse?tab=share">Free Shelf</Link></li>
     <li><Link to="/seller">Sell</Link></li>
     {user ? (
         <li><Link to="/logout" className="nav-cta">Logout</Link></li>
@@ -355,7 +353,7 @@ export default function HomePage() {
     </div>
     <div className="books-grid">
       {featuredBooks.map(b => (
-        <div className="book-card" key={b.id}>
+        <div className="book-card" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer' }}>
           <div className="book-cover"><img src={b.img} alt={b.title}/><span className={`book-badge badge-${b.badge}`}>{b.badge === 'sell' ? 'Buy' : b.badge.charAt(0).toUpperCase() + b.badge.slice(1)}</span></div>
           <div className="book-info">
             <div className="book-title">{b.title}</div>
@@ -365,9 +363,9 @@ export default function HomePage() {
                 {b.badge === 'free' ? 'Free' : `${b.price}${b.unit}`}
               </span>
               {b.badge === 'free' ? (
-                  <Link to={`/details?id=${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link>
+                  <Link to={`/book/${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link>
               ) : (
-                  <Link to={`/details?id=${b.id}`} className="btn-mini-cart" title={b.badge === 'sell' ? 'Buy' : 'Rent'}>
+                  <Link to={`/book/${b.id}`} className="btn-mini-cart" title={b.badge === 'sell' ? 'Buy' : 'Rent'}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                   </Link>
               )}
@@ -489,9 +487,18 @@ export default function HomePage() {
       <Link to="/browse" className="see-all">View all</Link>
     </div>
     <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
-      <div className="book-card"><div className="book-cover"><img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80" alt="The Alchemist"/><span className="book-badge badge-rent">Rent</span></div><div className="book-info"><div className="book-title">The Alchemist</div><div className="book-author">Paulo Coelho</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 30/wk</span><Link to="/details" className="btn-mini-cart" title="Rent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div></div>
-      <div className="book-card"><div className="book-cover"><img src="https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=400&q=80" alt="1984"/><span className="book-badge badge-rent">Rent</span></div><div className="book-info"><div className="book-title">1984</div><div className="book-author">George Orwell</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 35/wk</span><Link to="/details" className="btn-mini-cart" title="Rent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div></div>
-      <div className="book-card"><div className="book-cover"><img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=80" alt="Think and Grow Rich"/><span className="book-badge badge-rent">Rent</span></div><div className="book-info"><div className="book-title">Think & Grow Rich</div><div className="book-author">Napoleon Hill</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 45/wk</span><Link to="/details" className="btn-mini-cart" title="Rent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div></div>
+      <div className="book-card" onClick={() => navigate('/book/6618d3f666b6c666f666f666')} style={{ cursor: 'pointer' }}>
+        <div className="book-cover"><img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80" alt="The Alchemist"/><span className="book-badge badge-rent">Rent</span></div>
+        <div className="book-info"><div className="book-title">The Alchemist</div><div className="book-author">Paulo Coelho</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 30/wk</span><Link to="/book/6618d3f666b6c666f666f666" className="btn-mini-cart" title="Rent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div>
+      </div>
+      <div className="book-card" onClick={() => navigate('/book/6618d3f666b6c666f666f667')} style={{ cursor: 'pointer' }}>
+        <div className="book-cover"><img src="https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=400&q=80" alt="1984"/><span className="book-badge badge-rent">Rent</span></div>
+        <div className="book-info"><div className="book-title">1984</div><div className="book-author">George Orwell</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 35/wk</span><Link to="/book/6618d3f666b6c666f666f667" className="btn-mini-cart" title="Rent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div>
+      </div>
+      <div className="book-card" onClick={() => navigate('/book/6618d3f666b6c666f666f668')} style={{ cursor: 'pointer' }}>
+        <div className="book-cover"><img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=80" alt="Think and Grow Rich"/><span className="book-badge badge-rent">Rent</span></div>
+        <div className="book-info"><div className="book-title">Think & Grow Rich</div><div className="book-author">Napoleon Hill</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 45/wk</span><Link to="/book/6618d3f666b6c666f666f668" className="btn-mini-cart" title="Rent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div>
+      </div>
     </div>
   </div>
 
@@ -504,7 +511,7 @@ export default function HomePage() {
     <div style={{ background: 'linear-gradient(135deg,rgba(96,108,56,.07),rgba(19,73,60,.05))', border: '1.5px solid rgba(96,108,56,.2)', borderRadius: '20px', padding: '26px' }}>
       <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
         {freeBooks.map(b => (
-          <div className="book-card" key={b.id}>
+          <div className="book-card" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer' }}>
             <div className="book-cover">
               <img src={b.img} alt={b.title}/>
               <span className="book-badge badge-free">Free</span>
@@ -514,7 +521,7 @@ export default function HomePage() {
               <div className="book-author">{b.author}</div>
               <div className="book-footer">
                 <span className="book-price free">Free</span>
-                <Link to={`/details?id=${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link>
+                <Link to={`/book/${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link>
               </div>
             </div>
           </div>
@@ -531,7 +538,7 @@ export default function HomePage() {
     </div>
     <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
       {recentBooks.map(b => (
-        <div className="book-card book-card-h" key={b.id}>
+        <div className="book-card book-card-h" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer' }}>
           <div className="book-cover" style={{ width: '82px', flexShrink: '0', borderRadius: '0', minHeight: '110px', height: 'auto' }}>
             <img src={b.img} alt={b.title}/>
             <span className={`book-badge badge-${b.badge}`} style={{ top: '6px', right: '4px', fontSize: '.6rem', padding: '2px 6px' }}>{b.badge === 'sell' ? 'Buy' : b.badge.charAt(0).toUpperCase() + b.badge.slice(1)}</span>
@@ -543,9 +550,9 @@ export default function HomePage() {
             <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span className={`book-price ${b.badge === 'free' ? 'free' : ''}`}>{b.badge === 'free' ? 'Free' : `${b.price}${b.unit}`}</span>
               {b.badge === 'free' ? (
-                  <Link to={`/details?id=${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link>
+                  <Link to={`/book/${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link>
               ) : (
-                  <Link to={`/details?id=${b.id}`} className="btn-mini-cart">
+                  <Link to={`/book/${b.id}`} className="btn-mini-cart">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                   </Link>
               )}
@@ -577,10 +584,10 @@ export default function HomePage() {
     <div className="widget-title">
       Top Rented Books
     </div>
-    <div className="top-book-row"><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=80&q=75" alt="Atomic Habits"/></div><div className="top-book-info"><div className="top-book-title">Atomic Habits</div><div className="top-book-meta">Rented 124 times</div></div></div>
-    <div className="top-book-row"><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1589998059171-988d887df646?w=80&q=75" alt="Sapiens"/></div><div className="top-book-info"><div className="top-book-title">Sapiens</div><div className="top-book-meta">Rented 98 times</div></div></div>
-    <div className="top-book-row"><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=80&q=75" alt="The Alchemist"/></div><div className="top-book-info"><div className="top-book-title">The Alchemist</div><div className="top-book-meta">Rented 87 times</div></div></div>
-    <div className="top-book-row"><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=80&q=75" alt="1984"/></div><div className="top-book-info"><div className="top-book-title">1984</div><div className="top-book-meta">Rented 74 times</div></div></div>
+    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f669')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=80&q=75" alt="Atomic Habits"/></div><div className="top-book-info"><div className="top-book-title">Atomic Habits</div><div className="top-book-meta">Rented 124 times</div></div></div>
+    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f670')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1589998059171-988d887df646?w=80&q=75" alt="Sapiens"/></div><div className="top-book-info"><div className="top-book-title">Sapiens</div><div className="top-book-meta">Rented 98 times</div></div></div>
+    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f666')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=80&q=75" alt="The Alchemist"/></div><div className="top-book-info"><div className="top-book-title">The Alchemist</div><div className="top-book-meta">Rented 87 times</div></div></div>
+    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f667')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=80&q=75" alt="1984"/></div><div className="top-book-info"><div className="top-book-title">1984</div><div className="top-book-meta">Rented 74 times</div></div></div>
   </div>
 
   
@@ -588,9 +595,9 @@ export default function HomePage() {
     <div className="widget-title">
       Top Selling Books
     </div>
-    <div className="top-book-row"><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=80&q=75" alt="Zero to One"/></div><div className="top-book-info"><div className="top-book-title">Zero to One</div><div className="top-book-meta">Sold 56 · Rs. 350 avg</div></div></div>
-    <div className="top-book-row"><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=80&q=75" alt="Rich Dad Poor Dad"/></div><div className="top-book-info"><div className="top-book-title">Rich Dad Poor Dad</div><div className="top-book-meta">Sold 48 · Rs. 280 avg</div></div></div>
-    <div className="top-book-row"><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=80&q=75" alt="Deep Work"/></div><div className="top-book-info"><div className="top-book-title">Deep Work</div><div className="top-book-meta">Sold 41 · Rs. 310 avg</div></div></div>
+    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f671')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=80&q=75" alt="Zero to One"/></div><div className="top-book-info"><div className="top-book-title">Zero to One</div><div className="top-book-meta">Sold 56 · Rs. 350 avg</div></div></div>
+    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f672')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=80&q=75" alt="Rich Dad Poor Dad"/></div><div className="top-book-info"><div className="top-book-title">Rich Dad Poor Dad</div><div className="top-book-meta">Sold 48 · Rs. 280 avg</div></div></div>
+    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f673')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=80&q=75" alt="Deep Work"/></div><div className="top-book-info"><div className="top-book-title">Deep Work</div><div className="top-book-meta">Sold 41 · Rs. 310 avg</div></div></div>
   </div>
 
   
@@ -658,69 +665,26 @@ export default function HomePage() {
 </section>
 
 
-<footer style={{ background: '#0d2e26', color: 'rgba(255,250,224,.75)', padding: '60px 5% 30px' }}>
+<footer className="footer">
   <div className="footer-grid">
-    <div className="footer-brand" style={{ display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'flex-start' }}>
-      <Link to="#" className="logo" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontFamily: "'Playfair Display', serif", fontSize: '1.8rem', fontWeight: 700, color: 'var(--bg)', textDecoration: 'none', lineHeight: 1 }}>
-        <div className="logo-icon" style={{ width: '64px', height: '64px' }}><img src={IMAGES.img_0} alt="BookCycle logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }}/></div>
-        BookCycle
+    <div>
+      <Link to="/" className="footer-brand">
+        <div className="f-logo"><img src={IMAGES.img_0} alt="BookCycle"/></div>
+        <span className="footer-brand-name">BookCycle</span>
       </Link>
-      <p style={{ fontSize: '.88rem', lineHeight: 1.7, maxWidth: '260px', marginTop: '14px' }}>Islamabad's community book platform. Share, rent, and discover books across the city. Making knowledge accessible to all.</p>
-      <div className="social-links" style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-        <Link to="#" className="social-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></Link>
-        <Link to="#" className="social-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></Link>
-        <Link to="#" className="social-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></Link>
-        <Link to="#" className="social-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></Link>
+      <p className="footer-desc">Islamabad's community book platform. Share, rent, and discover books across the city.</p>
+      <div className="f-social" style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
+        <Link to="#" className="f-soc"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></Link>
+        <Link to="#" className="f-soc"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></Link>
+        <Link to="#" className="f-soc"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></Link>
+        <Link to="#" className="f-soc"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></Link>
       </div>
     </div>
-    <div className="footer-col">
-      <h4 style={{ color: 'var(--bg)', fontWeight: 700, fontSize: '.95rem', marginBottom: '18px' }}>Platform</h4>
-      <ul style={{ listStyle: 'none' }}>
-        <li style={{ marginBottom: '10px' }}><Link to="/browse" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Browse Books</Link></li>
-        <li style={{ marginBottom: '10px' }}><Link to="/browse" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Rent a Book</Link></li>
-        <li style={{ marginBottom: '10px' }}><Link to="/browse" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Free Shelf</Link></li>
-        <li style={{ marginBottom: '10px' }}><Link to="/seller" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Sell Your Book</Link></li>
-      </ul>
-    </div>
-    <div className="footer-col">
-      <h4 style={{ color: 'var(--bg)', fontWeight: 700, fontSize: '.95rem', marginBottom: '18px' }}>Company</h4>
-      <ul style={{ listStyle: 'none' }}>
-        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>About Us</Link></li>
-        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>How It Works</Link></li>
-        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Blog</Link></li>
-        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Press</Link></li>
-        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Careers</Link></li>
-      </ul>
-    </div>
-    <div className="footer-col">
-      <h4 style={{ color: 'var(--bg)', fontWeight: 700, fontSize: '.95rem', marginBottom: '18px' }}>Contact</h4>
-      <ul style={{ listStyle: 'none' }}>
-        <li style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '10px' }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,250,224,.45)" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          <Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>contact@bookcycle.com</Link>
-        </li>
-        <li style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '10px' }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,250,224,.45)" strokeWidth="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.04 1.18 2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z"/></svg>
-          <Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>+92 300 1234567</Link>
-        </li>
-        <li style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '10px' }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,250,224,.45)" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          <Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>F-7, Islamabad</Link>
-        </li>
-        <li style={{ marginTop: '12px', marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Help Center</Link></li>
-        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Report an Issue</Link></li>
-        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Community Forum</Link></li>
-      </ul>
-    </div>
+    <div className="footer-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/browse?tab=rent">Rent a Book</Link></li><li><Link to="/browse?tab=free">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div>
+    <div className="footer-col"><h4>Company</h4><ul><li><Link to="#">About Us</Link></li><li><Link to="#">How It Works</Link></li><li><Link to="#">Blog</Link></li><li><Link to="#">Careers</Link></li></ul></div>
+    <div className="footer-col"><h4>Contact</h4><ul><li><Link to="#">contact@bookcycle.com</Link></li><li><Link to="#">+92 300 1234567</Link></li><li><Link to="#">F-7, Islamabad</Link></li><li><Link to="#">Help Center</Link></li></ul></div>
   </div>
-  <div className="footer-bottom" style={{ borderTop: '1px solid rgba(255,250,224,.1)', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-    <p style={{ fontSize: '.82rem' }}>© 2025 BookCycle. All rights reserved. Made with love in Islamabad.</p>
-    <div className="footer-policies" style={{ display: 'flex', gap: '24px' }}>
-      <Link to="#" style={{ color: 'rgba(255,250,224,.45)', textDecoration: 'none', fontSize: '.82rem' }}>Privacy Policy</Link>
-      <Link to="#" style={{ color: 'rgba(255,250,224,.45)', textDecoration: 'none', fontSize: '.82rem' }}>Terms of Service</Link>
-      <Link to="#" style={{ color: 'rgba(255,250,224,.45)', textDecoration: 'none', fontSize: '.82rem' }}>Cookie Policy</Link>
-    </div>
-  </div>
+  <div className="footer-bottom"><p>© 2025 BookCycle. All rights reserved.</p><div className="footer-links"><Link to="#">Privacy Policy</Link><Link to="#">Terms of Service</Link><Link to="#">Cookie Policy</Link></div></div>
 </footer>
 
 

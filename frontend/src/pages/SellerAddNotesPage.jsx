@@ -112,23 +112,37 @@ export default function SellerAddNotesPage() {
     return (
         <div className="SellerAddBookPage">
             
-<nav className="navbar"><Link to="/home" className="logo"><div className="logo-icon"><img src={IMAGES.img_0} alt="BookCycle"/></div><span className="logo-text">BookCycle</span></Link><ul className="nav-links"><li><Link to="/home">Home</Link></li><li><Link to="/">Browse</Link></li><li><Link to="/seller" className="sell-link">Sell</Link></li>
-    {user ? (
-        <>
-            <li><span className="nav-user" style={{ color: 'var(--text)', fontWeight: 600 }}>Hi, {user.name}</span></li>
-            <li><Link to="/logout" className="nav-cta" style={{ marginLeft: 10 }}>Logout</Link></li>
-        </>
-    ) : (
-        <li><Link to="/login" className="nav-cta">Login</Link></li>
-    )}<li>
-      <Link to="/cart" className="cart-btn" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,250,224, 0.9)' }}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="9" cy="21" r="1"></circle>
-          <circle cx="20" cy="21" r="1"></circle>
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-        </svg>
-      </Link>
-    </li><li><Link to="/seller"  className="nav-cta" >List a Book</Link></li></ul></nav>
+<header className="seller-header">
+<nav className="navbar" style={{ 
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+    padding: '0 5%', height: '76px', 
+    background: 'var(--primary)',
+    boxShadow: '0 2px 20px rgba(19,73,60,.35)',
+    borderBottom: '1.5px solid rgba(221,161,94,.45)'
+}}>
+    <div className="nav-left">
+        <Link to="/home" className="logo" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+            <div className="logo-icon"><img src={IMAGES.img_0} alt="BookCycle"/></div>
+            <span className="logo-text" style={{ color: 'var(--bg)', fontWeight: 700, fontSize: '1.4rem' }}>BookCycle</span>
+        </Link>
+    </div>
+    <div className="nav-center">
+        {user && <span className="nav-user" style={{ color: 'rgba(255,250,224,0.9)', fontWeight: 600, fontSize: '1rem' }}>Hi, {user.name}</span>}
+    </div>
+    <div className="nav-right">
+        <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '30px', margin: 0, padding: 0, listStyle: 'none' }}>
+            <li><Link to="/home" style={{ color: 'rgba(255,250,224,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>Home</Link></li>
+            <li><Link to="/browse" style={{ color: 'rgba(255,250,224,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>Browse</Link></li>
+            <li><Link to="/seller" style={{ color: '#fff', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600 }}>Sell</Link></li>
+            {user ? (
+                <li><Link to="/logout" className="nav-cta" style={{ background: 'var(--accent)', color: 'var(--primary)', padding: '8px 20px', borderRadius: '50px', fontWeight: 700, textDecoration: 'none' }}>Logout</Link></li>
+            ) : (
+                <li><Link to="/login" className="nav-cta" style={{ background: 'var(--accent)', color: 'var(--primary)', padding: '8px 20px', borderRadius: '50px', fontWeight: 700, textDecoration: 'none' }}>Login</Link></li>
+            )}
+        </ul>
+    </div>
+</nav>
+</header>
 
 <div className="progress-wrap" style={{ marginTop: '20px' }}>
   <div className="progress-steps">
@@ -316,7 +330,13 @@ export default function SellerAddNotesPage() {
   <div className="steps-widget"><div className="sw-head">Your Progress</div><div className="sw-body"><div className="sw-item"><div className="sw-num done">✓</div><div><div className="sw-label ">Select Categories</div><div className="sw-sub">Choose what you want to sell</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num active">2</div><div><div className="sw-label ">Upload Notes</div><div className="sw-sub">Add details & PDF file</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num ">3</div><div><div className="sw-label upcoming">Published!</div><div className="sw-sub">Your notes are live</div></div></div></div></div>
 </aside>
 </div>
-<footer className="footer"><div className="footer-grid"><div><Link to="/" className="footer-brand"><div className="f-logo"><img src={IMAGES.img_0} alt="BookCycle"/></div><span className="f-brand-name">BookCycle</span></Link><p className="f-desc">Islamabad's community book platform. Share, rent, and discover books across the city.</p></div><div className="f-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div></div></footer>
+<footer className="footer" style={{ marginTop: '80px' }}>
+  <div className="footer-grid">
+    <div><Link to="/home" className="footer-brand"><div className="f-logo"><img src={IMAGES.img_0} alt="BookCycle"/></div><span className="footer-brand-name">BookCycle</span></Link><p className="footer-desc">Islamabad's community book platform. Share, rent, and discover books across the city.</p></div>
+    <div className="footer-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/browse?tab=rent">Rent a Book</Link></li><li><Link to="/browse?tab=free">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div>
+  </div>
+  <div className="footer-bottom"><p>© 2025 BookCycle. All rights reserved.</p></div>
+</footer>
         </div>
     );
 }

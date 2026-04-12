@@ -69,35 +69,34 @@ export default function BrowseBooksPage() {
     return (
         <div className="BrowseBooksPage">
             
-<nav className="navbar">
+<nav style={{ 
+    position: 'sticky', top: 0, zIndex: 10000, 
+    background: 'var(--primary)', 
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+    padding: '0 5%', height: '76px', 
+    boxShadow: '0 2px 20px rgba(19,73,60,.35)',
+    borderBottom: '1.5px solid rgba(221,161,94,.45)' 
+}}>
   <Link to="/home" className="logo">
-    <div className="logo-icon"><img src={IMAGES.img_0} alt="BookCycle"/></div>
-    <span className="logo-text">BookCycle</span>
+    <div className="logo-icon"><img src={IMAGES.img_0} alt="BookCycle logo"/></div>
+    BookCycle
   </Link>
-  <ul className="nav-links">
+
+  {user && (
+      <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', color: 'rgba(255,250,224,.9)', fontWeight: 600, fontSize: '1rem', letterSpacing: '0.03em' }}>
+        Hi, {user.name}
+      </div>
+  )}
+
+  <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '30px', margin: 0, padding: 0 }}>
     <li><Link to="/home">Home</Link></li>
-    <li><Link to="/browse" className="browse-active">Browse</Link></li>
+    <li><Link to="/browse">Browse</Link></li>
     <li><Link to="/seller">Sell</Link></li>
-    
     {user ? (
-        <>
-            <li><span className="nav-user" style={{ color: 'var(--text)', fontWeight: 600 }}>Hi, {user.name}</span></li>
-            <li><Link to="/logout" className="nav-cta" style={{ marginLeft: 10 }}>Logout</Link></li>
-        </>
+        <li><Link to="/logout" className="nav-cta">Logout</Link></li>
     ) : (
         <li><Link to="/login" className="nav-cta">Login</Link></li>
     )}
-    <li>
-      <Link to="/cart" className="cart-btn" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)' }}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="9" cy="21" r="1"></circle>
-          <circle cx="20" cy="21" r="1"></circle>
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-        </svg>
-        <span className="cart-badge" style={{ position: 'absolute', top: '-6px', right: '-10px', background: 'var(--cta)', color: '#fff', fontSize: '0.65rem', fontWeight: 700, padding: '2px 6px', borderRadius: '10px' }}>3</span>
-      </Link>
-    </li>
-    <li><Link to="/seller/add"  className="nav-cta" >List a Book</Link></li>
   </ul>
 </nav>
 <div className="browse-hero">
@@ -191,7 +190,7 @@ export default function BrowseBooksPage() {
       {isLoading ? (
         <div style={{gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: 'var(--muted)'}}>Loading books...</div>
       ) : books.map((book, idx) => (
-        <div className="book-card" key={book._id} style={{ animationDelay: `${idx * 0.04}s` }} onClick={() => navigate(`/details?id=${book._id}`)}>
+        <div className="book-card" key={book._id} style={{ animationDelay: `${idx * 0.04}s` }} onClick={() => navigate(`/book/${book._id}`)}>
           <div className="bc-img-wrap">
             <img src={getImageUrl(book)} alt={book.title} className="bc-img"/>
             {book.exchangeType === 'Sell' && <span className="tb tb-buy">Buy</span>}
@@ -212,7 +211,7 @@ export default function BrowseBooksPage() {
                 ) : book.exchangeType === 'Share' ? (
                   <>
                     <span className="free-tag">🎁 Free Shelf</span>
-                    <Link to={`/details?id=${book._id}`} className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link>
+                    <Link to={`/book/${book._id}`} className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link>
                   </>
                 ) : (
                   <>
@@ -220,7 +219,7 @@ export default function BrowseBooksPage() {
                       <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. {book.price}</span>
                       {book.exchangeType === 'Rent' && <span className="price-unit">/wk</span>}
                     </div>
-                    <Link to={`/details?id=${book._id}`} className="btn-mini-cart"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link>
+                    <Link to={`/book/${book._id}`} className="btn-mini-cart"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link>
                   </>
                 )}
             </div>
@@ -248,7 +247,7 @@ export default function BrowseBooksPage() {
       <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '8px' }}>
         {recommended && recommended.length > 0 ? recommended.map((bk, idx) => (
             <div key={bk._id || idx} style={{ flex: '0 0 190px', background: 'var(--card-bg, #fff)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} 
-                 onClick={() => navigate(`/details?id=${bk._id}`)}
+                 onClick={() => navigate(`/book/${bk._id}`)}
                  onMouseOver={(e)=>{e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'}} 
                  onMouseOut={(e)=>{e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''}}>
                 <img src={getImageUrl(bk)} style={{ width: '100%', height: '130px', objectFit: 'cover' }} alt={bk.title} />

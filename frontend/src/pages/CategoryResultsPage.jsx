@@ -1,45 +1,44 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import RecommendationWidget from '../components/RecommendationWidget';
 
 export default function CategoryResultsPage() {
     const { user } = useAuth();
+    const navigate = useNavigate();
     return (
         <div className="CategoryResultsPage">
             
-<nav className="navbar">
-  <Link to="/home" className="logo">
-    <div className="logo-icon"><img src={IMAGES.img_0} alt="BookCycle"/></div>
-    <span className="logo-text">BookCycle</span>
-  </Link>
-  <ul className="nav-links">
-    <li><Link to="/home">Home</Link></li>
-    <li><Link to="/browse" className="browse-active">Browse</Link></li>
-    <li><Link to="/seller">Sell</Link></li>
-    
-    {user ? (
-        <>
-            <li><span className="nav-user" style={{ color: 'var(--text)', fontWeight: 600 }}>Hi, {user.name}</span></li>
-            <li><Link to="/logout" className="nav-cta" style={{ marginLeft: 10 }}>Logout</Link></li>
-        </>
-    ) : (
-        <li><Link to="/login" className="nav-cta">Login</Link></li>
-    )}
-    <li>
-      <Link to="/cart" className="cart-btn" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,250,224, 0.9)' }}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="9" cy="21" r="1"></circle>
-          <circle cx="20" cy="21" r="1"></circle>
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-        </svg>
-        <span className="cart-badge" style={{ position: 'absolute', top: '-6px', right: '-10px', background: 'var(--cta)', color: '#fff', fontSize: '0.65rem', fontWeight: 700, padding: '2px 6px', borderRadius: '10px' }}>3</span>
-      </Link>
-    </li>
-    <li><Link to="/seller/add"  className="nav-cta" >List a Book</Link></li>
-  </ul>
-</nav>
+        <nav style={{ 
+            position: 'sticky', top: 0, zIndex: 10000, 
+            background: 'var(--primary)', 
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+            padding: '0 5%', height: '76px', 
+            boxShadow: '0 2px 20px rgba(19,73,60,.35)',
+            borderBottom: '1.5px solid rgba(221,161,94,.45)' 
+        }}>
+            <Link to="/home" className="logo">
+                <div className="logo-icon"><img src={IMAGES.img_0} alt="BookCycle logo"/></div>
+                BookCycle
+            </Link>
+
+            {user && (
+                <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', color: 'rgba(255,250,224,.9)', fontWeight: 600, fontSize: '1rem', letterSpacing: '0.03em' }}>
+                    Hi, {user.name}
+                </div>
+            )}
+
+            <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '30px', margin: 0, padding: 0 }}>
+                <li><Link to="/browse">Browse</Link></li>
+                <li><Link to="/seller">Sell</Link></li>
+                {user ? (
+                    <li><Link to="/logout" className="nav-cta">Logout</Link></li>
+                ) : (
+                    <li><Link to="/login" className="nav-cta">Login</Link></li>
+                )}
+            </ul>
+        </nav>
 <div className="cat-hero">
   <div className="cat-hero-inner">
     <div className="cat-breadcrumb">
@@ -143,7 +142,7 @@ export default function CategoryResultsPage() {
     <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 50</span><span className="price-unit">/wk</span></div>
     <div className="bc-stars">★★★★★</div>
     <div className="bc-actions">
-      <Link to="/details?id=b1" className="btn-details">View Details</Link>
+      <Link to="/book/b1" className="btn-details">View Details</Link>
       <Link to="/cart" className="btn-cart" >Add to Cart</Link>
     </div>
   </div>
@@ -161,7 +160,7 @@ export default function CategoryResultsPage() {
     <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 350</span></div>
     <div className="bc-stars">★★★★★</div>
     <div className="bc-actions">
-      <Link to="/details?id=b2" className="btn-details">View Details</Link>
+      <Link to="/book/b2" className="btn-details">View Details</Link>
       <Link to="/cart" className="btn-cart" >Add to Cart</Link>
     </div>
   </div>
@@ -179,7 +178,7 @@ export default function CategoryResultsPage() {
     <div className="price-line"><span className="free-tag">🎁 Free Shelf</span></div>
     <div className="bc-stars">★★★★☆</div>
     <div className="bc-actions">
-      <Link to="/details?id=b3" className="btn-details">View Details</Link>
+      <Link to="/book/b3" className="btn-details">View Details</Link>
       <Link to="/cart" className="btn-cart" >Add to Cart</Link>
     </div>
   </div>
@@ -197,7 +196,7 @@ export default function CategoryResultsPage() {
     <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 40</span><span className="price-unit">/wk</span></div>
     <div className="bc-stars">★★★★☆</div>
     <div className="bc-actions">
-      <Link to="/details?id=b4" className="btn-details">View Details</Link>
+      <Link to="/book/b4" className="btn-details">View Details</Link>
       <Link to="/cart" className="btn-cart" >Add to Cart</Link>
     </div>
   </div>
@@ -215,7 +214,7 @@ export default function CategoryResultsPage() {
     <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 30</span><span className="price-unit">/wk</span></div>
     <div className="bc-stars">★★★★★</div>
     <div className="bc-actions">
-      <Link to="/details?id=b5" className="btn-details">View Details</Link>
+      <Link to="/book/b5" className="btn-details">View Details</Link>
       <Link to="/cart" className="btn-cart" >Add to Cart</Link>
     </div>
   </div>
@@ -233,7 +232,7 @@ export default function CategoryResultsPage() {
     <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 280</span></div>
     <div className="bc-stars">★★★★☆</div>
     <div className="bc-actions">
-      <Link to="/details?id=b6" className="btn-details">View Details</Link>
+      <Link to="/book/b6" className="btn-details">View Details</Link>
       <Link to="/cart" className="btn-cart" >Add to Cart</Link>
     </div>
   </div>
@@ -251,7 +250,7 @@ export default function CategoryResultsPage() {
     <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 450</span></div>
     <div className="bc-stars">★★★★★</div>
     <div className="bc-actions">
-      <Link to="/details?id=b7" className="btn-details">View Details</Link>
+      <Link to="/book/b7" className="btn-details">View Details</Link>
       <Link to="/cart" className="btn-cart" >Add to Cart</Link>
     </div>
   </div>
@@ -269,7 +268,7 @@ export default function CategoryResultsPage() {
     <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 60</span><span className="price-unit">/wk</span></div>
     <div className="bc-stars">★★★★★</div>
     <div className="bc-actions">
-      <Link to="/details?id=b8" className="btn-details">View Details</Link>
+      <Link to="/book/b8" className="btn-details">View Details</Link>
       <Link to="/cart" className="btn-cart" >Add to Cart</Link>
     </div>
   </div>
@@ -287,7 +286,7 @@ export default function CategoryResultsPage() {
     <div className="price-line"><span className="free-tag">🎁 Free Shelf</span></div>
     <div className="bc-stars">★★★★★</div>
     <div className="bc-actions">
-      <Link to="/details?id=b9" className="btn-details">View Details</Link>
+      <Link to="/book/b9" className="btn-details">View Details</Link>
       <Link to="/cart" className="btn-cart" >Add to Cart</Link>
     </div>
   </div>
@@ -305,7 +304,7 @@ export default function CategoryResultsPage() {
     <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 320</span></div>
     <div className="bc-stars">★★★★☆</div>
     <div className="bc-actions">
-      <Link to="/details?id=b10" className="btn-details">View Details</Link>
+      <Link to="/book/b10" className="btn-details">View Details</Link>
       <Link to="/cart" className="btn-cart" >Add to Cart</Link>
     </div>
   </div>
@@ -323,7 +322,7 @@ export default function CategoryResultsPage() {
     <div className="price-line"><span className="free-tag">🎁 Free Shelf</span></div>
     <div className="bc-stars">★★★★☆</div>
     <div className="bc-actions">
-      <Link to="/details?id=b11" className="btn-details">View Details</Link>
+      <Link to="/book/b11" className="btn-details">View Details</Link>
       <Link to="/cart" className="btn-cart" >Add to Cart</Link>
     </div>
   </div>
@@ -341,7 +340,7 @@ export default function CategoryResultsPage() {
     <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 45</span><span className="price-unit">/wk</span></div>
     <div className="bc-stars">★★★★★</div>
     <div className="bc-actions">
-      <Link to="/details?id=b12" className="btn-details">View Details</Link>
+      <Link to="/book/b12" className="btn-details">View Details</Link>
       <Link to="/cart" className="btn-cart" >Add to Cart</Link>
     </div>
   </div>

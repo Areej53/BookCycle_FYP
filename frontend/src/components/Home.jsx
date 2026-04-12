@@ -22,7 +22,7 @@ const styles = `
   @keyframes floatY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
 
   /* Navbar */
-  .h-navbar { background:var(--primary); display:flex; align-items:center; justify-content:space-between; padding:0 5%; height:72px; box-shadow:0 2px 16px rgba(19,73,60,.25); position:sticky; top:0; z-index:100; }
+  .h-navbar { background:var(--primary); display:flex; align-items:center; justify-content:space-between; padding:0 5%; height:76px; box-shadow:0 2px 20px rgba(19,73,60,.35); position:sticky; top:0; z-index:100; border-bottom:1.5px solid rgba(221,161,94,.45); }
   .h-logo { display:flex; align-items:center; gap:8px; cursor:pointer; }
   .h-logo-circle { width:44px; height:44px; border-radius:50%; background:var(--bg); display:grid; place-items:center; font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:900; color:var(--primary); }
   .h-logo-text { font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:700; color:var(--bg); }
@@ -32,6 +32,11 @@ const styles = `
   .h-nav-search { display:flex; align-items:center; gap:9px; background:rgba(255,250,224,.1); border:1px solid rgba(255,250,224,.2); border-radius:50px; padding:7px 16px; }
   .h-nav-search input { background:transparent; border:none; outline:none; color:var(--bg); font-size:.87rem; width:160px; font-family:'DM Sans',sans-serif; }
   .h-nav-search input::placeholder { color:rgba(255,250,224,.5); }
+  .h-nav-links { display: flex; align-items: center; gap: 30px; margin: 0; padding: 0; list-style: none; }
+  .h-nav-links a { color: rgba(255,250,224,0.85); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.15s; }
+  .h-nav-links a:hover { color: #fff; }
+  .h-nav-cta { background: var(--accent); color: var(--primary) !important; padding: 8px 20px; border-radius: 50px; font-weight: 700; transition: all 0.2s; }
+  .h-nav-cta:hover { background: var(--cta); color: #fff !important; transform: translateY(-1px); }
   .h-btn-ghost { background:transparent; border:1.5px solid rgba(255,250,224,.35); color:var(--bg); padding:8px 18px; border-radius:8px; font-weight:600; font-size:.87rem; cursor:pointer; transition:all .15s; font-family:'DM Sans',sans-serif; }
   .h-btn-ghost:hover { background:rgba(255,250,224,.1); border-color:rgba(255,250,224,.6); }
   .h-btn-solid { background:var(--accent); color:var(--primary); padding:8px 20px; border-radius:8px; font-weight:700; font-size:.87rem; border:none; cursor:pointer; transition:all .15s; font-family:'DM Sans',sans-serif; }
@@ -296,26 +301,18 @@ export default function Home({ onNavigate }) {
 
         {/* Navbar */}
         <nav className="h-navbar">
-          <div className="h-logo">
-            <div className="h-logo-circle" style={{ overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <img src={logoImg} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <div className="h-logo" onClick={() => navigate('/home')}>
+            <div className="h-logo-circle">
+                <img src={logoImg} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <span className="h-logo-text">BookCycle</span>
           </div>
-          <div className="h-nav-links">
-            <button className="h-nav-link">Browse Books</button>
-            <button className="h-nav-link">Rent</button>
-            <button className="h-nav-link">Free Shelf</button>
-            <button className="h-nav-link">Sell</button>
-          </div>
-          <div className="h-nav-search">
-            <span style={{ color: "rgba(255,250,224,.6)" }}>🔍</span>
-            <input placeholder="Search books, authors..." />
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button className="h-btn-ghost" onClick={() => onNavigate?.("login")}>Sign In</button>
-            <button className="h-btn-solid" onClick={() => onNavigate?.("register")}>Join Free</button>
-          </div>
+
+          <ul className="h-nav-links">
+            <li><button className="h-nav-link" onClick={() => navigate('/browse')}>Browse</button></li>
+            <li><button className="h-nav-link" onClick={() => navigate('/seller')}>Sell</button></li>
+            <li><button className="h-nav-cta" onClick={() => onNavigate?.("login")}>Login</button></li>
+          </ul>
         </nav>
 
         {/* Hero */}
@@ -326,7 +323,7 @@ export default function Home({ onNavigate }) {
               <h1 className="h-hero-title">Share, Rent, and<br /><em>Discover Books</em><br />Around You</h1>
               <p className="h-hero-sub">Find affordable books, rent for short-term use, or share yours with others. Over 900+ books available across Islamabad.</p>
               <div className="h-hero-btns">
-                <button className="h-btn-primary">Browse Books</button>
+                <button className="h-btn-primary" onClick={() => navigate('/browse')}>Browse Books</button>
                 <button className="h-btn-outline" onClick={() => onNavigate?.("register")}>Join BookCycle</button>
               </div>
               <div className="h-hero-stats">
@@ -362,7 +359,7 @@ export default function Home({ onNavigate }) {
             </div>
             <div className="h-books-grid">
               {featuredBooks.map(b => (
-                <div key={b.id} className="h-bcard" onClick={() => navigate(`/details?id=${b.id}`)}>
+                <div key={b.id} className="h-bcard" onClick={() => navigate(`/book/${b.id}`)}>
                   <div className="h-bcard-img">
                     <img src={b.img} alt={b.title} />
                     <span className={`h-badge h-badge-${b.badge}`}>{b.badge.charAt(0).toUpperCase() + b.badge.slice(1)}</span>
@@ -402,7 +399,7 @@ export default function Home({ onNavigate }) {
             </div>
             <div className="h-books-grid">
               {recentBooks.map(b => (
-                <div key={b.id} className="h-bcard" onClick={() => navigate(`/details?id=${b.id}`)}>
+                <div key={b.id} className="h-bcard" onClick={() => navigate(`/book/${b.id}`)}>
                   <div className="h-bcard-img">
                     <img src={b.img} alt={b.title} />
                     <span className={`h-badge h-badge-${b.badge}`}>{b.badge.charAt(0).toUpperCase() + b.badge.slice(1)}</span>
