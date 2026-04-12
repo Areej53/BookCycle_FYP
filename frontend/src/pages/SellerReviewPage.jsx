@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { api, getApiErrorMessage } from '../api/client';
 import { toast } from 'react-toastify';
 import { FiCheckCircle, FiAlertCircle, FiEdit3 } from 'react-icons/fi';
+import Navbar from '../components/Navbar';
 
 export default function SellerReviewPage() {
     const { sellerData, resetSellerData } = useContext(SellerContext);
@@ -52,39 +53,7 @@ export default function SellerReviewPage() {
         <div className="SellerReviewPage">
             
 <header className="seller-header">
-<nav className="navbar">
-    <div className="nav-left">
-        <Link to="/home" className="logo">
-            <div className="logo-icon"><img src={IMAGES.img_0} alt="BookCycle"/></div>
-            <span className="logo-text">BookCycle</span>
-        </Link>
-    </div>
-    <div className="nav-center">
-        {user && <span className="nav-user" style={{ color: 'rgba(255,250,224,0.9)', fontWeight: 600 }}>Hi, {user.name}</span>}
-    </div>
-    <div className="nav-right">
-        <ul className="nav-links">
-            <li><Link to="/home">Home</Link></li>
-            <li><Link to="/browse">Browse</Link></li>
-            <li><Link to="/seller" className="sell-link">Sell</Link></li>
-            {user ? (
-                <li><Link to="/logout" className="nav-cta" style={{ marginLeft: 10 }}>Logout</Link></li>
-            ) : (
-                <li><Link to="/login" className="nav-cta">Login</Link></li>
-            )}
-            <li>
-                <Link to="/cart" className="cart-btn" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,250,224, 0.9)' }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="9" cy="21" r="1"></circle>
-                        <circle cx="20" cy="21" r="1"></circle>
-                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                    </svg>
-                    <span className="cart-badge" style={{ position: 'absolute', top: '-6px', right: '-10px', background: 'var(--cta)', color: '#fff', fontSize: '0.65rem', fontWeight: 700, padding: '2px 6px', borderRadius: '10px' }}>3</span>
-                </Link>
-            </li>
-        </ul>
-    </div>
-</nav>
+<Navbar />
 
 <div className="progress-wrap"><div className="progress-steps"><div className="p-step done"><div className="p-num">✓</div>Categories</div><div className="p-line done"></div><div className="p-step done"><div className="p-num">✓</div>Book Details</div><div className="p-line done"></div><div className="p-step active"><div className="p-num">3</div>Review</div><div className="p-line "></div><div className="p-step "><div className="p-num">4</div>Published!</div></div></div>
 </header>

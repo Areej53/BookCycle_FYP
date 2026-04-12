@@ -18,3 +18,4 @@ export { default as SellerPublishedPage } from "./SellerPublishedPage";
 export { default as SellerReviewPage } from "./SellerReviewPage";
 export { default as CartPage } from "./CartPage";
 export { default as SellerAddNotesPage } from "./SellerAddNotesPage.jsx";
+export { default as CheckoutPage } from "./CheckoutPage";

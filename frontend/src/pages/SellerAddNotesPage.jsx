@@ -5,6 +5,7 @@ import { SellerContext } from '../context/SellerContext';
 import { useAuth } from '../context/AuthContext';
 import { api, getApiErrorMessage } from '../api/client';
 import { toast } from 'react-toastify';
+import Navbar from '../components/Navbar';
 
 export default function SellerAddNotesPage() {
     const { sellerData, updateSellerData, resetSellerData } = useContext(SellerContext);
@@ -113,35 +114,7 @@ export default function SellerAddNotesPage() {
         <div className="SellerAddBookPage">
             
 <header className="seller-header">
-<nav className="navbar" style={{ 
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-    padding: '0 5%', height: '76px', 
-    background: 'var(--primary)',
-    boxShadow: '0 2px 20px rgba(19,73,60,.35)',
-    borderBottom: '1.5px solid rgba(221,161,94,.45)'
-}}>
-    <div className="nav-left">
-        <Link to="/home" className="logo" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-            <div className="logo-icon"><img src={IMAGES.img_0} alt="BookCycle"/></div>
-            <span className="logo-text" style={{ color: 'var(--bg)', fontWeight: 700, fontSize: '1.4rem' }}>BookCycle</span>
-        </Link>
-    </div>
-    <div className="nav-center">
-        {user && <span className="nav-user" style={{ color: 'rgba(255,250,224,0.9)', fontWeight: 600, fontSize: '1rem' }}>Hi, {user.name}</span>}
-    </div>
-    <div className="nav-right">
-        <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '30px', margin: 0, padding: 0, listStyle: 'none' }}>
-            <li><Link to="/home" style={{ color: 'rgba(255,250,224,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>Home</Link></li>
-            <li><Link to="/browse" style={{ color: 'rgba(255,250,224,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>Browse</Link></li>
-            <li><Link to="/seller" style={{ color: '#fff', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600 }}>Sell</Link></li>
-            {user ? (
-                <li><Link to="/logout" className="nav-cta" style={{ background: 'var(--accent)', color: 'var(--primary)', padding: '8px 20px', borderRadius: '50px', fontWeight: 700, textDecoration: 'none' }}>Logout</Link></li>
-            ) : (
-                <li><Link to="/login" className="nav-cta" style={{ background: 'var(--accent)', color: 'var(--primary)', padding: '8px 20px', borderRadius: '50px', fontWeight: 700, textDecoration: 'none' }}>Login</Link></li>
-            )}
-        </ul>
-    </div>
-</nav>
+<Navbar />
 </header>
 
 <div className="progress-wrap" style={{ marginTop: '20px' }}>
