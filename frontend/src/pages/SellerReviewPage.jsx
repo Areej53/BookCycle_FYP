@@ -5,6 +5,7 @@ import { SellerContext } from '../context/SellerContext';
 import { useAuth } from '../context/AuthContext';
 import { api, getApiErrorMessage } from '../api/client';
 import { toast } from 'react-toastify';
+import { FiCheckCircle, FiAlertCircle, FiEdit3 } from 'react-icons/fi';
 
 export default function SellerReviewPage() {
     const { sellerData, resetSellerData } = useContext(SellerContext);
@@ -78,7 +79,7 @@ export default function SellerReviewPage() {
       </Link>
     </li><li><Link to="/seller"  className="nav-cta" >List a Book</Link></li></ul></nav>
 
-<div className="progress-wrap" style={{ marginTop: '20px' }}><div className="progress-steps"><div className="p-step done"><div className="p-num">✓</div>Categories</div><div className="p-line done"></div><div className="p-step done"><div className="p-num">✓</div>Book Details</div><div className="p-line done"></div><div className="p-step active"><div className="p-num">3</div>Review</div><div className="p-line "></div><div className="p-step "><div className="p-num">4</div>Published!</div></div></div>
+<div className="progress-wrap"><div className="progress-steps"><div className="p-step done"><div className="p-num">✓</div>Categories</div><div className="p-line done"></div><div className="p-step done"><div className="p-num">✓</div>Book Details</div><div className="p-line done"></div><div className="p-step active"><div className="p-num">3</div>Review</div><div className="p-line "></div><div className="p-step "><div className="p-num">4</div>Published!</div></div></div>
 
 <div className="page-layout"><main>
 <div className="rev-header">
@@ -111,7 +112,7 @@ export default function SellerReviewPage() {
         <span className="prev-badge" style={{ background: 'rgba(96,108,56,.2)', color: 'rgba(255,250,224,.7)' }}>{sellerData.condition || 'New'}</span>
       </div>
     </div>
-    <button className="edit-btn" onClick={() => navigate('/seller/add')}>✏ Edit</button>
+    <button className="edit-btn" style={{ display: 'flex', alignItems: 'center', gap: '5px' }} onClick={() => navigate('/seller/add')}><FiEdit3 /> Edit</button>
   </div>
   <div className="fields-grid">
     <div className="field-row"><div className="field-lbl">Listing Type</div><div className="field-val">{sellerData.exchangeType}</div></div>
@@ -125,7 +126,6 @@ export default function SellerReviewPage() {
     <div className="field-row"><div className="field-lbl">Condition</div><div className="field-val">{sellerData.condition}</div></div>
     <div className="field-row"><div className="field-lbl">Language</div><div className="field-val">{sellerData.language}</div></div>
     <div className="field-row"><div className="field-lbl">Edition</div><div className="field-val">{sellerData.edition || 'N/A'}</div></div>
-    <div className="field-row"><div className="field-lbl">Available</div><div className="field-val">{sellerData.duration}</div></div>
   </div>
   
   {(sellerData.images && sellerData.images.length > 0) && (
@@ -143,11 +143,11 @@ export default function SellerReviewPage() {
 </div>
 
 <div className="checklist-card">
-  <div className="checklist-title">✅ Listing Checklist</div>
-  <div className="check-item"><div className={`check-circle ${sellerData.title && sellerData.author ? 'ok' : 'warn'}`}>{sellerData.title && sellerData.author ? '✓' : '!'}</div><div><div className="check-text">Book title & author added</div><div className="check-sub">{sellerData.title} by {sellerData.author}</div></div></div>
-  <div className="check-item"><div className={`check-circle ${sellerData.category ? 'ok' : 'warn'}`}>{sellerData.category ? '✓' : '!'}</div><div><div className="check-text">Category selected</div><div className="check-sub">{sellerData.category}</div></div></div>
-  <div className="check-item"><div className={`check-circle ${sellerData.exchangeType ? 'ok' : 'warn'}`}>{sellerData.exchangeType ? '✓' : '!'}</div><div><div className="check-text">Listing type & price set</div><div className="check-sub">{sellerData.exchangeType} {sellerData.price ? `Rs.${sellerData.price}` : ''}</div></div></div>
-  <div className="check-item"><div className={`check-circle ${sellerData.description && sellerData.description.length >= 50 ? 'ok' : 'warn'}`}>{sellerData.description && sellerData.description.length >= 50 ? '✓' : '!'}</div><div><div className="check-text">Description added</div><div className="check-sub">{(sellerData.description || '').length} characters</div></div></div>
+  <div className="checklist-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FiCheckCircle style={{ color: 'var(--primary)' }} /> Listing Checklist</div>
+  <div className="check-item"><div className={`check-circle ${sellerData.title && sellerData.author ? 'ok' : 'warn'}`}>{sellerData.title && sellerData.author ? <FiCheckCircle /> : <FiAlertCircle />}</div><div><div className="check-text">Book title & author added</div><div className="check-sub">{sellerData.title} by {sellerData.author}</div></div></div>
+  <div className="check-item"><div className={`check-circle ${sellerData.category ? 'ok' : 'warn'}`}>{sellerData.category ? <FiCheckCircle /> : <FiAlertCircle />}</div><div><div className="check-text">Category selected</div><div className="check-sub">{sellerData.category}</div></div></div>
+  <div className="check-item"><div className={`check-circle ${sellerData.exchangeType ? 'ok' : 'warn'}`}>{sellerData.exchangeType ? <FiCheckCircle /> : <FiAlertCircle />}</div><div><div className="check-text">Listing type & price set</div><div className="check-sub">{sellerData.exchangeType} {sellerData.price ? `Rs.${sellerData.price}` : ''}</div></div></div>
+  <div className="check-item"><div className={`check-circle ${sellerData.description && sellerData.description.length >= 50 ? 'ok' : 'warn'}`}>{sellerData.description && sellerData.description.length >= 50 ? <FiCheckCircle /> : <FiAlertCircle />}</div><div><div className="check-text">Description added</div><div className="check-sub">{(sellerData.description || '').length} characters</div></div></div>
 </div>
 
 <div className="rev-actions">

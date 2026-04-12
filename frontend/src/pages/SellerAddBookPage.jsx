@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { SellerContext } from '../context/SellerContext';
 import { useAuth } from '../context/AuthContext';
+import { FiFileText, FiList, FiCheckCircle, FiDollarSign, FiAlignLeft, FiImage, FiRepeat, FiGift, FiUploadCloud } from 'react-icons/fi';
 
 export default function SellerAddBookPage() {
     const { sellerData, updateSellerData } = useContext(SellerContext);
@@ -83,7 +84,7 @@ export default function SellerAddBookPage() {
       </Link>
     </li><li><Link to="/seller"  className="nav-cta" >List a Book</Link></li></ul></nav>
 
-<div className="progress-wrap" style={{ marginTop: '20px' }}><div className="progress-steps"><div className="p-step done"><div className="p-num">✓</div>Categories</div><div className="p-line done"></div><div className="p-step active"><div className="p-num">2</div>Book Details</div><div className="p-line "></div><div className="p-step "><div className="p-num">3</div>Review</div><div className="p-line "></div><div className="p-step "><div className="p-num">4</div>Published!</div></div></div>
+<div className="progress-wrap"><div className="progress-steps"><div className="p-step done"><div className="p-num">✓</div>Categories</div><div className="p-line done"></div><div className="p-step active"><div className="p-num">2</div>Book Details</div><div className="p-line "></div><div className="p-step "><div className="p-num">3</div>Review</div><div className="p-line "></div><div className="p-step "><div className="p-num">4</div>Published!</div></div></div>
 
 <div className="page-layout">
 <main>
@@ -94,7 +95,7 @@ export default function SellerAddBookPage() {
   </div>
   <div className="form-body">
 
-    <div className="section-title"><div className="st-icon">📄</div>Book Information</div>
+    <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiFileText /></div>Book Information</div>
     <div className="form-grid">
       <div className="field span2">
         <label>Book Title <span className="req">*</span></label>
@@ -136,20 +137,20 @@ export default function SellerAddBookPage() {
       </div>
     </div>
 
-    <div className="section-title" style={{ marginTop: '30px' }}><div className="st-icon">📋</div>Listing Type</div>
+    <div className="section-title" style={{ marginTop: '30px' }}><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiList /></div>Listing Type</div>
     <div className="listing-grid">
       <div className={`listing-opt ${sellerData.exchangeType === 'Sell' ? 'active' : ''}`} onClick={() => handleListingType('Sell')}>
-        <div className="lo-icon">💰</div><div className="lo-name">Sell</div><div className="lo-sub">Fixed price for buyers.</div>
+        <div className="lo-icon"><FiDollarSign /></div><div className="lo-name">Sell</div><div className="lo-sub">Fixed price for buyers.</div>
       </div>
       <div className={`listing-opt ${sellerData.exchangeType === 'Rent' ? 'active' : ''}`} onClick={() => handleListingType('Rent')}>
-        <div className="lo-icon">🔄</div><div className="lo-name">Rent</div><div className="lo-sub">Weekly or monthly rental.</div>
+        <div className="lo-icon"><FiRepeat /></div><div className="lo-name">Rent</div><div className="lo-sub">Weekly or monthly rental.</div>
       </div>
       <div className={`listing-opt ${sellerData.exchangeType === 'Share' ? 'active' : ''}`} onClick={() => handleListingType('Share')}>
-        <div className="lo-icon">🎁</div><div className="lo-name">Free Shelf</div><div className="lo-sub">Donate your book free.</div>
+        <div className="lo-icon"><FiGift /></div><div className="lo-name">Free Shelf</div><div className="lo-sub">Donate your book free.</div>
       </div>
     </div>
 
-    <div className="section-title"><div className="st-icon">✅</div>Condition &amp; Availability</div>
+    <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiCheckCircle /></div>Condition &amp; Availability</div>
     <div className="form-grid" style={{ marginBottom: '24px' }}>
       <div className="field">
         <label>Condition <span className="req">*</span></label>
@@ -159,17 +160,9 @@ export default function SellerAddBookPage() {
           <div className={`cond-pill ${sellerData.condition === 'Fair' || sellerData.condition === 'Poor' ? 'active-worn' : ''}`} onClick={() => handleCondition('Fair')}>Worn / Fair</div>
         </div>
       </div>
-      <div className="field">
-        <label>Available Duration</label>
-        <select name="duration" value={sellerData.duration} onChange={handleChange}>
-          <option value="1w">1 Week</option><option value="2w">2 Weeks</option>
-          <option value="1m">1 Month</option><option value="3m">3 Months</option>
-          <option value="open">Open / Until Taken</option>
-        </select>
-      </div>
     </div>
 
-    <div className="section-title"><div className="st-icon">💰</div>Pricing</div>
+    <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiDollarSign /></div>Pricing</div>
     {sellerData.exchangeType === 'Sell' && (
         <div className="pricing-section show" style={{display:'block'}}>
         <div className="form-grid" style={{ marginBottom: '24px' }}>
@@ -180,10 +173,6 @@ export default function SellerAddBookPage() {
                 <input type="number" name="price" value={sellerData.price} onChange={handleChange} placeholder="0" min="0"/>
             </div>
             {errors.price && <span className="err-msg" style={{ display: 'block' }}>{errors.price}</span>}
-            </div>
-            <div className="field">
-            <label>Negotiable?</label>
-            <select name="negotiable" value={sellerData.negotiable} onChange={handleChange}><option value="yes">Yes</option><option value="no">No</option></select>
             </div>
         </div>
         </div>
@@ -231,7 +220,7 @@ export default function SellerAddBookPage() {
         </div>
     )}
 
-    <div className="section-title"><div className="st-icon">📝</div>Description</div>
+    <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiAlignLeft /></div>Description</div>
     <div className="field">
       <label>Book Description <span className="req">*</span></label>
       <textarea name="description" value={sellerData.description} onChange={handleChange} rows="4" placeholder="Describe the book — content, condition, why someone should read it…"></textarea>
@@ -241,10 +230,10 @@ export default function SellerAddBookPage() {
       </div>
     </div>
 
-    <div className="section-title"><div className="st-icon">🖼</div>Book Images</div>
+    <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiImage /></div>Book Images</div>
     <div className="dropzone" onClick={() => fileInputRef.current.click()}>
       <input type="file" ref={fileInputRef} multiple accept="image/*" style={{ display: 'none' }} onChange={handleFileChange}/>
-      <div className="dz-icon">📤</div>
+      <div className="dz-icon"><FiUploadCloud size={32} color="var(--cta)" /></div>
       <div className="dz-title">Click to browse images here</div>
       <div className="dz-sub">JPG, PNG up to 5MB · Max 6</div>
     </div>
