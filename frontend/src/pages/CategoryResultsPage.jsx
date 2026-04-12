@@ -1,12 +1,78 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import RecommendationWidget from '../components/RecommendationWidget';
+import useRecommendations from '../hooks/useRecommendations';
+import { api } from '../api/client';
 
 export default function CategoryResultsPage() {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [books, setBooks] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const { recommended } = useRecommendations();
+
+    const q = searchParams.get('q') || '';
+    const cats = searchParams.get('cats') || '';
+    const conds = searchParams.get('conds') || '';
+    const type = searchParams.get('type') || '';
+    const price = searchParams.get('price') || '';
+    const sort = searchParams.get('sort') || '';
+
+    const [localQuery, setLocalQuery] = useState(q);
+    const [localCats, setLocalCats] = useState(cats ? cats.split(',') : []);
+    const [localConds, setLocalConds] = useState(conds ? conds.split(',') : []);
+    const [localType, setLocalType] = useState(type ? type.split(',') : []);
+    const [maxPrice, setMaxPrice] = useState(price || '');
+
+    const getImageUrl = (book) => {
+        const imagePath = book.image || (book.images && book.images[0]);
+        if (!imagePath) {
+            if (book.category === 'Notes') return 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=400&q=80';
+            return 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80';
+        }
+        if (imagePath.startsWith('http') || imagePath.startsWith('data:image')) return imagePath;
+        return `http://localhost:5000${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
+    };
+
+    useEffect(() => {
+        const fetchBooks = async () => {
+            setIsLoading(true);
+            try {
+                const params = {};
+                if (q) params.q = q;
+                if (cats) params.cats = cats;
+                if (conds) params.conds = conds;
+                if (type && type !== 'all') params.type = type;
+                if (price) params.price = price;
+                if (sort) params.sort = sort;
+
+                const res = await api.get('/books', { params });
+                setBooks(res.data.books);
+            } catch (err) {
+                console.error('Failed to fetch books', err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchBooks();
+    }, [searchParams]);
+
+    const handleSearch = () => {
+        const params = new URLSearchParams();
+        if (localQuery) params.set('q', localQuery);
+        if (localCats.length) params.set('cats', localCats.join(','));
+        if (localConds.length) params.set('conds', localConds.join(','));
+        if (localType.length && !localType.includes('all')) params.set('type', localType.join(','));
+        if (maxPrice) params.set('price', maxPrice);
+        if (sort) params.set('sort', sort);
+        navigate(`/browse/search?${params.toString()}`);
+    };
+
+    const toggleArray = (arr, val) => arr.includes(val) ? arr.filter(i => i !== val) : [...arr, val];
+
     return (
         <div className="CategoryResultsPage">
             
@@ -39,6 +105,7 @@ export default function CategoryResultsPage() {
                 )}
             </ul>
         </nav>
+
 <div className="cat-hero">
   <div className="cat-hero-inner">
     <div className="cat-breadcrumb">
@@ -46,12 +113,12 @@ export default function CategoryResultsPage() {
       <Link to="/browse">Browse</Link>›
       <span id="crumb-cat">Results</span>
     </div>
-    <h1 id="page-heading">Category: <em id="heading-cat">All Books</em></h1>
-    <p className="cat-hero-sub" id="page-sub">Showing all available books</p>
+    <h1 id="page-heading">Category: <em id="heading-cat">{cats || 'All Books'}</em></h1>
+    <p className="cat-hero-sub" id="page-sub">{isLoading ? "Loading books..." : `Showing ${books.length} available books`}</p>
     <div className="search-wrap">
       <div className="search-bar">
-        <input type="text" id="search-inp" placeholder="Search within results…" oninput="applyFilters()"/>
-        <button className="search-btn" onClick={function(){}} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <input type="text" id="search-inp" placeholder="Search within results…" value={localQuery} onChange={e => setLocalQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()}/>
+        <button className="search-btn" onClick={handleSearch} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -68,18 +135,18 @@ export default function CategoryResultsPage() {
     <div className="filter-sidebar">
   <div className="filter-head">
     <span className="filter-title">Filters</span>
-    <button className="filter-reset" onClick={function(){}}>Reset All</button>
+    <button className="filter-reset" onClick={() => { setSearchParams(new URLSearchParams()); setLocalQuery(''); setLocalCats([]); setLocalConds([]); setLocalType([]); setMaxPrice(''); }}>Reset All</button>
   </div>
   <div className="filter-section">
     <div className="filter-label">Category</div>
     <div className="filter-opts">
-      <label className="filter-opt"><input type="checkbox" value="Programming" onChange={function(){}}/> Programming</label>
-      <label className="filter-opt"><input type="checkbox" value="Science" onChange={function(){}}/> Science</label>
-      <label className="filter-opt"><input type="checkbox" value="Novels" onChange={function(){}}/> Novels</label>
-      <label className="filter-opt"><input type="checkbox" value="Self-Development" onChange={function(){}}/> Self-Development</label>
-      <label className="filter-opt"><input type="checkbox" value="Algebra" onChange={function(){}}/> Algebra</label>
-      <label className="filter-opt"><input type="checkbox" value="Mathematics" onChange={function(){}}/> Mathematics</label>
-      <label className="filter-opt"><input type="checkbox" value="Physics" onChange={function(){}}/> Physics</label>
+      <label className="filter-opt"><input type="checkbox" value="Programming" checked={localCats.includes('programming')} onChange={() => setLocalCats(toggleArray(localCats, 'programming'))}/> Programming</label>
+      <label className="filter-opt"><input type="checkbox" value="Science" checked={localCats.includes('science')} onChange={() => setLocalCats(toggleArray(localCats, 'science'))}/> Science</label>
+      <label className="filter-opt"><input type="checkbox" value="Novels" checked={localCats.includes('novels')} onChange={() => setLocalCats(toggleArray(localCats, 'novels'))}/> Novels</label>
+      <label className="filter-opt"><input type="checkbox" value="Self-Development" checked={localCats.includes('self-development')} onChange={() => setLocalCats(toggleArray(localCats, 'self-development'))}/> Self-Development</label>
+      <label className="filter-opt"><input type="checkbox" value="Algebra" checked={localCats.includes('algebra')} onChange={() => setLocalCats(toggleArray(localCats, 'algebra'))}/> Algebra</label>
+      <label className="filter-opt"><input type="checkbox" value="Mathematics" checked={localCats.includes('mathematics')} onChange={() => setLocalCats(toggleArray(localCats, 'mathematics'))}/> Mathematics</label>
+      <label className="filter-opt"><input type="checkbox" value="Physics" checked={localCats.includes('physics')} onChange={() => setLocalCats(toggleArray(localCats, 'physics'))}/> Physics</label>
     </div>
   </div>
   <div className="filter-section">
@@ -87,24 +154,26 @@ export default function CategoryResultsPage() {
     <div className="price-inputs">
       <input type="number" className="price-inp" id="price-min" placeholder="Min" min="0"/>
       <span className="price-sep">—</span>
-      <input type="number" className="price-inp" id="price-max" placeholder="Max" min="0"/>
+      <input type="number" className="price-inp" id="price-max" placeholder="Max" min="0" value={maxPrice} onChange={e => setMaxPrice(e.target.value)}/>
     </div>
-    <button className="btn-apply" onClick={function(){}}>Apply</button>
+    <button className="btn-apply" onClick={handleSearch}>Apply</button>
   </div>
   <div className="filter-section">
     <div className="filter-label">Type</div>
     <div className="filter-opts">
-      <label className="filter-opt"><input type="checkbox" value="buy" onChange={function(){}}/> For Sale</label>
-      <label className="filter-opt"><input type="checkbox" value="rent" onChange={function(){}}/> For Rent</label>
-      <label className="filter-opt"><input type="checkbox" value="free" onChange={function(){}}/> Free Shelf</label>
+      <label className="filter-opt"><input type="checkbox" value="sell" checked={localType.includes('sell')} onChange={() => setLocalType(toggleArray(localType, 'sell'))}/> For Sale</label>
+      <label className="filter-opt"><input type="checkbox" value="rent" checked={localType.includes('rent')} onChange={() => setLocalType(toggleArray(localType, 'rent'))}/> For Rent</label>
+      <label className="filter-opt"><input type="checkbox" value="share" checked={localType.includes('share')} onChange={() => setLocalType(toggleArray(localType, 'share'))}/> Free Shelf</label>
     </div>
   </div>
   <div className="filter-section">
     <div className="filter-label">Condition</div>
     <div className="filter-opts">
-      <label className="filter-opt"><input type="checkbox" value="Like New" onChange={function(){}}/> Like New</label>
-      <label className="filter-opt"><input type="checkbox" value="Good" onChange={function(){}}/> Good</label>
-      <label className="filter-opt"><input type="checkbox" value="Used" onChange={function(){}}/> Used</label>
+      <label className="filter-opt"><input type="checkbox" value="New" checked={localConds.includes('new')} onChange={() => setLocalConds(toggleArray(localConds, 'new'))}/> New</label>
+      <label className="filter-opt"><input type="checkbox" value="Like New" checked={localConds.includes('like new')} onChange={() => setLocalConds(toggleArray(localConds, 'like new'))}/> Like New</label>
+      <label className="filter-opt"><input type="checkbox" value="Good" checked={localConds.includes('good')} onChange={() => setLocalConds(toggleArray(localConds, 'good'))}/> Good</label>
+      <label className="filter-opt"><input type="checkbox" value="Fair" checked={localConds.includes('fair')} onChange={() => setLocalConds(toggleArray(localConds, 'fair'))}/> Fair</label>
+      <label className="filter-opt"><input type="checkbox" value="Poor" checked={localConds.includes('poor')} onChange={() => setLocalConds(toggleArray(localConds, 'poor'))}/> Poor</label>
     </div>
   </div>
 </div>
@@ -112,14 +181,9 @@ export default function CategoryResultsPage() {
 
   <main className="main-col">
     
-    <div className="active-filters" id="active-filters" style={{ display: 'none' }}>
-      <span className="af-label">Filters Applied:</span>
-      <div id="af-chips"></div>
-    </div>
-
     <div className="sort-bar">
-      <div className="result-count"><strong id="result-count">0</strong> books found</div>
-      <select className="sort-select" onChange={function(){}}>
+      <div className="result-count"><strong id="result-count">{books.length}</strong> books found</div>
+      <select className="sort-select" value={sort} onChange={(e) => { const p = new URLSearchParams(searchParams); p.set('sort', e.target.value); setSearchParams(p); }}>
         <option value="default">Default</option>
         <option value="price-asc">Price: Low → High</option>
         <option value="price-desc">Price: High → Low</option>
@@ -129,290 +193,57 @@ export default function CategoryResultsPage() {
     </div>
 
     <div className="books-grid" id="books-grid">
-<div className="book-card" style={{ animationDelay: '0.0s' }} onClick={function(){}}>
-  <div className="bc-img-wrap">
-    <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80" alt="Atomic Habits" className="bc-img"/>
-    <span className="tb tb-rent">Rent</span>
-  </div>
-  <div className="bc-body">
-    <div className="bc-cat">Self-Development</div>
-    <div className="bc-title">Atomic Habits</div>
-    <div className="bc-author">by James Clear</div>
-    <div className="bc-cond">Condition: <strong>Like New</strong></div>
-    <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 50</span><span className="price-unit">/wk</span></div>
-    <div className="bc-stars" style={{ display: 'flex', gap: '2px', marginTop: '6px' }}>
-      {[...Array(5)].map((_, i) => (
-        <svg key={i} width="11" height="11" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+      {isLoading ? (
+        <div style={{gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: 'var(--muted)'}}>Loading books...</div>
+      ) : books.map((book, idx) => (
+        <div className="book-card" key={book._id} style={{ animationDelay: `${idx * 0.04}s`, cursor: 'pointer' }} onClick={() => navigate(`/book/${book._id}`)}>
+          <div className="bc-img-wrap">
+            <img src={getImageUrl(book)} alt={book.title} className="bc-img"/>
+            {book.exchangeType === 'Sell' && <span className="tb tb-buy">Buy</span>}
+            {book.exchangeType === 'Rent' && <span className="tb tb-rent">Rent</span>}
+            {book.exchangeType === 'Share' && <span className="tb tb-free">Free</span>}
+          </div>
+          <div className="bc-body">
+            <div className="bc-cat">{book.category}</div>
+            <div className="bc-title">{book.title}</div>
+            <div className="bc-author">by {book.author}</div>
+            <div className="bc-cond">Condition: <strong>{book.condition}</strong></div>
+            <div className="bc-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+              <div className="price-line">
+                  {book.exchangeType === 'Share' ? (
+                    <span className="free-tag">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
+                      Free Shelf
+                    </span>
+                  ) : (
+                    <>
+                    <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. {book.price}</span>
+                    {book.exchangeType === 'Rent' && <span className="price-unit">/wk</span>}
+                    </>
+                  )}
+              </div>
+              <Link to={`/book/${book._id}`} className="btn-mini-cart">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+              </Link>
+            </div>
+          </div>
+        </div>
       ))}
     </div>
-    <div className="bc-actions">
-      <Link to="/book/b1" className="btn-details">View Details</Link>
-      <Link to="/cart" className="btn-cart" >Add to Cart</Link>
-    </div>
-  </div>
-</div>
-<div className="book-card" style={{ animationDelay: '0.04s' }} onClick={function(){}}>
-  <div className="bc-img-wrap">
-    <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80" alt="Deep Work" className="bc-img"/>
-    <span className="tb tb-buy">Buy</span>
-  </div>
-  <div className="bc-body">
-    <div className="bc-cat">Programming</div>
-    <div className="bc-title">Deep Work</div>
-    <div className="bc-author">by Cal Newport</div>
-    <div className="bc-cond">Condition: <strong>Good</strong></div>
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
-      <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 350</span></div>
-      <Link to="/book/b2" className="btn-mini-cart" style={{ color: '#fff' }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-      </Link>
-    </div>
-  </div>
-</div>
-<div className="book-card" style={{ animationDelay: '0.08s' }} onClick={function(){}}>
-  <div className="bc-img-wrap">
-    <img src="https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&q=80" alt="Sapiens" className="bc-img"/>
-    <span className="tb tb-free">Free</span>
-  </div>
-  <div className="bc-body">
-    <div className="bc-cat">Science</div>
-    <div className="bc-title">Sapiens</div>
-    <div className="bc-author">by Yuval Noah Harari</div>
-    <div className="bc-cond">Condition: <strong>Used</strong></div>
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
-      <div className="price-line"><span className="free-tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg> Free Shelf</span></div>
-      <Link to="/book/b3" className="btn-mini-cart" style={{ color: '#fff' }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-      </Link>
-    </div>
-  </div>
-</div>
-<div className="book-card" style={{ animationDelay: '0.12s' }} onClick={function(){}}>
-  <div className="bc-img-wrap">
-    <img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80" alt="Rich Dad Poor Dad" className="bc-img"/>
-    <span className="tb tb-rent">Rent</span>
-  </div>
-  <div className="bc-body">
-    <div className="bc-cat">Self-Development</div>
-    <div className="bc-title">Rich Dad Poor Dad</div>
-    <div className="bc-author">by Robert Kiyosaki</div>
-    <div className="bc-cond">Condition: <strong>Good</strong></div>
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
-      <div className="price-line">
-        <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 40</span><span className="price-unit">/wk</span>
-      </div>
-      <Link to="/book/b4" className="btn-mini-cart" style={{ color: '#fff' }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-      </Link>
-    </div>
-  </div>
-</div>
-<div className="book-card" style={{ animationDelay: '0.16s' }} onClick={function(){}}>
-  <div className="bc-img-wrap">
-    <img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80" alt="The Alchemist" className="bc-img"/>
-    <span className="tb tb-rent">Rent</span>
-  </div>
-  <div className="bc-body">
-    <div className="bc-cat">Novels</div>
-    <div className="bc-title">The Alchemist</div>
-    <div className="bc-author">by Paulo Coelho</div>
-    <div className="bc-cond">Condition: <strong>Like New</strong></div>
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
-      <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 30</span><span className="price-unit">/wk</span></div>
-      <Link to="/book/b5" className="btn-mini-cart" style={{ color: '#fff' }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-      </Link>
-    </div>
-  </div>
-</div>
-<div className="book-card" style={{ animationDelay: '0.2s' }} onClick={function(){}}>
-  <div className="bc-img-wrap">
-    <img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&q=80" alt="Introduction to Algebra" className="bc-img"/>
-    <span className="tb tb-buy">Buy</span>
-  </div>
-  <div className="bc-body">
-    <div className="bc-cat">Algebra</div>
-    <div className="bc-title">Introduction to Algebra</div>
-    <div className="bc-author">by Michael Artin</div>
-    <div className="bc-cond">Condition: <strong>Like New</strong></div>
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
-      <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 280</span></div>
-      <Link to="/book/b6" className="btn-mini-cart" style={{ color: '#fff' }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-      </Link>
-    </div>
-  </div>
-</div>
-<div className="book-card" style={{ animationDelay: '0.24s' }} onClick={function(){}}>
-  <div className="bc-img-wrap">
-    <img src="https://images.unsplash.com/photo-1509228468518-180dd4864904?w=400&q=80" alt="Calculus: Early Transcendentals" className="bc-img"/>
-    <span className="tb tb-buy">Buy</span>
-  </div>
-  <div className="bc-body">
-    <div className="bc-cat">Mathematics</div>
-    <div className="bc-title">Calculus: Early Transcendentals</div>
-    <div className="bc-author">by James Stewart</div>
-    <div className="bc-cond">Condition: <strong>Good</strong></div>
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
-      <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 450</span></div>
-      <Link to="/book/b7" className="btn-mini-cart">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-      </Link>
-    </div>
-  </div>
-</div>
-<div className="book-card" style={{ animationDelay: '0.28s' }} onClick={function(){}}>
-  <div className="bc-img-wrap">
-    <img src="https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=400&q=80" alt="Concepts of Physics" className="bc-img"/>
-    <span className="tb tb-rent">Rent</span>
-  </div>
-  <div className="bc-body">
-    <div className="bc-cat">Physics</div>
-    <div className="bc-title">Concepts of Physics</div>
-    <div className="bc-author">by H.C. Verma</div>
-    <div className="bc-cond">Condition: <strong>Used</strong></div>
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
-      <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 60</span><span className="price-unit">/wk</span></div>
-      <Link to="/book/b8" className="btn-mini-cart">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-      </Link>
-    </div>
-  </div>
-</div>
-<div className="book-card" style={{ animationDelay: '0.32s' }} onClick={function(){}}>
-  <div className="bc-img-wrap">
-    <img src="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=400&q=80" alt="1984" className="bc-img"/>
-    <span className="tb tb-free">Free</span>
-  </div>
-  <div className="bc-body">
-    <div className="bc-cat">Novels</div>
-    <div className="bc-title">1984</div>
-    <div className="bc-author">by George Orwell</div>
-    <div className="bc-cond">Condition: <strong>Used</strong></div>
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
-      <div className="price-line"><span className="free-tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg> Free Shelf</span></div>
-      <Link to="/book/b9" className="btn-mini-cart">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-      </Link>
-    </div>
-  </div>
-</div>
-<div className="book-card" style={{ animationDelay: '0.36s' }} onClick={function(){}}>
-  <div className="bc-img-wrap">
-    <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&q=80" alt="Python Crash Course" className="bc-img"/>
-    <span className="tb tb-buy">Buy</span>
-  </div>
-  <div className="bc-body">
-    <div className="bc-cat">Programming</div>
-    <div className="bc-title">Python Crash Course</div>
-    <div className="bc-author">by Eric Matthes</div>
-    <div className="bc-cond">Condition: <strong>Like New</strong></div>
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
-      <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 320</span></div>
-      <Link to="/book/b10" className="btn-mini-cart" style={{ color: '#fff' }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-      </Link>
-    </div>
-  </div>
-</div>
-<div className="book-card" style={{ animationDelay: '0.4s' }} onClick={function(){}}>
-  <div className="bc-img-wrap">
-    <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80" alt="The Power of Now" className="bc-img"/>
-    <span className="tb tb-free">Free</span>
-  </div>
-  <div className="bc-body">
-    <div className="bc-cat">Self-Development</div>
-    <div className="bc-title">The Power of Now</div>
-    <div className="bc-author">by Eckhart Tolle</div>
-    <div className="bc-cond">Condition: <strong>Good</strong></div>
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
-      <div className="price-line"><span className="free-tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg> Free Shelf</span></div>
-      <Link to="/book/b11" className="btn-mini-cart" style={{ color: '#fff' }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-      </Link>
-    </div>
-  </div>
-</div>
-<div className="book-card" style={{ animationDelay: '0.44s' }} onClick={function(){}}>
-  <div className="bc-img-wrap">
-    <img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&q=80" alt="Linear Algebra Done Right" className="bc-img"/>
-    <span className="tb tb-rent">Rent</span>
-  </div>
-  <div className="bc-body">
-    <div className="bc-cat">Algebra</div>
-    <div className="bc-title">Linear Algebra Done Right</div>
-    <div className="bc-author">by Sheldon Axler</div>
-    <div className="bc-cond">Condition: <strong>Like New</strong></div>
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
-      <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 45</span><span className="price-unit">/wk</span></div>
-      <Link to="/book/b12" className="btn-mini-cart" style={{ color: '#fff' }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-      </Link>
-    </div>
-  </div>
-</div>
-    </div>
-    <div className="no-results" id="no-results" style={{ display: 'none' }}>
+    
+    {!isLoading && books.length === 0 && <div className="no-results" id="no-results">
       <div className="no-results-icon" style={{ opacity: 0.7, marginBottom: '10px' }}>
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
       </div>
-      <div className="no-results-title">No books match your filters</div>
-      <div className="no-results-text">Try removing some filters or browse other categories.</div>
+      <div className="no-results-title">No books found matching your search and filters</div>
+      <div className="no-results-text">Try removing some filters or check your spelling.<br/>You can also browse by category below:</div>
       <div className="no-results-cats">
-        <span className="no-results-cat" onClick={function(){}}>Browse All</span>
-        <span className="no-results-cat" onClick={function(){}}>Novels</span>
-        <span className="no-results-cat" onClick={function(){}}>Mathematics</span>
+        <span className="no-results-cat" onClick={() => navigate('/browse')}>Browse All</span>
+        <span className="no-results-cat" onClick={() => navigate('/browse?cats=novels')}>Novels</span>
+        <span className="no-results-cat" onClick={() => navigate('/browse?cats=mathematics')}>Mathematics</span>
       </div>
-    </div>
+    </div>}
 
-    <div style={{ marginTop: '52px' }}>
-      <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.2rem', fontWeight: '700', color: 'var(--primary)', marginBottom: '16px' }}>More You Might Like</div>
-      <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '8px' }}>
-        <div style={{ flex: '0 0 190px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} onClick={function(){}} onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <img src="https://images.unsplash.com/photo-1509228468518-180dd4864904?w=400&q=80" style={{ width: '100%', height: '130px', objectFit: 'cover' }}/>
-          <div style={{ padding: '10px 12px' }}>
-            <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Calculus: Early Transcendentals</div>
-            <div style={{ fontSize: '.74rem', color: 'var(--muted)' }}>by James Stewart</div>
-            <div style={{ fontSize: '.78rem', fontWeight: '700', color: 'var(--cta)', marginTop: '4px' }}>Rs. 450</div>
-          </div>
-        </div><div style={{ flex: '0 0 190px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} onClick={function(){}} onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <img src="https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=400&q=80" style={{ width: '100%', height: '130px', objectFit: 'cover' }}/>
-          <div style={{ padding: '10px 12px' }}>
-            <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Concepts of Physics</div>
-            <div style={{ fontSize: '.74rem', color: 'var(--muted)' }}>by H.C. Verma</div>
-            <div style={{ fontSize: '.78rem', fontWeight: '700', color: 'var(--cta)', marginTop: '4px' }}>Rs. 60/wk</div>
-          </div>
-        </div><div style={{ flex: '0 0 190px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} onClick={function(){}} onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <img src="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=400&q=80" style={{ width: '100%', height: '130px', objectFit: 'cover' }}/>
-          <div style={{ padding: '10px 12px' }}>
-            <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>1984</div>
-            <div style={{ fontSize: '.74rem', color: 'var(--muted)' }}>by George Orwell</div>
-            <div style={{ fontSize: '.78rem', fontWeight: '700', color: 'var(--secondary)', marginTop: '4px' }}>Free</div>
-          </div>
-        </div><div style={{ flex: '0 0 190px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} onClick={function(){}} onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&q=80" style={{ width: '100%', height: '130px', objectFit: 'cover' }}/>
-          <div style={{ padding: '10px 12px' }}>
-            <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Python Crash Course</div>
-            <div style={{ fontSize: '.74rem', color: 'var(--muted)' }}>by Eric Matthes</div>
-            <div style={{ fontSize: '.78rem', fontWeight: '700', color: 'var(--cta)', marginTop: '4px' }}>Rs. 320</div>
-          </div>
-        </div><div style={{ flex: '0 0 190px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} onClick={function(){}} onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80" style={{ width: '100%', height: '130px', objectFit: 'cover' }}/>
-          <div style={{ padding: '10px 12px' }}>
-            <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>The Power of Now</div>
-            <div style={{ fontSize: '.74rem', color: 'var(--muted)' }}>by Eckhart Tolle</div>
-            <div style={{ fontSize: '.78rem', fontWeight: '700', color: 'var(--secondary)', marginTop: '4px' }}>Free</div>
-          </div>
-        </div><div style={{ flex: '0 0 190px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} onClick={function(){}} onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&q=80" style={{ width: '100%', height: '130px', objectFit: 'cover' }}/>
-          <div style={{ padding: '10px 12px' }}>
-            <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Linear Algebra Done Right</div>
-            <div style={{ fontSize: '.74rem', color: 'var(--muted)' }}>by Sheldon Axler</div>
-            <div style={{ fontSize: '.78rem', fontWeight: '700', color: 'var(--cta)', marginTop: '4px' }}>Rs. 45/wk</div>
-          </div>
-        </div>
-      </div>
-    </div>
   </main>
 
   <aside className="right-sidebar">
@@ -434,7 +265,7 @@ export default function CategoryResultsPage() {
         <Link to="#" className="f-soc"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></Link>
       </div>
     </div>
-    <div className="footer-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/browse?tab=rent">Rent a Book</Link></li><li><Link to="/browse?tab=free">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div>
+    <div className="footer-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/browse?tab=rent">Rent a Book</Link></li><li><Link to="/browse?tab=share">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div>
     <div className="footer-col"><h4>Company</h4><ul><li><Link to="#">About Us</Link></li><li><Link to="#">How It Works</Link></li><li><Link to="#">Blog</Link></li><li><Link to="#">Careers</Link></li></ul></div>
     <div className="footer-col"><h4>Contact</h4><ul><li><Link to="#"><span className="__cf_email__" data-cfemail="b0d8d5dcdcdff0d2dfdfdbd3c9d3dcd59ec0db">[email&#160;protected]</span></Link></li><li><Link to="#">+92 300 1234567</Link></li><li><Link to="#">F-7, Islamabad</Link></li><li><Link to="#">Help Center</Link></li></ul></div>
   </div>
