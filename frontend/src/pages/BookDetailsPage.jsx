@@ -134,9 +134,11 @@ export default function BookDetailsPage() {
                                     {book.exchangeType === 'Rent' && <span style={{ fontSize: '1.2rem', opacity: 0.6 }}>/week</span>}
                                 </div>
                             </div>
-                            <button onClick={handleAddToCart} className="btn-primary" style={{ padding: '15px 40px', fontSize: '1.1rem', borderRadius: '50px', boxShadow: '0 10px 25px rgba(19,73,60,0.2)' }}>
-                                {book.exchangeType === 'Share' ? 'Claim Now' : 'Add to Cart'}
-                            </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                <button onClick={handleAddToCart} className="btn-mini-cart" style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--cta)', color: '#fff', boxShadow: '0 12px 30px rgba(188,108,37,0.35)', transition: 'all 0.2s', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                                </button>
+                            </div>
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '40px' }}>

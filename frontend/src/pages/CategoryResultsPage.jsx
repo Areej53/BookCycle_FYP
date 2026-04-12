@@ -140,7 +140,11 @@ export default function CategoryResultsPage() {
     <div className="bc-author">by James Clear</div>
     <div className="bc-cond">Condition: <strong>Like New</strong></div>
     <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 50</span><span className="price-unit">/wk</span></div>
-    <div className="bc-stars">★★★★★</div>
+    <div className="bc-stars" style={{ display: 'flex', gap: '2px', marginTop: '6px' }}>
+      {[...Array(5)].map((_, i) => (
+        <svg key={i} width="11" height="11" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+      ))}
+    </div>
     <div className="bc-actions">
       <Link to="/book/b1" className="btn-details">View Details</Link>
       <Link to="/cart" className="btn-cart" >Add to Cart</Link>
@@ -157,11 +161,11 @@ export default function CategoryResultsPage() {
     <div className="bc-title">Deep Work</div>
     <div className="bc-author">by Cal Newport</div>
     <div className="bc-cond">Condition: <strong>Good</strong></div>
-    <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 350</span></div>
-    <div className="bc-stars">★★★★★</div>
-    <div className="bc-actions">
-      <Link to="/book/b2" className="btn-details">View Details</Link>
-      <Link to="/cart" className="btn-cart" >Add to Cart</Link>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+      <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 350</span></div>
+      <Link to="/book/b2" className="btn-mini-cart" style={{ color: '#fff' }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+      </Link>
     </div>
   </div>
 </div>
@@ -175,11 +179,11 @@ export default function CategoryResultsPage() {
     <div className="bc-title">Sapiens</div>
     <div className="bc-author">by Yuval Noah Harari</div>
     <div className="bc-cond">Condition: <strong>Used</strong></div>
-    <div className="price-line"><span className="free-tag">🎁 Free Shelf</span></div>
-    <div className="bc-stars">★★★★☆</div>
-    <div className="bc-actions">
-      <Link to="/book/b3" className="btn-details">View Details</Link>
-      <Link to="/cart" className="btn-cart" >Add to Cart</Link>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+      <div className="price-line"><span className="free-tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg> Free Shelf</span></div>
+      <Link to="/book/b3" className="btn-mini-cart" style={{ color: '#fff' }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+      </Link>
     </div>
   </div>
 </div>
@@ -193,11 +197,13 @@ export default function CategoryResultsPage() {
     <div className="bc-title">Rich Dad Poor Dad</div>
     <div className="bc-author">by Robert Kiyosaki</div>
     <div className="bc-cond">Condition: <strong>Good</strong></div>
-    <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 40</span><span className="price-unit">/wk</span></div>
-    <div className="bc-stars">★★★★☆</div>
-    <div className="bc-actions">
-      <Link to="/book/b4" className="btn-details">View Details</Link>
-      <Link to="/cart" className="btn-cart" >Add to Cart</Link>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+      <div className="price-line">
+        <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 40</span><span className="price-unit">/wk</span>
+      </div>
+      <Link to="/book/b4" className="btn-mini-cart" style={{ color: '#fff' }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+      </Link>
     </div>
   </div>
 </div>
@@ -211,11 +217,11 @@ export default function CategoryResultsPage() {
     <div className="bc-title">The Alchemist</div>
     <div className="bc-author">by Paulo Coelho</div>
     <div className="bc-cond">Condition: <strong>Like New</strong></div>
-    <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 30</span><span className="price-unit">/wk</span></div>
-    <div className="bc-stars">★★★★★</div>
-    <div className="bc-actions">
-      <Link to="/book/b5" className="btn-details">View Details</Link>
-      <Link to="/cart" className="btn-cart" >Add to Cart</Link>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+      <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 30</span><span className="price-unit">/wk</span></div>
+      <Link to="/book/b5" className="btn-mini-cart" style={{ color: '#fff' }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+      </Link>
     </div>
   </div>
 </div>
@@ -229,11 +235,11 @@ export default function CategoryResultsPage() {
     <div className="bc-title">Introduction to Algebra</div>
     <div className="bc-author">by Michael Artin</div>
     <div className="bc-cond">Condition: <strong>Like New</strong></div>
-    <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 280</span></div>
-    <div className="bc-stars">★★★★☆</div>
-    <div className="bc-actions">
-      <Link to="/book/b6" className="btn-details">View Details</Link>
-      <Link to="/cart" className="btn-cart" >Add to Cart</Link>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+      <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 280</span></div>
+      <Link to="/book/b6" className="btn-mini-cart" style={{ color: '#fff' }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+      </Link>
     </div>
   </div>
 </div>
@@ -247,11 +253,11 @@ export default function CategoryResultsPage() {
     <div className="bc-title">Calculus: Early Transcendentals</div>
     <div className="bc-author">by James Stewart</div>
     <div className="bc-cond">Condition: <strong>Good</strong></div>
-    <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 450</span></div>
-    <div className="bc-stars">★★★★★</div>
-    <div className="bc-actions">
-      <Link to="/book/b7" className="btn-details">View Details</Link>
-      <Link to="/cart" className="btn-cart" >Add to Cart</Link>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+      <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 450</span></div>
+      <Link to="/book/b7" className="btn-mini-cart">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+      </Link>
     </div>
   </div>
 </div>
@@ -265,11 +271,11 @@ export default function CategoryResultsPage() {
     <div className="bc-title">Concepts of Physics</div>
     <div className="bc-author">by H.C. Verma</div>
     <div className="bc-cond">Condition: <strong>Used</strong></div>
-    <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 60</span><span className="price-unit">/wk</span></div>
-    <div className="bc-stars">★★★★★</div>
-    <div className="bc-actions">
-      <Link to="/book/b8" className="btn-details">View Details</Link>
-      <Link to="/cart" className="btn-cart" >Add to Cart</Link>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+      <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 60</span><span className="price-unit">/wk</span></div>
+      <Link to="/book/b8" className="btn-mini-cart">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+      </Link>
     </div>
   </div>
 </div>
@@ -283,11 +289,11 @@ export default function CategoryResultsPage() {
     <div className="bc-title">1984</div>
     <div className="bc-author">by George Orwell</div>
     <div className="bc-cond">Condition: <strong>Used</strong></div>
-    <div className="price-line"><span className="free-tag">🎁 Free Shelf</span></div>
-    <div className="bc-stars">★★★★★</div>
-    <div className="bc-actions">
-      <Link to="/book/b9" className="btn-details">View Details</Link>
-      <Link to="/cart" className="btn-cart" >Add to Cart</Link>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+      <div className="price-line"><span className="free-tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg> Free Shelf</span></div>
+      <Link to="/book/b9" className="btn-mini-cart">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+      </Link>
     </div>
   </div>
 </div>
@@ -301,11 +307,11 @@ export default function CategoryResultsPage() {
     <div className="bc-title">Python Crash Course</div>
     <div className="bc-author">by Eric Matthes</div>
     <div className="bc-cond">Condition: <strong>Like New</strong></div>
-    <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 320</span></div>
-    <div className="bc-stars">★★★★☆</div>
-    <div className="bc-actions">
-      <Link to="/book/b10" className="btn-details">View Details</Link>
-      <Link to="/cart" className="btn-cart" >Add to Cart</Link>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+      <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 320</span></div>
+      <Link to="/book/b10" className="btn-mini-cart" style={{ color: '#fff' }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+      </Link>
     </div>
   </div>
 </div>
@@ -319,11 +325,11 @@ export default function CategoryResultsPage() {
     <div className="bc-title">The Power of Now</div>
     <div className="bc-author">by Eckhart Tolle</div>
     <div className="bc-cond">Condition: <strong>Good</strong></div>
-    <div className="price-line"><span className="free-tag">🎁 Free Shelf</span></div>
-    <div className="bc-stars">★★★★☆</div>
-    <div className="bc-actions">
-      <Link to="/book/b11" className="btn-details">View Details</Link>
-      <Link to="/cart" className="btn-cart" >Add to Cart</Link>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+      <div className="price-line"><span className="free-tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg> Free Shelf</span></div>
+      <Link to="/book/b11" className="btn-mini-cart" style={{ color: '#fff' }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+      </Link>
     </div>
   </div>
 </div>
@@ -337,11 +343,11 @@ export default function CategoryResultsPage() {
     <div className="bc-title">Linear Algebra Done Right</div>
     <div className="bc-author">by Sheldon Axler</div>
     <div className="bc-cond">Condition: <strong>Like New</strong></div>
-    <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 45</span><span className="price-unit">/wk</span></div>
-    <div className="bc-stars">★★★★★</div>
-    <div className="bc-actions">
-      <Link to="/book/b12" className="btn-details">View Details</Link>
-      <Link to="/cart" className="btn-cart" >Add to Cart</Link>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+      <div className="price-line"><span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. 45</span><span className="price-unit">/wk</span></div>
+      <Link to="/book/b12" className="btn-mini-cart" style={{ color: '#fff' }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+      </Link>
     </div>
   </div>
 </div>

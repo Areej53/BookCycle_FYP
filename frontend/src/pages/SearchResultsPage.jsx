@@ -195,18 +195,23 @@ export default function SearchResultsPage() {
             <div className="bc-title">{book.title}</div>
             <div className="bc-author">by {book.author}</div>
             <div className="bc-cond">Condition: <strong>{book.condition}</strong></div>
-            <div className="price-line">
-                {book.exchangeType === 'Share' ? (
-                  <span className="free-tag">🎁 Free Shelf</span>
-                ) : (
-                  <>
-                  <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. {book.price}</span>
-                  {book.exchangeType === 'Rent' && <span className="price-unit">/wk</span>}
-                  </>
-                )}
-            </div>
-            <div className="bc-actions">
-              <Link to={`/book/${book._id}`} className="btn-details">View Details</Link>
+            <div className="bc-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+              <div className="price-line">
+                  {book.exchangeType === 'Share' ? (
+                    <span className="free-tag">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
+                      Free Shelf
+                    </span>
+                  ) : (
+                    <>
+                    <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. {book.price}</span>
+                    {book.exchangeType === 'Rent' && <span className="price-unit">/wk</span>}
+                    </>
+                  )}
+              </div>
+              <Link to={`/book/${book._id}`} className="btn-mini-cart">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+              </Link>
             </div>
           </div>
         </div>

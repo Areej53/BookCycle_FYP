@@ -215,12 +215,30 @@ export default function HomePage() {
         
         <div className="filter-row">
           <span className="filter-row-label">Category</span>
-          <span className={`f-chip ${activeCats.includes('programming') ? 'active' : ''}`} onClick={() => toggleCat('programming')}>💻 Programming</span>
-          <span className={`f-chip ${activeCats.includes('science') ? 'active' : ''}`} onClick={() => toggleCat('science')}>🔬 Science</span>
-          <span className={`f-chip ${activeCats.includes('literature') ? 'active' : ''}`} onClick={() => toggleCat('literature')}>📖 Literature</span>
-          <span className={`f-chip ${activeCats.includes('novels') ? 'active' : ''}`} onClick={() => toggleCat('novels')}>📚 Novels</span>
-          <span className={`f-chip ${activeCats.includes('islamic') ? 'active' : ''}`} onClick={() => toggleCat('islamic')}>🕌 Islamic</span>
-          <span className={`f-chip ${activeCats.includes('psychology') ? 'active' : ''}`} onClick={() => toggleCat('psychology')}>🧠 Psychology</span>
+          <span className={`f-chip ${activeCats.includes('programming') ? 'active' : ''}`} onClick={() => toggleCat('programming')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+            Programming
+          </span>
+          <span className={`f-chip ${activeCats.includes('science') ? 'active' : ''}`} onClick={() => toggleCat('science')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 3h15"></path><path d="M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3"></path><path d="M6 14h12"></path></svg>
+            Science
+          </span>
+          <span className={`f-chip ${activeCats.includes('literature') ? 'active' : ''}`} onClick={() => toggleCat('literature')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            Literature
+          </span>
+          <span className={`f-chip ${activeCats.includes('novels') ? 'active' : ''}`} onClick={() => toggleCat('novels')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            Novels
+          </span>
+          <span className={`f-chip ${activeCats.includes('islamic') ? 'active' : ''}`} onClick={() => toggleCat('islamic')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12a3 3 0 0 1-3 3H5a2 2 0 0 0-2 2h18a2 2 0 0 0-2-2h-4a3 3 0 0 1-3-3V3z"></path></svg>
+            Islamic
+          </span>
+          <span className={`f-chip ${activeCats.includes('psychology') ? 'active' : ''}`} onClick={() => toggleCat('psychology')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"></path><path d="M12 6a4 4 0 0 1 4 4c0 2-3 5-4 5s-4-3-4-5a4 4 0 0 1 4-4z"></path></svg>
+            Psychology
+          </span>
         </div>
 
         
@@ -379,7 +397,7 @@ export default function HomePage() {
   
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
-      <div><div className="section-label">✦ Explore</div><h2 className="section-title">Browse by <span>Category</span></h2></div>
+      <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Explore</div><h2 className="section-title">Browse by <span>Category</span></h2></div>
       <Link to="/browse" className="see-all">View All Genres</Link>
     </div>
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '14px' }}>
@@ -447,7 +465,7 @@ export default function HomePage() {
   
   <div style={{ marginTop: '60px', background: '#f5f0d0', borderRadius: '24px', padding: '40px' }}>
     <div className="section-header">
-      <div><div className="section-label">✦ Simple Process</div><h2 className="section-title">How BookCycle <span>Works</span></h2></div>
+      <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Simple Process</div><h2 className="section-title">How BookCycle <span>Works</span></h2></div>
     </div>
     <div className="steps-grid">
       <div className="step">
@@ -483,21 +501,21 @@ export default function HomePage() {
   
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
-      <div><div className="section-label">✦ Borrow</div><h2 className="section-title">Books for <span>Rent</span></h2></div>
+      <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Borrow</div><h2 className="section-title">Books for <span>Rent</span></h2></div>
       <Link to="/browse" className="see-all">View all</Link>
     </div>
     <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
       <div className="book-card" onClick={() => navigate('/book/6618d3f666b6c666f666f666')} style={{ cursor: 'pointer' }}>
         <div className="book-cover"><img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80" alt="The Alchemist"/><span className="book-badge badge-rent">Rent</span></div>
-        <div className="book-info"><div className="book-title">The Alchemist</div><div className="book-author">Paulo Coelho</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 30/wk</span><Link to="/book/6618d3f666b6c666f666f666" className="btn-mini-cart" title="Rent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div>
+        <div className="book-info"><div className="book-title">The Alchemist</div><div className="book-author">Paulo Coelho</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 30/wk</span><Link to="/book/6618d3f666b6c666f666f666" className="btn-mini-cart" title="Rent" style={{ color: '#fff' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div>
       </div>
       <div className="book-card" onClick={() => navigate('/book/6618d3f666b6c666f666f667')} style={{ cursor: 'pointer' }}>
         <div className="book-cover"><img src="https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=400&q=80" alt="1984"/><span className="book-badge badge-rent">Rent</span></div>
-        <div className="book-info"><div className="book-title">1984</div><div className="book-author">George Orwell</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 35/wk</span><Link to="/book/6618d3f666b6c666f666f667" className="btn-mini-cart" title="Rent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div>
+        <div className="book-info"><div className="book-title">1984</div><div className="book-author">George Orwell</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 35/wk</span><Link to="/book/6618d3f666b6c666f666f667" className="btn-mini-cart" title="Rent" style={{ color: '#fff' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div>
       </div>
       <div className="book-card" onClick={() => navigate('/book/6618d3f666b6c666f666f668')} style={{ cursor: 'pointer' }}>
         <div className="book-cover"><img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=80" alt="Think and Grow Rich"/><span className="book-badge badge-rent">Rent</span></div>
-        <div className="book-info"><div className="book-title">Think & Grow Rich</div><div className="book-author">Napoleon Hill</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 45/wk</span><Link to="/book/6618d3f666b6c666f666f668" className="btn-mini-cart" title="Rent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div>
+        <div className="book-info"><div className="book-title">Think & Grow Rich</div><div className="book-author">Napoleon Hill</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 45/wk</span><Link to="/book/6618d3f666b6c666f666f668" className="btn-mini-cart" title="Rent" style={{ color: '#fff' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div>
       </div>
     </div>
   </div>
@@ -505,7 +523,7 @@ export default function HomePage() {
   
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
-      <div><div className="section-label" style={{ background: 'rgba(96,108,56,.1)', color: 'var(--secondary)' }}>✦ Donate & Receive</div><h2 className="section-title">Free Knowledge <span>Shelf</span></h2></div>
+      <div><div className="section-label" style={{ background: 'rgba(96,108,56,.1)', color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Donate & Receive</div><h2 className="section-title">Free Knowledge <span>Shelf</span></h2></div>
       <Link to="/browse" className="see-all">Browse shelf</Link>
     </div>
     <div style={{ background: 'linear-gradient(135deg,rgba(96,108,56,.07),rgba(19,73,60,.05))', border: '1.5px solid rgba(96,108,56,.2)', borderRadius: '20px', padding: '26px' }}>
@@ -521,7 +539,9 @@ export default function HomePage() {
               <div className="book-author">{b.author}</div>
               <div className="book-footer">
                 <span className="book-price free">Free</span>
-                <Link to={`/book/${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link>
+                <Link to={`/book/${b.id}`} className="btn-mini-cart" style={{ color: '#fff' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                </Link>
               </div>
             </div>
           </div>
@@ -533,7 +553,7 @@ export default function HomePage() {
   
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
-      <div><div className="section-label">✦ Just Listed</div><h2 className="section-title">Recently <span>Added</span></h2></div>
+      <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Just Listed</div><h2 className="section-title">Recently <span>Added</span></h2></div>
       <Link to="/browse" className="see-all">See all new</Link>
     </div>
     <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
@@ -549,13 +569,9 @@ export default function HomePage() {
             <div style={{ marginTop: '5px', fontSize: '.77rem', color: 'var(--text-muted)' }}>Added {b.timeAgo}</div>
             <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span className={`book-price ${b.badge === 'free' ? 'free' : ''}`}>{b.badge === 'free' ? 'Free' : `${b.price}${b.unit}`}</span>
-              {b.badge === 'free' ? (
-                  <Link to={`/book/${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link>
-              ) : (
-                  <Link to={`/book/${b.id}`} className="btn-mini-cart">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                  </Link>
-              )}
+              <Link to={`/book/${b.id}`} className="btn-mini-cart" style={{ color: '#fff' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+              </Link>
             </div>
           </div>
         </div>
