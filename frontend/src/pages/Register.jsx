@@ -122,7 +122,7 @@ const Register = () => {
               <div className="interests-selection">
                 <p>Interests *</p>
                 <div className="interests-options">
-                  {["Science", "Programming", "Engineering", "Novels", "Islamic Books", "Notes"].map((cat) => (
+                  {["Programming", "Science", "Physics", "Self Development", "Algebra", "Mathematics", "Novels", "Notes"].map((cat) => (
                     <label key={cat}>
                       <input type="checkbox" value={cat} checked={interests.includes(cat)} onChange={handleInterestChange} />
                       {cat}

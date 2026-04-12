@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { SellerContext } from '../context/SellerContext';
 import { useAuth } from '../context/AuthContext';
+import RecommendationWidget from '../components/RecommendationWidget';
 
 export default function SellerCategoriesPage() {
     const { sellerData, updateSellerData } = useContext(SellerContext);
@@ -21,7 +22,11 @@ export default function SellerCategoriesPage() {
             setShowErr(true);
             return;
         }
-        navigate('/seller/add');
+        if (sellerData.category === 'Notes') {
+            navigate('/seller/notes/add');
+        } else {
+            navigate('/seller/add');
+        }
     };
 
     const isSelected = (cat) => sellerData.category === cat;
@@ -68,7 +73,8 @@ export default function SellerCategoriesPage() {
     {id: 'self-dev', name: 'Self-Development', desc: 'Mindset, productivity, habits, motivation & personal growth.', count: 130, img: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=150&q=80'},
     {id: 'algebra', name: 'Algebra', desc: 'Linear algebra, abstract algebra, equations, matrices & number theory.', count: 63, img: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=150&q=80'},
     {id: 'mathematics', name: 'Mathematics', desc: 'Calculus, statistics, geometry, discrete math & applied mathematics.', count: 84, img: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?w=150&q=80'},
-    {id: 'physics', name: 'Physics', desc: 'Classical mechanics, quantum physics, thermodynamics & electromagnetism.', count: 71, img: 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=150&q=80'}
+    {id: 'physics', name: 'Physics', desc: 'Classical mechanics, quantum physics, thermodynamics & electromagnetism.', count: 71, img: 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=150&q=80'},
+    {id: 'notes', name: 'Notes', desc: 'Study notes, lecture summaries, past papers & educational materials.', count: 45, img: 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=150&q=80'}
   ].map(cat => (
     <div key={cat.id} className={`cat-card ${isSelected(cat.name) ? 'selected' : ''}`} onClick={() => handleCategoryClick(cat.name)}>
       <div className={`cat-check ${isSelected(cat.name) ? 'active' : ''}`}></div>
@@ -100,18 +106,7 @@ export default function SellerCategoriesPage() {
 </main>
 <aside className="sidebar">
   <div className="steps-widget"><div className="sw-head">Your Progress</div><div className="sw-body"><div className="sw-item"><div className="sw-num active">1</div><div><div className="sw-label ">Select Categories</div><div className="sw-sub">Choose what you want to sell</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num ">2</div><div><div className="sw-label upcoming">Add Book Details</div><div className="sw-sub">Fill in book info & images</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num ">3</div><div><div className="sw-label upcoming">Review Listing</div><div className="sw-sub">Preview before going live</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num ">4</div><div><div className="sw-label upcoming">Published!</div><div className="sw-sub">Your book is now live</div></div></div></div></div>
-  <div className="rec-widget">
-    <div className="rec-head">
-      <span className="rec-title"><span className="rec-dot"></span>Recommended for You</span>
-      <span className="rec-badge">Trending</span>
-    </div>
-    <div className="rec-list"><div className="rec-book"><div className="rec-img"><img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=120&q=80" alt="Atomic Habits"/></div><div style={{ flex: '1', minWidth: '0' }}><div className="rec-book-title">Atomic Habits</div><div className="rec-author">James Clear</div><div className="rec-stars">★★★★★</div><div className="rec-bottom"><span className="rec-price">Rs. 50/wk</span><Link to="/details"  className="rec-action" style={{ background: 'var(--cta)' }} >Rent</Link></div></div></div>
-<div className="rec-book"><div className="rec-img"><img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=120&q=80" alt="Deep Work"/></div><div style={{ flex: '1', minWidth: '0' }}><div className="rec-book-title">Deep Work</div><div className="rec-author">Cal Newport</div><div className="rec-stars">★★★★★</div><div className="rec-bottom"><span className="rec-price">Rs. 350</span><Link to="/details"  className="rec-action" style={{ background: 'var(--cta)' }} >Buy</Link></div></div></div>
-<div className="rec-book"><div className="rec-img"><img src="https://images.unsplash.com/photo-1589998059171-988d887df646?w=120&q=80" alt="Sapiens"/></div><div style={{ flex: '1', minWidth: '0' }}><div className="rec-book-title">Sapiens</div><div className="rec-author">Y.N. Harari</div><div className="rec-stars">★★★★☆</div><div className="rec-bottom"><span className="rec-price free-price">Free</span><Link to="/details"  className="rec-action" style={{ background: 'var(--secondary)' }} >Claim</Link></div></div></div>
-<div className="rec-book"><div className="rec-img"><img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=120&q=80" alt="Rich Dad Poor Dad"/></div><div style={{ flex: '1', minWidth: '0' }}><div className="rec-book-title">Rich Dad Poor Dad</div><div className="rec-author">R. Kiyosaki</div><div className="rec-stars">★★★★☆</div><div className="rec-bottom"><span className="rec-price">Rs. 40/wk</span><Link to="/details"  className="rec-action" style={{ background: 'var(--cta)' }} >Rent</Link></div></div></div>
-<div className="rec-book"><div className="rec-img"><img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=120&q=80" alt="The Alchemist"/></div><div style={{ flex: '1', minWidth: '0' }}><div className="rec-book-title">The Alchemist</div><div className="rec-author">Paulo Coelho</div><div className="rec-stars">★★★★★</div><div className="rec-bottom"><span className="rec-price">Rs. 30/wk</span><Link to="/details"  className="rec-action" style={{ background: 'var(--cta)' }} >Rent</Link></div></div></div></div>
-    <div className="rec-footer"><Link to="/browse">Browse all books →</Link></div>
-  </div>
+  <RecommendationWidget />
 </aside>
 </div>
 <footer className="footer"><div className="footer-grid"><div><Link to="/" className="footer-brand"><div className="f-logo"><img src={IMAGES.img_0} alt="BookCycle"/></div><span className="f-brand-name">BookCycle</span></Link><p className="f-desc">Islamabad's community book platform. Share, rent, and discover books across the city.</p></div><div className="f-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div></div></footer>

@@ -2,6 +2,33 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../api/client';
+
+const getImageUrl = (book) => {
+    const imagePath = book.image || (book.images && book.images[0]);
+    if (!imagePath) {
+        if (book.category === 'Notes') return 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=400&q=80';
+        return 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80';
+    }
+    if (imagePath.startsWith('http') || imagePath.startsWith('data:image')) return imagePath;
+    return `http://localhost:5000${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
+};
+
+const getTimeAgo = (date) => {
+    if (!date) return 'Just now';
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " yrs ago";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " mos ago";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days ago";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " hrs ago";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " mins ago";
+    return Math.floor(seconds || 0) + " secs ago";
+};
 
 export default function HomePage() {
     const { user } = useAuth();
@@ -14,6 +41,47 @@ export default function HomePage() {
     const [activeConds, setActiveConds] = useState([]);
     const [priceRange, setPriceRange] = useState(1000);
     const wrapperRef = useRef(null);
+    const [featuredBooks, setFeaturedBooks] = useState([]);
+    const [recentBooks, setRecentBooks] = useState([]);
+    const [freeBooks, setFreeBooks] = useState([]);
+
+    useEffect(() => {
+        const fetchBooks = async () => {
+            try {
+                const [featRes, recentRes, freeRes] = await Promise.all([
+                    api.get('/books?limit=4'),
+                    api.get('/books?limit=3&sort=recent'),
+                    api.get('/books?type=share&limit=3&sort=recent')
+                ]);
+                
+                const formatBooks = (booksArr, max) => {
+                    return booksArr.slice(0, max).map(b => ({
+                        id: b._id,
+                        img: getImageUrl(b),
+                        badge: b.exchangeType === 'Sell' ? 'sell' : b.exchangeType === 'Rent' ? 'rent' : 'free',
+                        title: b.title,
+                        author: b.author,
+                        price: b.exchangeType === 'Share' ? 'Free' : `Rs. ${b.price}`,
+                        unit: b.exchangeType === 'Rent' ? '/wk' : '',
+                        timeAgo: getTimeAgo(b.createdAt)
+                    }));
+                };
+
+                if (featRes.data.books) {
+                    setFeaturedBooks(formatBooks(featRes.data.books, 4));
+                }
+                if (recentRes.data.books) {
+                    setRecentBooks(formatBooks(recentRes.data.books, 3));
+                }
+                if (freeRes.data.books) {
+                    setFreeBooks(formatBooks(freeRes.data.books, 3));
+                }
+            } catch (error) {
+                console.error("Failed to fetch dynamic books", error);
+            }
+        };
+        fetchBooks();
+    }, []);
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -286,22 +354,27 @@ export default function HomePage() {
       <Link to="/browse" className="see-all">View all</Link>
     </div>
     <div className="books-grid">
-      <div className="book-card">
-        <div className="book-cover"><img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80" alt="Atomic Habits"/><span className="book-badge badge-rent">Rent</span></div>
-        <div className="book-info"><div className="book-title">Atomic Habits</div><div className="book-author">James Clear</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 50/wk</span><Link to="/details" className="btn-mini-cart" title="Rent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div>
-      </div>
-      <div className="book-card">
-        <div className="book-cover"><img src="https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&q=80" alt="Sapiens"/><span className="book-badge badge-free">Free</span></div>
-        <div className="book-info"><div className="book-title">Sapiens</div><div className="book-author">Yuval Noah Harari</div><div className="book-footer"><span className="book-price free">Free</span><Link to="/details"  className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link></div></div>
-      </div>
-      <div className="book-card">
-        <div className="book-cover"><img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80" alt="Deep Work"/><span className="book-badge badge-sell">Buy</span></div>
-        <div className="book-info"><div className="book-title">Deep Work</div><div className="book-author">Cal Newport</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 350</span><Link to="/details" className="btn-mini-cart" title="Buy"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div>
-      </div>
-      <div className="book-card">
-        <div className="book-cover"><img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80" alt="Rich Dad Poor Dad"/><span className="book-badge badge-rent">Rent</span></div>
-        <div className="book-info"><div className="book-title">Rich Dad Poor Dad</div><div className="book-author">Robert Kiyosaki</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 40/wk</span><Link to="/details" className="btn-mini-cart" title="Rent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div>
-      </div>
+      {featuredBooks.map(b => (
+        <div className="book-card" key={b.id}>
+          <div className="book-cover"><img src={b.img} alt={b.title}/><span className={`book-badge badge-${b.badge}`}>{b.badge === 'sell' ? 'Buy' : b.badge.charAt(0).toUpperCase() + b.badge.slice(1)}</span></div>
+          <div className="book-info">
+            <div className="book-title">{b.title}</div>
+            <div className="book-author">{b.author}</div>
+            <div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span className={`book-price ${b.badge === 'free' ? 'free' : ''}`}>
+                {b.badge === 'free' ? 'Free' : `${b.price}${b.unit}`}
+              </span>
+              {b.badge === 'free' ? (
+                  <Link to={`/details?id=${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link>
+              ) : (
+                  <Link to={`/details?id=${b.id}`} className="btn-mini-cart" title={b.badge === 'sell' ? 'Buy' : 'Rent'}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                  </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   </div>
 
@@ -322,60 +395,52 @@ export default function HomePage() {
         .home-cat-name { font-weight: 700; font-size: .88rem; color: #fff; text-align: center; margin: 0; }
         .home-cat-count { font-size: .72rem; color: rgba(255,255,255,.6); margin-top: 2px; }
       `}</style>
-        <div className="home-cat-card" onClick={() => navigate('/browse/category/fiction')}>
-            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&q=80" alt="Fiction"/></div>
+        <div className="home-cat-card" onClick={() => navigate('/browse?cats=programming')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&q=80" alt="Programming"/></div>
             <div className="home-cat-overlay">
-                <div className="home-cat-name">Fiction & Lit</div>
-                <div className="home-cat-count">420+ books</div>
+                <div className="home-cat-name">Programming</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse/category/science')}>
+        <div className="home-cat-card" onClick={() => navigate('/browse?cats=science')}>
             <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=400&q=80" alt="Science"/></div>
             <div className="home-cat-overlay">
                 <div className="home-cat-name">Science</div>
-                <div className="home-cat-count">210+ books</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse/category/history')}>
-            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=400&q=80" alt="History"/></div>
+        <div className="home-cat-card" onClick={() => navigate('/browse?cats=novels')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=400&q=80" alt="Novels"/></div>
             <div className="home-cat-overlay">
-                <div className="home-cat-name">History</div>
-                <div className="home-cat-count">185+ books</div>
+                <div className="home-cat-name">Novels</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse/category/children')}>
-            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80" alt="Children"/></div>
+        <div className="home-cat-card" onClick={() => navigate('/browse?cats=self%20development')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80" alt="Self Development"/></div>
             <div className="home-cat-overlay">
-                <div className="home-cat-name">Children's</div>
-                <div className="home-cat-count">150+ books</div>
+                <div className="home-cat-name">Self Development</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse/category/business')}>
-            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&q=80" alt="Business"/></div>
+        <div className="home-cat-card" onClick={() => navigate('/browse?cats=algebra')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&q=80" alt="Algebra"/></div>
             <div className="home-cat-overlay">
-                <div className="home-cat-name">Business</div>
-                <div className="home-cat-count">310+ books</div>
+                <div className="home-cat-name">Algebra</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse/category/arts')}>
-            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80" alt="Arts"/></div>
+        <div className="home-cat-card" onClick={() => navigate('/browse?cats=mathematics')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80" alt="Mathematics"/></div>
             <div className="home-cat-overlay">
-                <div className="home-cat-name">Arts & Design</div>
-                <div className="home-cat-count">125+ books</div>
+                <div className="home-cat-name">Mathematics</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse/category/philosophy')}>
-            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80" alt="Philosophy"/></div>
+        <div className="home-cat-card" onClick={() => navigate('/browse?cats=physics')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80" alt="Physics"/></div>
             <div className="home-cat-overlay">
-                <div className="home-cat-name">Philosophy</div>
-                <div className="home-cat-count">95+ books</div>
+                <div className="home-cat-name">Physics</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse/category/tech')}>
-            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=400&q=80" alt="Tech"/></div>
+        <div className="home-cat-card" onClick={() => navigate('/browse?cats=notes')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=400&q=80" alt="Notes"/></div>
             <div className="home-cat-overlay">
-                <div className="home-cat-name">Tech & Code</div>
-                <div className="home-cat-count">240+ books</div>
+                <div className="home-cat-name">Notes</div>
             </div>
         </div>
     </div>
@@ -438,9 +503,22 @@ export default function HomePage() {
     </div>
     <div style={{ background: 'linear-gradient(135deg,rgba(96,108,56,.07),rgba(19,73,60,.05))', border: '1.5px solid rgba(96,108,56,.2)', borderRadius: '20px', padding: '26px' }}>
       <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
-        <div className="book-card"><div className="book-cover"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80" alt="To Kill a Mockingbird"/><span className="book-badge badge-free">Free</span></div><div className="book-info"><div className="book-title">To Kill a Mockingbird</div><div className="book-author">Harper Lee</div><div className="book-footer"><span className="book-price free">Free</span><Link to="/details"  className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link></div></div></div>
-        <div className="book-card"><div className="book-cover"><img src="https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=400&q=80" alt="The Great Gatsby"/><span className="book-badge badge-free">Free</span></div><div className="book-info"><div className="book-title">The Great Gatsby</div><div className="book-author">F. Scott Fitzgerald</div><div className="book-footer"><span className="book-price free">Free</span><Link to="/details"  className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link></div></div></div>
-        <div className="book-card"><div className="book-cover"><img src="https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400&q=80" alt="Brave New World"/><span className="book-badge badge-free">Free</span></div><div className="book-info"><div className="book-title">Brave New World</div><div className="book-author">Aldous Huxley</div><div className="book-footer"><span className="book-price free">Free</span><Link to="/details"  className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link></div></div></div>
+        {freeBooks.map(b => (
+          <div className="book-card" key={b.id}>
+            <div className="book-cover">
+              <img src={b.img} alt={b.title}/>
+              <span className="book-badge badge-free">Free</span>
+            </div>
+            <div className="book-info">
+              <div className="book-title">{b.title}</div>
+              <div className="book-author">{b.author}</div>
+              <div className="book-footer">
+                <span className="book-price free">Free</span>
+                <Link to={`/details?id=${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   </div>
@@ -452,9 +530,29 @@ export default function HomePage() {
       <Link to="/browse" className="see-all">See all new</Link>
     </div>
     <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
-      <div className="book-card book-card-h"><div className="book-cover" style={{ width: '82px', flexShrink: '0', borderRadius: '0', minHeight: '110px', height: 'auto' }}><img src="https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=200&q=80" alt="Zero to One"/><span className="book-badge badge-sell" style={{ top: '6px', right: '4px', fontSize: '.6rem', padding: '2px 6px' }}>Buy</span></div><div className="book-info" style={{ padding: '14px' }}><div className="book-title" style={{ fontSize: '.9rem' }}>Zero to One</div><div className="book-author">Peter Thiel</div><div style={{ marginTop: '5px', fontSize: '.77rem', color: 'var(--text-muted)' }}>Added 2 hrs ago</div><div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 400</span><Link to="/details" className="btn-mini-cart"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div></div>
-      <div className="book-card book-card-h"><div className="book-cover" style={{ width: '82px', flexShrink: '0', borderRadius: '0', minHeight: '110px', height: 'auto' }}><img src="https://images.unsplash.com/photo-1476275466078-4007374efbbe?w=200&q=80" alt="Ikigai"/><span className="book-badge badge-rent" style={{ top: '6px', right: '4px', fontSize: '.6rem', padding: '2px 6px' }}>Rent</span></div><div className="book-info" style={{ padding: '14px' }}><div className="book-title" style={{ fontSize: '.9rem' }}>Ikigai</div><div className="book-author">Héctor García</div><div style={{ marginTop: '5px', fontSize: '.77rem', color: 'var(--text-muted)' }}>Added 5 hrs ago</div><div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 35/wk</span><Link to="/details" className="btn-mini-cart"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div></div>
-      <div className="book-card book-card-h"><div className="book-cover" style={{ width: '82px', flexShrink: '0', borderRadius: '0', minHeight: '110px', height: 'auto' }}><img src="https://images.unsplash.com/photo-1509021436665-8f07dbf5bf1d?w=200&q=80" alt="Dune"/><span className="book-badge badge-free" style={{ top: '6px', right: '4px', fontSize: '.6rem', padding: '2px 6px' }}>Free</span></div><div className="book-info" style={{ padding: '14px' }}><div className="book-title" style={{ fontSize: '.9rem' }}>Dune</div><div className="book-author">Frank Herbert</div><div style={{ marginTop: '5px', fontSize: '.77rem', color: 'var(--text-muted)' }}>Added 1 day ago</div><div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price free">Free</span><Link to="/details" className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link></div></div></div>
+      {recentBooks.map(b => (
+        <div className="book-card book-card-h" key={b.id}>
+          <div className="book-cover" style={{ width: '82px', flexShrink: '0', borderRadius: '0', minHeight: '110px', height: 'auto' }}>
+            <img src={b.img} alt={b.title}/>
+            <span className={`book-badge badge-${b.badge}`} style={{ top: '6px', right: '4px', fontSize: '.6rem', padding: '2px 6px' }}>{b.badge === 'sell' ? 'Buy' : b.badge.charAt(0).toUpperCase() + b.badge.slice(1)}</span>
+          </div>
+          <div className="book-info" style={{ padding: '14px' }}>
+            <div className="book-title" style={{ fontSize: '.9rem' }}>{b.title}</div>
+            <div className="book-author">{b.author}</div>
+            <div style={{ marginTop: '5px', fontSize: '.77rem', color: 'var(--text-muted)' }}>Added {b.timeAgo}</div>
+            <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span className={`book-price ${b.badge === 'free' ? 'free' : ''}`}>{b.badge === 'free' ? 'Free' : `${b.price}${b.unit}`}</span>
+              {b.badge === 'free' ? (
+                  <Link to={`/details?id=${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link>
+              ) : (
+                  <Link to={`/details?id=${b.id}`} className="btn-mini-cart">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                  </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   </div>
 

@@ -16,6 +16,7 @@ import {
   SellerCategoriesPage,
   SellerPublishedPage,
   SellerReviewPage,
+  SellerAddNotesPage,
   CartPage,
 } from "./pages";
 import { ToastContainer } from "react-toastify";
@@ -86,6 +87,10 @@ const router = createBrowserRouter([
           {
             path: "seller/categories",
             element: <SellerCategoriesPage />,
+          },
+          {
+            path: "seller/notes/add",
+            element: <SellerAddNotesPage />,
           },
           {
             path: "seller/published",
