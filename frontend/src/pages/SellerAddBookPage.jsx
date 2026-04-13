@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { SellerContext } from '../context/SellerContext';
 import { useAuth } from '../context/AuthContext';
+import { FiFileText, FiList, FiCheckCircle, FiDollarSign, FiAlignLeft, FiImage, FiRepeat, FiGift, FiUploadCloud } from 'react-icons/fi';
+import Navbar from '../components/Navbar';
 
 export default function SellerAddBookPage() {
     const { sellerData, updateSellerData } = useContext(SellerContext);
@@ -26,19 +28,27 @@ export default function SellerAddBookPage() {
         updateSellerData({ exchangeType: type });
     };
 
-    const handleFileChange = (e) => {
+    const handleFileChange = async (e) => {
         const files = Array.from(e.target.files);
-        const newImages = files.map(file => ({
-            file,
-            preview: URL.createObjectURL(file),
-            name: file.name
+        const newImages = await Promise.all(files.map(file => {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    resolve({
+                        file,
+                        preview: reader.result,
+                        name: file.name,
+                        base64: reader.result
+                    });
+                };
+                reader.readAsDataURL(file);
+            });
         }));
         updateSellerData({ images: [...(sellerData.images || []), ...newImages].slice(0, 6) });
     };
 
     const removeImage = (index) => {
         const newImages = [...(sellerData.images || [])];
-        URL.revokeObjectURL(newImages[index].preview);
         newImages.splice(index, 1);
         updateSellerData({ images: newImages });
     };
@@ -64,26 +74,11 @@ export default function SellerAddBookPage() {
     return (
         <div className="SellerAddBookPage">
             
-<nav className="navbar"><Link to="/home" className="logo"><div className="logo-icon"><img src={IMAGES.img_0} alt="BookCycle"/></div><span className="logo-text">BookCycle</span></Link><ul className="nav-links"><li><Link to="/home">Home</Link></li><li><Link to="/">Browse</Link></li><li><Link to="/seller" className="sell-link">Sell</Link></li>
-    {user ? (
-        <>
-            <li><span className="nav-user" style={{ color: 'var(--text)', fontWeight: 600 }}>Hi, {user.name}</span></li>
-            <li><Link to="/logout" className="nav-cta" style={{ marginLeft: 10 }}>Logout</Link></li>
-        </>
-    ) : (
-        <li><Link to="/login" className="nav-cta">Login</Link></li>
-    )}<li>
-      <Link to="/cart" className="cart-btn" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,250,224, 0.9)' }}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="9" cy="21" r="1"></circle>
-          <circle cx="20" cy="21" r="1"></circle>
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-        </svg>
-        <span className="cart-badge" style={{ position: 'absolute', top: '-6px', right: '-10px', background: 'var(--cta)', color: '#fff', fontSize: '0.65rem', fontWeight: 700, padding: '2px 6px', borderRadius: '10px' }}>3</span>
-      </Link>
-    </li><li><Link to="/seller"  className="nav-cta" >List a Book</Link></li></ul></nav>
+<header className="seller-header">
+<Navbar />
 
-<div className="progress-wrap" style={{ marginTop: '20px' }}><div className="progress-steps"><div className="p-step done"><div className="p-num">✓</div>Categories</div><div className="p-line done"></div><div className="p-step active"><div className="p-num">2</div>Book Details</div><div className="p-line "></div><div className="p-step "><div className="p-num">3</div>Review</div><div className="p-line "></div><div className="p-step "><div className="p-num">4</div>Published!</div></div></div>
+<div className="progress-wrap"><div className="progress-steps"><div className="p-step done"><div className="p-num">✓</div>Categories</div><div className="p-line done"></div><div className="p-step active"><div className="p-num">2</div>Book Details</div><div className="p-line "></div><div className="p-step "><div className="p-num">3</div>Review</div><div className="p-line "></div><div className="p-step "><div className="p-num">4</div>Published!</div></div></div>
+</header>
 
 <div className="page-layout">
 <main>
@@ -94,7 +89,7 @@ export default function SellerAddBookPage() {
   </div>
   <div className="form-body">
 
-    <div className="section-title"><div className="st-icon">📄</div>Book Information</div>
+    <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiFileText /></div>Book Information</div>
     <div className="form-grid">
       <div className="field span2">
         <label>Book Title <span className="req">*</span></label>
@@ -108,14 +103,15 @@ export default function SellerAddBookPage() {
       </div>
       <div className="field">
         <label>Category</label>
-        <select name="category" value={sellerData.category || 'Mathematics'} onChange={handleChange}>
+        <select name="category" value={sellerData.category || 'Programming'} onChange={handleChange}>
           <option value="Programming">Programming</option>
           <option value="Science">Science</option>
           <option value="Novels">Novels</option>
-          <option value="Self-Development">Self-Development</option>
+          <option value="Self Development">Self Development</option>
           <option value="Algebra">Algebra</option>
           <option value="Mathematics">Mathematics</option>
           <option value="Physics">Physics</option>
+          <option value="Notes">Notes</option>
         </select>
       </div>
       <div className="field">
@@ -136,20 +132,20 @@ export default function SellerAddBookPage() {
       </div>
     </div>
 
-    <div className="section-title" style={{ marginTop: '30px' }}><div className="st-icon">📋</div>Listing Type</div>
+    <div className="section-title" style={{ marginTop: '30px' }}><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiList /></div>Listing Type</div>
     <div className="listing-grid">
       <div className={`listing-opt ${sellerData.exchangeType === 'Sell' ? 'active' : ''}`} onClick={() => handleListingType('Sell')}>
-        <div className="lo-icon">💰</div><div className="lo-name">Sell</div><div className="lo-sub">Fixed price for buyers.</div>
+        <div className="lo-icon"><FiDollarSign /></div><div className="lo-name">Sell</div><div className="lo-sub">Fixed price for buyers.</div>
       </div>
       <div className={`listing-opt ${sellerData.exchangeType === 'Rent' ? 'active' : ''}`} onClick={() => handleListingType('Rent')}>
-        <div className="lo-icon">🔄</div><div className="lo-name">Rent</div><div className="lo-sub">Weekly or monthly rental.</div>
+        <div className="lo-icon"><FiRepeat /></div><div className="lo-name">Rent</div><div className="lo-sub">Weekly or monthly rental.</div>
       </div>
       <div className={`listing-opt ${sellerData.exchangeType === 'Share' ? 'active' : ''}`} onClick={() => handleListingType('Share')}>
-        <div className="lo-icon">🎁</div><div className="lo-name">Free Shelf</div><div className="lo-sub">Donate your book free.</div>
+        <div className="lo-icon"><FiGift /></div><div className="lo-name">Free Shelf</div><div className="lo-sub">Donate your book free.</div>
       </div>
     </div>
 
-    <div className="section-title"><div className="st-icon">✅</div>Condition &amp; Availability</div>
+    <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiCheckCircle /></div>Condition &amp; Availability</div>
     <div className="form-grid" style={{ marginBottom: '24px' }}>
       <div className="field">
         <label>Condition <span className="req">*</span></label>
@@ -159,17 +155,9 @@ export default function SellerAddBookPage() {
           <div className={`cond-pill ${sellerData.condition === 'Fair' || sellerData.condition === 'Poor' ? 'active-worn' : ''}`} onClick={() => handleCondition('Fair')}>Worn / Fair</div>
         </div>
       </div>
-      <div className="field">
-        <label>Available Duration</label>
-        <select name="duration" value={sellerData.duration} onChange={handleChange}>
-          <option value="1w">1 Week</option><option value="2w">2 Weeks</option>
-          <option value="1m">1 Month</option><option value="3m">3 Months</option>
-          <option value="open">Open / Until Taken</option>
-        </select>
-      </div>
     </div>
 
-    <div className="section-title"><div className="st-icon">💰</div>Pricing</div>
+    <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiDollarSign /></div>Pricing</div>
     {sellerData.exchangeType === 'Sell' && (
         <div className="pricing-section show" style={{display:'block'}}>
         <div className="form-grid" style={{ marginBottom: '24px' }}>
@@ -180,10 +168,6 @@ export default function SellerAddBookPage() {
                 <input type="number" name="price" value={sellerData.price} onChange={handleChange} placeholder="0" min="0"/>
             </div>
             {errors.price && <span className="err-msg" style={{ display: 'block' }}>{errors.price}</span>}
-            </div>
-            <div className="field">
-            <label>Negotiable?</label>
-            <select name="negotiable" value={sellerData.negotiable} onChange={handleChange}><option value="yes">Yes</option><option value="no">No</option></select>
             </div>
         </div>
         </div>
@@ -226,12 +210,13 @@ export default function SellerAddBookPage() {
     )}
 
     {sellerData.exchangeType === 'Share' && (
-        <div className="pricing-section show free-info" style={{ marginBottom: '24px', display:'block' }}>
-        🎁 This book will be listed FREE on the Knowledge Shelf. No price needed.
+        <div className="pricing-section show free-info" style={{ marginBottom: '24px', display:'flex', alignItems: 'center', gap: '8px' }}>
+          <FiGift style={{ fontSize: '1.2rem', color: 'var(--cta)' }} />
+          This book will be listed FREE on the Knowledge Shelf. No price needed.
         </div>
     )}
 
-    <div className="section-title"><div className="st-icon">📝</div>Description</div>
+    <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiAlignLeft /></div>Description</div>
     <div className="field">
       <label>Book Description <span className="req">*</span></label>
       <textarea name="description" value={sellerData.description} onChange={handleChange} rows="4" placeholder="Describe the book — content, condition, why someone should read it…"></textarea>
@@ -241,10 +226,10 @@ export default function SellerAddBookPage() {
       </div>
     </div>
 
-    <div className="section-title"><div className="st-icon">🖼</div>Book Images</div>
+    <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiImage /></div>Book Images</div>
     <div className="dropzone" onClick={() => fileInputRef.current.click()}>
       <input type="file" ref={fileInputRef} multiple accept="image/*" style={{ display: 'none' }} onChange={handleFileChange}/>
-      <div className="dz-icon">📤</div>
+      <div className="dz-icon"><FiUploadCloud size={32} color="var(--cta)" /></div>
       <div className="dz-title">Click to browse images here</div>
       <div className="dz-sub">JPG, PNG up to 5MB · Max 6</div>
     </div>

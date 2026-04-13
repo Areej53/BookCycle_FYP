@@ -5,6 +5,8 @@ import { SellerContext } from '../context/SellerContext';
 import { useAuth } from '../context/AuthContext';
 import { api, getApiErrorMessage } from '../api/client';
 import { toast } from 'react-toastify';
+import { FiCheckCircle, FiAlertCircle, FiEdit3 } from 'react-icons/fi';
+import Navbar from '../components/Navbar';
 
 export default function SellerReviewPage() {
     const { sellerData, resetSellerData } = useContext(SellerContext);
@@ -19,26 +21,16 @@ export default function SellerReviewPage() {
         setError('');
         
         try {
-            const catMap = {
-                'Programming': 'Technology',
-                'Science': 'Academic',
-                'Novels': 'Fiction',
-                'Self-Development': 'Non-Fiction',
-                'Algebra': 'Academic',
-                'Mathematics': 'Academic',
-                'Physics': 'Academic'
-            };
-            const mappedCategory = catMap[sellerData.category] || 'Other';
-
             const payload = {
                 title: sellerData.title || 'Untitled',
                 author: sellerData.author || 'Unknown',
                 description: sellerData.description || 'No description provided.',
                 condition: sellerData.condition || 'Good',
-                category: mappedCategory,
+                category: sellerData.category || 'Programming',
                 exchangeType: sellerData.exchangeType || 'Sell',
                 price: sellerData.exchangeType === 'Sell' ? Number(sellerData.price) : (sellerData.exchangeType === 'Rent' ? Number(sellerData.rentWeek) : 0),
-                images: [] 
+                images: sellerData.images ? sellerData.images.map(img => img.base64 || img.preview) : [],
+                image: sellerData.images && sellerData.images.length > 0 ? (sellerData.images[0].base64 || sellerData.images[0].preview) : ''
             };
 
             const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
@@ -60,25 +52,11 @@ export default function SellerReviewPage() {
     return (
         <div className="SellerReviewPage">
             
-<nav className="navbar"><Link to="/home" className="logo"><div className="logo-icon"><img src={IMAGES.img_0} alt="BookCycle"/></div><span className="logo-text">BookCycle</span></Link><ul className="nav-links"><li><Link to="/home">Home</Link></li><li><Link to="/">Browse</Link></li><li><Link to="/seller" className="sell-link">Sell</Link></li>
-    {user ? (
-        <>
-            <li><span className="nav-user" style={{ color: 'var(--text)', fontWeight: 600 }}>Hi, {user.name}</span></li>
-            <li><Link to="/logout" className="nav-cta" style={{ marginLeft: 10 }}>Logout</Link></li>
-        </>
-    ) : (
-        <li><Link to="/login" className="nav-cta">Login</Link></li>
-    )}<li>
-      <Link to="/cart" className="cart-btn" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,250,224, 0.9)' }}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="9" cy="21" r="1"></circle>
-          <circle cx="20" cy="21" r="1"></circle>
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-        </svg>
-      </Link>
-    </li><li><Link to="/seller"  className="nav-cta" >List a Book</Link></li></ul></nav>
+<header className="seller-header">
+<Navbar />
 
-<div className="progress-wrap" style={{ marginTop: '20px' }}><div className="progress-steps"><div className="p-step done"><div className="p-num">✓</div>Categories</div><div className="p-line done"></div><div className="p-step done"><div className="p-num">✓</div>Book Details</div><div className="p-line done"></div><div className="p-step active"><div className="p-num">3</div>Review</div><div className="p-line "></div><div className="p-step "><div className="p-num">4</div>Published!</div></div></div>
+<div className="progress-wrap"><div className="progress-steps"><div className="p-step done"><div className="p-num">✓</div>Categories</div><div className="p-line done"></div><div className="p-step done"><div className="p-num">✓</div>Book Details</div><div className="p-line done"></div><div className="p-step active"><div className="p-num">3</div>Review</div><div className="p-line "></div><div className="p-step "><div className="p-num">4</div>Published!</div></div></div>
+</header>
 
 <div className="page-layout"><main>
 <div className="rev-header">
@@ -111,7 +89,7 @@ export default function SellerReviewPage() {
         <span className="prev-badge" style={{ background: 'rgba(96,108,56,.2)', color: 'rgba(255,250,224,.7)' }}>{sellerData.condition || 'New'}</span>
       </div>
     </div>
-    <button className="edit-btn" onClick={() => navigate('/seller/add')}>✏ Edit</button>
+    <button className="edit-btn" style={{ display: 'flex', alignItems: 'center', gap: '5px' }} onClick={() => navigate('/seller/add')}><FiEdit3 /> Edit</button>
   </div>
   <div className="fields-grid">
     <div className="field-row"><div className="field-lbl">Listing Type</div><div className="field-val">{sellerData.exchangeType}</div></div>
@@ -125,7 +103,6 @@ export default function SellerReviewPage() {
     <div className="field-row"><div className="field-lbl">Condition</div><div className="field-val">{sellerData.condition}</div></div>
     <div className="field-row"><div className="field-lbl">Language</div><div className="field-val">{sellerData.language}</div></div>
     <div className="field-row"><div className="field-lbl">Edition</div><div className="field-val">{sellerData.edition || 'N/A'}</div></div>
-    <div className="field-row"><div className="field-lbl">Available</div><div className="field-val">{sellerData.duration}</div></div>
   </div>
   
   {(sellerData.images && sellerData.images.length > 0) && (
@@ -143,11 +120,11 @@ export default function SellerReviewPage() {
 </div>
 
 <div className="checklist-card">
-  <div className="checklist-title">✅ Listing Checklist</div>
-  <div className="check-item"><div className={`check-circle ${sellerData.title && sellerData.author ? 'ok' : 'warn'}`}>{sellerData.title && sellerData.author ? '✓' : '!'}</div><div><div className="check-text">Book title & author added</div><div className="check-sub">{sellerData.title} by {sellerData.author}</div></div></div>
-  <div className="check-item"><div className={`check-circle ${sellerData.category ? 'ok' : 'warn'}`}>{sellerData.category ? '✓' : '!'}</div><div><div className="check-text">Category selected</div><div className="check-sub">{sellerData.category}</div></div></div>
-  <div className="check-item"><div className={`check-circle ${sellerData.exchangeType ? 'ok' : 'warn'}`}>{sellerData.exchangeType ? '✓' : '!'}</div><div><div className="check-text">Listing type & price set</div><div className="check-sub">{sellerData.exchangeType} {sellerData.price ? `Rs.${sellerData.price}` : ''}</div></div></div>
-  <div className="check-item"><div className={`check-circle ${sellerData.description && sellerData.description.length >= 50 ? 'ok' : 'warn'}`}>{sellerData.description && sellerData.description.length >= 50 ? '✓' : '!'}</div><div><div className="check-text">Description added</div><div className="check-sub">{(sellerData.description || '').length} characters</div></div></div>
+  <div className="checklist-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FiCheckCircle style={{ color: 'var(--primary)' }} /> Listing Checklist</div>
+  <div className="check-item"><div className={`check-circle ${sellerData.title && sellerData.author ? 'ok' : 'warn'}`}>{sellerData.title && sellerData.author ? <FiCheckCircle /> : <FiAlertCircle />}</div><div><div className="check-text">Book title & author added</div><div className="check-sub">{sellerData.title} by {sellerData.author}</div></div></div>
+  <div className="check-item"><div className={`check-circle ${sellerData.category ? 'ok' : 'warn'}`}>{sellerData.category ? <FiCheckCircle /> : <FiAlertCircle />}</div><div><div className="check-text">Category selected</div><div className="check-sub">{sellerData.category}</div></div></div>
+  <div className="check-item"><div className={`check-circle ${sellerData.exchangeType ? 'ok' : 'warn'}`}>{sellerData.exchangeType ? <FiCheckCircle /> : <FiAlertCircle />}</div><div><div className="check-text">Listing type & price set</div><div className="check-sub">{sellerData.exchangeType} {sellerData.price ? `Rs.${sellerData.price}` : ''}</div></div></div>
+  <div className="check-item"><div className={`check-circle ${sellerData.description && sellerData.description.length >= 50 ? 'ok' : 'warn'}`}>{sellerData.description && sellerData.description.length >= 50 ? <FiCheckCircle /> : <FiAlertCircle />}</div><div><div className="check-text">Description added</div><div className="check-sub">{(sellerData.description || '').length} characters</div></div></div>
 </div>
 
 <div className="rev-actions">

@@ -16,7 +16,9 @@ import {
   SellerCategoriesPage,
   SellerPublishedPage,
   SellerReviewPage,
+  SellerAddNotesPage,
   CartPage,
+  CheckoutPage,
 } from "./pages";
 import { ToastContainer } from "react-toastify";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -88,6 +90,10 @@ const router = createBrowserRouter([
             element: <SellerCategoriesPage />,
           },
           {
+            path: "seller/notes/add",
+            element: <SellerAddNotesPage />,
+          },
+          {
             path: "seller/published",
             element: <SellerPublishedPage />,
           },
@@ -98,6 +104,10 @@ const router = createBrowserRouter([
           {
             path: "cart",
             element: <CartPage />,
+          },
+          {
+            path: "checkout",
+            element: <CheckoutPage />,
           },
         ],
       },
@@ -110,8 +120,8 @@ function App() {
 
   return (
     <SellerProvider>
-        <RouterProvider router={router} />
-        <ToastContainer position='top-center' />
+      <RouterProvider router={router} />
+      <ToastContainer position='top-center' />
     </SellerProvider>
   )
 }

@@ -4,6 +4,8 @@ import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
+import RecommendationWidget from '../components/RecommendationWidget';
+import useRecommendations from '../hooks/useRecommendations';
 
 export default function SearchResultsPage() {
     const { user } = useAuth();
@@ -11,6 +13,7 @@ export default function SearchResultsPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const [books, setBooks] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const { recommended } = useRecommendations();
 
     const q = searchParams.get('q') || '';
     const cats = searchParams.get('cats') || '';
@@ -35,7 +38,7 @@ export default function SearchResultsPage() {
                 if (cats) params.cats = cats;
                 if (conds) params.conds = conds;
                 if (type && type !== 'all') params.type = type;
-                if (price && price < 1000) params.price = price;
+                if (price) params.price = price;
                 if (sort) params.sort = sort;
 
                 const res = await api.get('/books', { params });
@@ -64,41 +67,39 @@ export default function SearchResultsPage() {
     return (
         <div className="SearchResultsPage">
             
-<nav className="navbar">
-  <Link to="/home" className="logo">
-    <div className="logo-icon"><img src={IMAGES.img_0} alt="BookCycle"/></div>
-    <span className="logo-text">BookCycle</span>
-  </Link>
-  <ul className="nav-links">
-    <li><Link to="/home">Home</Link></li>
-    <li><Link to="/browse" className="browse-active">Browse</Link></li>
-    <li><Link to="/seller">Sell</Link></li>
-    
-    {user ? (
-        <>
-            <li><span className="nav-user" style={{ color: 'var(--text)', fontWeight: 600 }}>Hi, {user.name}</span></li>
-            <li><Link to="/logout" className="nav-cta" style={{ marginLeft: 10 }}>Logout</Link></li>
-        </>
-    ) : (
-        <li><Link to="/login" className="nav-cta">Login</Link></li>
-    )}
-    <li>
-      <Link to="/cart" className="cart-btn" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,250,224, 0.9)' }}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="9" cy="21" r="1"></circle>
-          <circle cx="20" cy="21" r="1"></circle>
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-        </svg>
-        <span className="cart-badge" style={{ position: 'absolute', top: '-6px', right: '-10px', background: 'var(--cta)', color: '#fff', fontSize: '0.65rem', fontWeight: 700, padding: '2px 6px', borderRadius: '10px' }}>3</span>
-      </Link>
-    </li>
-    <li><Link to="/seller/add"  className="nav-cta" >List a Book</Link></li>
-  </ul>
-</nav>
+        <nav style={{ 
+            position: 'sticky', top: 0, zIndex: 10000, 
+            background: 'var(--primary)', 
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+            padding: '0 5%', height: '76px', 
+            boxShadow: '0 2px 20px rgba(19,73,60,.35)',
+            borderBottom: '1.5px solid rgba(221,161,94,.45)' 
+        }}>
+            <Link to="/home" className="logo">
+                <div className="logo-icon"><img src={IMAGES.img_0} alt="BookCycle logo"/></div>
+                BookCycle
+            </Link>
+
+            {user && (
+                <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', color: 'rgba(255,250,224,.9)', fontWeight: 600, fontSize: '1rem', letterSpacing: '0.03em' }}>
+                    Hi, {user.name}
+                </div>
+            )}
+
+            <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '30px', margin: 0, padding: 0 }}>
+                <li><Link to="/browse">Browse</Link></li>
+                <li><Link to="/seller">Sell</Link></li>
+                {user ? (
+                    <li><Link to="/logout" className="nav-cta">Logout</Link></li>
+                ) : (
+                    <li><Link to="/login" className="nav-cta">Login</Link></li>
+                )}
+            </ul>
+        </nav>
 <div className="search-hero">
   <div className="search-hero-inner">
     <div className="search-hero-top">
-      <button className="back-btn" onClick={function(){}}>← Back</button>
+      <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
     </div>
     <h1>Results for: {q ? <em>"{q}"</em> : <em>"All Books"</em>}</h1>
     <p className="search-hero-sub" id="result-summary">{isLoading ? "Searching…" : `Found ${books.length} matching results`}</p>
@@ -151,17 +152,19 @@ export default function SearchResultsPage() {
   <div className="filter-section">
     <div className="filter-label">Type</div>
     <div className="filter-opts">
-      <label className="filter-opt"><input type="checkbox" value="buy" checked={localCats.includes('buy')} onChange={() => setLocalCats(toggleArray(localCats, 'buy'))}/> For Sale</label>
-      <label className="filter-opt"><input type="checkbox" value="rent" checked={localCats.includes('rent')} onChange={() => setLocalCats(toggleArray(localCats, 'rent'))}/> For Rent</label>
-      <label className="filter-opt"><input type="checkbox" value="free" checked={localCats.includes('free')} onChange={() => setLocalCats(toggleArray(localCats, 'free'))}/> Free Shelf</label>
+      <label className="filter-opt"><input type="checkbox" value="sell" checked={localType.includes('sell')} onChange={() => setLocalType(toggleArray(localType, 'sell'))}/> For Sale</label>
+      <label className="filter-opt"><input type="checkbox" value="rent" checked={localType.includes('rent')} onChange={() => setLocalType(toggleArray(localType, 'rent'))}/> For Rent</label>
+      <label className="filter-opt"><input type="checkbox" value="share" checked={localType.includes('share')} onChange={() => setLocalType(toggleArray(localType, 'share'))}/> Free Shelf</label>
     </div>
   </div>
   <div className="filter-section">
     <div className="filter-label">Condition</div>
     <div className="filter-opts">
-      <label className="filter-opt"><input type="checkbox" value="Like New" checked={localCats.includes('like new')} onChange={() => setLocalCats(toggleArray(localCats, 'like new'))}/> Like New</label>
-      <label className="filter-opt"><input type="checkbox" value="Good" checked={localCats.includes('good')} onChange={() => setLocalCats(toggleArray(localCats, 'good'))}/> Good</label>
-      <label className="filter-opt"><input type="checkbox" value="Used" checked={localCats.includes('used')} onChange={() => setLocalCats(toggleArray(localCats, 'used'))}/> Used</label>
+      <label className="filter-opt"><input type="checkbox" value="New" checked={localConds.includes('new')} onChange={() => setLocalConds(toggleArray(localConds, 'new'))}/> New</label>
+      <label className="filter-opt"><input type="checkbox" value="Like New" checked={localConds.includes('like new')} onChange={() => setLocalConds(toggleArray(localConds, 'like new'))}/> Like New</label>
+      <label className="filter-opt"><input type="checkbox" value="Good" checked={localConds.includes('good')} onChange={() => setLocalConds(toggleArray(localConds, 'good'))}/> Good</label>
+      <label className="filter-opt"><input type="checkbox" value="Fair" checked={localConds.includes('fair')} onChange={() => setLocalConds(toggleArray(localConds, 'fair'))}/> Fair</label>
+      <label className="filter-opt"><input type="checkbox" value="Poor" checked={localConds.includes('poor')} onChange={() => setLocalConds(toggleArray(localConds, 'poor'))}/> Poor</label>
     </div>
   </div>
 </div>
@@ -182,7 +185,7 @@ export default function SearchResultsPage() {
       {isLoading ? (
         <div style={{gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: 'var(--muted)'}}>Loading books...</div>
       ) : books.map((book, idx) => (
-        <div className="book-card" key={book._id} style={{ animationDelay: `${idx * 0.04}s` }} onClick={() => navigate(`/details?id=${book._id}`)}>
+        <div className="book-card" key={book._id} style={{ animationDelay: `${idx * 0.04}s`, cursor: 'pointer' }} onClick={() => navigate(`/book/${book._id}`)}>
           <div className="bc-img-wrap">
             <img src={book.images?.[0] ? 'http://localhost:5000' + book.images[0] : 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80'} alt={book.title} className="bc-img"/>
             {book.exchangeType === 'Sell' && <span className="tb tb-buy">Buy</span>}
@@ -194,18 +197,23 @@ export default function SearchResultsPage() {
             <div className="bc-title">{book.title}</div>
             <div className="bc-author">by {book.author}</div>
             <div className="bc-cond">Condition: <strong>{book.condition}</strong></div>
-            <div className="price-line">
-                {book.exchangeType === 'Share' ? (
-                  <span className="free-tag">🎁 Free Shelf</span>
-                ) : (
-                  <>
-                  <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. {book.price}</span>
-                  {book.exchangeType === 'Rent' && <span className="price-unit">/wk</span>}
-                  </>
-                )}
-            </div>
-            <div className="bc-actions">
-              <Link to={`/details?id=${book._id}`} className="btn-details">View Details</Link>
+            <div className="bc-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+              <div className="price-line">
+                  {book.exchangeType === 'Share' ? (
+                    <span className="free-tag">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
+                      Free Shelf
+                    </span>
+                  ) : (
+                    <>
+                    <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. {book.price}</span>
+                    {book.exchangeType === 'Rent' && <span className="price-unit">/wk</span>}
+                    </>
+                  )}
+              </div>
+              <Link to={`/book/${book._id}`} className="btn-mini-cart">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+              </Link>
             </div>
           </div>
         </div>
@@ -215,9 +223,9 @@ export default function SearchResultsPage() {
       <div className="no-results-icon" style={{ opacity: 0.7, marginBottom: '10px' }}>
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
       </div>
-      <div className="no-results-title">No books found</div>
+      <div className="no-results-title">No books found matching your search and filters</div>
       <div className="no-results-text">
-        Try checking your spelling or use fewer keywords.<br/>
+        Try removing some filters or check your spelling.<br/>
         You can also browse by category below:
       </div>
       <div className="no-results-cats">
@@ -235,68 +243,29 @@ export default function SearchResultsPage() {
       <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.2rem', fontWeight: '700', color: 'var(--primary)', marginBottom: '4px' }}>You Might Also Like</div>
       <div style={{ fontSize: '.83rem', color: 'var(--muted)', marginBottom: '16px' }}>Popular books across all categories</div>
       <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '8px' }}>
-        <div style={{ flex: '0 0 190px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} onClick={function(){}} onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80" style={{ width: '100%', height: '130px', objectFit: 'cover' }}/>
-          <div style={{ padding: '10px 12px' }}>
-            <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Atomic Habits</div>
-            <div style={{ fontSize: '.74rem', color: 'var(--muted)' }}>by James Clear</div>
-            <div style={{ fontSize: '.78rem', fontWeight: '700', color: 'var(--cta)', marginTop: '4px' }}>Rs. 50/wk</div>
-          </div>
-        </div><div style={{ flex: '0 0 190px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} onClick={function(){}} onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80" style={{ width: '100%', height: '130px', objectFit: 'cover' }}/>
-          <div style={{ padding: '10px 12px' }}>
-            <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Deep Work</div>
-            <div style={{ fontSize: '.74rem', color: 'var(--muted)' }}>by Cal Newport</div>
-            <div style={{ fontSize: '.78rem', fontWeight: '700', color: 'var(--cta)', marginTop: '4px' }}>Rs. 350</div>
-          </div>
-        </div><div style={{ flex: '0 0 190px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} onClick={function(){}} onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <img src="https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&q=80" style={{ width: '100%', height: '130px', objectFit: 'cover' }}/>
-          <div style={{ padding: '10px 12px' }}>
-            <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Sapiens</div>
-            <div style={{ fontSize: '.74rem', color: 'var(--muted)' }}>by Yuval Noah Harari</div>
-            <div style={{ fontSize: '.78rem', fontWeight: '700', color: 'var(--secondary)', marginTop: '4px' }}>Free</div>
-          </div>
-        </div><div style={{ flex: '0 0 190px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} onClick={function(){}} onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80" style={{ width: '100%', height: '130px', objectFit: 'cover' }}/>
-          <div style={{ padding: '10px 12px' }}>
-            <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Rich Dad Poor Dad</div>
-            <div style={{ fontSize: '.74rem', color: 'var(--muted)' }}>by Robert Kiyosaki</div>
-            <div style={{ fontSize: '.78rem', fontWeight: '700', color: 'var(--cta)', marginTop: '4px' }}>Rs. 40/wk</div>
-          </div>
-        </div><div style={{ flex: '0 0 190px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} onClick={function(){}} onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80" style={{ width: '100%', height: '130px', objectFit: 'cover' }}/>
-          <div style={{ padding: '10px 12px' }}>
-            <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>The Alchemist</div>
-            <div style={{ fontSize: '.74rem', color: 'var(--muted)' }}>by Paulo Coelho</div>
-            <div style={{ fontSize: '.78rem', fontWeight: '700', color: 'var(--cta)', marginTop: '4px' }}>Rs. 30/wk</div>
-          </div>
-        </div><div style={{ flex: '0 0 190px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} onClick={function(){}} onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          <img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&q=80" style={{ width: '100%', height: '130px', objectFit: 'cover' }}/>
-          <div style={{ padding: '10px 12px' }}>
-            <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Introduction to Algebra</div>
-            <div style={{ fontSize: '.74rem', color: 'var(--muted)' }}>by Michael Artin</div>
-            <div style={{ fontSize: '.78rem', fontWeight: '700', color: 'var(--cta)', marginTop: '4px' }}>Rs. 280</div>
-          </div>
-        </div>
+        {recommended && recommended.length > 0 ? recommended.map((bk, idx) => (
+            <div key={bk._id || idx} style={{ flex: '0 0 190px', background: 'var(--card-bg, #fff)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} 
+                 onClick={() => navigate(`/book/${bk._id}`)}
+                 onMouseOver={(e)=>{e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'}} 
+                 onMouseOut={(e)=>{e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''}}>
+                <img src={bk.image || (bk.images && bk.images[0]) ? (bk.image?.startsWith('http') || bk.image?.startsWith('data:') ? bk.image : `http://localhost:5000${bk.image || bk.images[0]}`) : 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80'} style={{ width: '100%', height: '130px', objectFit: 'cover' }} alt={bk.title} />
+                <div style={{ padding: '10px 12px' }}>
+                    <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bk.title}</div>
+                    <div style={{ fontSize: '.74rem', color: 'var(--muted)', margin: '2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>by {bk.author}</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+                        <div style={{ fontSize: '.78rem', fontWeight: '700', color: bk.exchangeType === 'Share' ? 'var(--secondary)' : 'var(--cta)' }}>
+                            {bk.exchangeType === 'Share' ? 'Free' : `Rs. ${bk.price}${bk.exchangeType === 'Rent' ? '/wk' : ''}`}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )) : <div style={{ padding: '20px', color: 'var(--muted)' }}>No recommendations yet.</div>}
       </div>
     </div>
   </main>
 
   <aside className="right-sidebar">
-    <div className="rec-widget">
-  <div className="rec-head">
-    <span className="rec-title"><span className="rec-dot"></span>Recommended for You</span>
-    <span className="rec-badge">Trending</span>
-  </div>
-  <div className="rec-list">
-    <div className="rec-book" onClick={function(){}}><div className="rec-img"><img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=120&q=80" alt="Atomic Habits"/></div><div style={{ flex: '1', minWidth: '0' }}><div className="rec-book-title">Atomic Habits</div><div className="rec-author">James Clear</div><div className="rec-stars">★★★★★</div><div className="rec-bottom"><span className="rec-price">Rs. 50/wk</span><Link to="/details"  className="rec-action" style={{ background: 'var(--cta)' }} >Rent</Link></div></div></div>
-    <div className="rec-book" onClick={function(){}}><div className="rec-img"><img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=120&q=80" alt="Deep Work"/></div><div style={{ flex: '1', minWidth: '0' }}><div className="rec-book-title">Deep Work</div><div className="rec-author">Cal Newport</div><div className="rec-stars">★★★★★</div><div className="rec-bottom"><span className="rec-price">Rs. 350</span><Link to="/details"  className="rec-action" style={{ background: 'var(--cta)' }} >Buy</Link></div></div></div>
-    <div className="rec-book" onClick={function(){}}><div className="rec-img"><img src="https://images.unsplash.com/photo-1589998059171-988d887df646?w=120&q=80" alt="Sapiens"/></div><div style={{ flex: '1', minWidth: '0' }}><div className="rec-book-title">Sapiens</div><div className="rec-author">Y.N. Harari</div><div className="rec-stars">★★★★☆</div><div className="rec-bottom"><span className="rec-price free-price">Free</span><Link to="/details"  className="rec-action" style={{ background: 'var(--secondary)' }} >Claim</Link></div></div></div>
-    <div className="rec-book" onClick={function(){}}><div className="rec-img"><img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=120&q=80" alt="Rich Dad Poor Dad"/></div><div style={{ flex: '1', minWidth: '0' }}><div className="rec-book-title">Rich Dad Poor Dad</div><div className="rec-author">R. Kiyosaki</div><div className="rec-stars">★★★★☆</div><div className="rec-bottom"><span className="rec-price">Rs. 40/wk</span><Link to="/details"  className="rec-action" style={{ background: 'var(--cta)' }} >Rent</Link></div></div></div>
-    <div className="rec-book" onClick={function(){}}><div className="rec-img"><img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=120&q=80" alt="The Alchemist"/></div><div style={{ flex: '1', minWidth: '0' }}><div className="rec-book-title">The Alchemist</div><div className="rec-author">Paulo Coelho</div><div className="rec-stars">★★★★★</div><div className="rec-bottom"><span className="rec-price">Rs. 30/wk</span><Link to="/details"  className="rec-action" style={{ background: 'var(--cta)' }} >Rent</Link></div></div></div>
-  </div>
-  <div className="rec-footer"><Link to="/browse">Browse all books →</Link></div>
-</div>
+    <RecommendationWidget />
   </aside>
 </div>
 <footer className="footer">
@@ -314,7 +283,7 @@ export default function SearchResultsPage() {
         <Link to="#" className="f-soc"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></Link>
       </div>
     </div>
-    <div className="footer-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/browse?tab=rent">Rent a Book</Link></li><li><Link to="/browse?tab=free">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div>
+    <div className="footer-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/browse?tab=rent">Rent a Book</Link></li><li><Link to="/browse?tab=share">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div>
     <div className="footer-col"><h4>Company</h4><ul><li><Link to="#">About Us</Link></li><li><Link to="#">How It Works</Link></li><li><Link to="#">Blog</Link></li><li><Link to="#">Careers</Link></li></ul></div>
     <div className="footer-col"><h4>Contact</h4><ul><li><Link to="#"><span className="__cf_email__" data-cfemail="b4dcd1d8d8dbf4d6dbdbdfd7cdd7d8d19ac4df">[email&#160;protected]</span></Link></li><li><Link to="#">+92 300 1234567</Link></li><li><Link to="#">F-7, Islamabad</Link></li><li><Link to="#">Help Center</Link></li></ul></div>
   </div>

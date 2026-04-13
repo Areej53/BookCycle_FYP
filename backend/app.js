@@ -1,5 +1,10 @@
 const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
+const fs = require('fs');
+
+if (!fs.existsSync(path.join(__dirname, 'uploads'))) {
+  fs.mkdirSync(path.join(__dirname, 'uploads'));
+}
 
 const express = require("express");
 require("express-async-errors");
@@ -13,7 +18,9 @@ const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(
   cors({
     origin(origin, callback) {

@@ -2,6 +2,35 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../api/client';
+
+import Navbar from '../components/Navbar';
+
+const getImageUrl = (book) => {
+    const imagePath = book.image || (book.images && book.images[0]);
+    if (!imagePath) {
+        if (book.category === 'Notes') return 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=400&q=80';
+        return 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80';
+    }
+    if (imagePath.startsWith('http') || imagePath.startsWith('data:image')) return imagePath;
+    return `http://localhost:5000${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
+};
+
+const getTimeAgo = (date) => {
+    if (!date) return 'Just now';
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " yrs ago";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " mos ago";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days ago";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " hrs ago";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " mins ago";
+    return Math.floor(seconds || 0) + " secs ago";
+};
 
 export default function HomePage() {
     const { user } = useAuth();
@@ -12,8 +41,49 @@ export default function HomePage() {
     const [activeSort, setActiveSort] = useState('recent');
     const [activeCats, setActiveCats] = useState([]);
     const [activeConds, setActiveConds] = useState([]);
-    const [priceRange, setPriceRange] = useState(1000);
+    const [priceRange, setPriceRange] = useState(5000);
     const wrapperRef = useRef(null);
+    const [featuredBooks, setFeaturedBooks] = useState([]);
+    const [recentBooks, setRecentBooks] = useState([]);
+    const [freeBooks, setFreeBooks] = useState([]);
+
+    useEffect(() => {
+        const fetchBooks = async () => {
+            try {
+                const [featRes, recentRes, freeRes] = await Promise.all([
+                    api.get('/books?limit=4'),
+                    api.get('/books?limit=3&sort=recent'),
+                    api.get('/books?type=share&limit=3&sort=recent')
+                ]);
+                
+                const formatBooks = (booksArr, max) => {
+                    return booksArr.slice(0, max).map(b => ({
+                        id: b._id,
+                        img: getImageUrl(b),
+                        badge: b.exchangeType === 'Sell' ? 'sell' : b.exchangeType === 'Rent' ? 'rent' : 'free',
+                        title: b.title,
+                        author: b.author,
+                        price: b.exchangeType === 'Share' ? 'Free' : `Rs. ${b.price}`,
+                        unit: b.exchangeType === 'Rent' ? '/wk' : '',
+                        timeAgo: getTimeAgo(b.createdAt)
+                    }));
+                };
+
+                if (featRes.data.books) {
+                    setFeaturedBooks(formatBooks(featRes.data.books, 4));
+                }
+                if (recentRes.data.books) {
+                    setRecentBooks(formatBooks(recentRes.data.books, 3));
+                }
+                if (freeRes.data.books) {
+                    setFreeBooks(formatBooks(freeRes.data.books, 3));
+                }
+            } catch (error) {
+                console.error("Failed to fetch dynamic books", error);
+            }
+        };
+        fetchBooks();
+    }, []);
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -28,12 +98,12 @@ export default function HomePage() {
     const handleSearch = (e) => {
         if (e.key === 'Enter' || e.type === 'click') {
             applyFilters();
-            if (searchQuery.trim() || activeType !== 'all' || activeCats.length || activeConds.length || priceRange < 1000) {
+            if (searchQuery.trim() || activeType !== 'all' || activeCats.length || activeConds.length || priceRange < 5000 || activeSort !== 'recent') {
                 const params = new URLSearchParams();
                 if (searchQuery) params.append('q', searchQuery);
                 if (activeType !== 'all') params.append('type', activeType);
                 if (activeSort !== 'recent') params.append('sort', activeSort);
-                if (priceRange < 1000) params.append('price', priceRange);
+                if (priceRange < 5000) params.append('price', priceRange);
                 if (activeCats.length) params.append('cats', activeCats.join(','));
                 if (activeConds.length) params.append('conds', activeConds.join(','));
                 navigate(`/browse/search?${params.toString()}`);
@@ -56,7 +126,7 @@ export default function HomePage() {
         setActiveSort('recent');
         setActiveCats([]);
         setActiveConds([]);
-        setPriceRange(1000);
+        setPriceRange(5000);
         setSearchQuery('');
         setIsFilterOpen(true);
     };
@@ -73,39 +143,7 @@ export default function HomePage() {
             
 
 
-<nav style={{ 
-  position: 'sticky', top: 0, zIndex: 10000, 
-  background: 'var(--primary)', 
-  display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-  padding: '0 5%', height: '76px', 
-  boxShadow: '0 2px 20px rgba(19,73,60,.35)',
-  borderBottom: '1.5px solid rgba(221,161,94,.45)' 
-}}>
-  <Link to="/home" className="logo">
-    <div className="logo-icon">
-      <img src={IMAGES.img_0} alt="BookCycle logo"/>
-    </div>
-    BookCycle
-  </Link>
-
-  {user && (
-      <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', color: 'rgba(255,250,224,.9)', fontWeight: 600, fontSize: '1rem', letterSpacing: '0.03em' }}>
-        Hi, {user.name}
-      </div>
-  )}
-
-  <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '30px', margin: 0, padding: 0 }}>
-    <li><Link to="/browse">Browse</Link></li>
-    <li><Link to="/browse?tab=rent">Rent</Link></li>
-    <li><Link to="/browse?tab=share">Free Shelf</Link></li>
-    <li><Link to="/seller">Sell</Link></li>
-    {user ? (
-        <li><Link to="/logout" className="nav-cta">Logout</Link></li>
-    ) : (
-        <li><Link to="/login" className="nav-cta">Login</Link></li>
-    )}
-  </ul>
-</nav>
+<Navbar />
 
 
 <section className="hero">
@@ -132,38 +170,53 @@ export default function HomePage() {
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M5 7h6M5 10h4"/></svg>
             Rent
           </span>
-          <span className={`f-chip ${activeType === 'free' ? 'active' : ''}`} onClick={() => setActiveType('free')}>
+          <span className={`f-chip ${activeType === 'share' ? 'active' : ''}`} onClick={() => setActiveType('share')}>
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 2v12M4 6h5.5a2.5 2.5 0 010 5H4"/></svg>
             Free
           </span>
-          <span className={`f-chip ${activeType === 'buy' ? 'active' : ''}`} onClick={() => setActiveType('buy')}>
+          <span className={`f-chip ${activeType === 'sell' ? 'active' : ''}`} onClick={() => setActiveType('sell')}>
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 3h2l2 7h6l1.5-5H6"/><circle cx="8" cy="13" r="1"/><circle cx="12" cy="13" r="1"/></svg>
             Buy
-          </span>
-          <span className={`f-chip ${activeType === 'donate' ? 'active' : ''}`} onClick={() => setActiveType('donate')}>
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 13S3 9.5 3 6a5 5 0 0110 0c0 3.5-5 7-5 7z"/></svg>
-            Donate
           </span>
         </div>
 
         
         <div className="filter-row">
           <span className="filter-row-label">Category</span>
-          <span className={`f-chip ${activeCats.includes('programming') ? 'active' : ''}`} onClick={() => toggleCat('programming')}>💻 Programming</span>
-          <span className={`f-chip ${activeCats.includes('science') ? 'active' : ''}`} onClick={() => toggleCat('science')}>🔬 Science</span>
-          <span className={`f-chip ${activeCats.includes('literature') ? 'active' : ''}`} onClick={() => toggleCat('literature')}>📖 Literature</span>
-          <span className={`f-chip ${activeCats.includes('novels') ? 'active' : ''}`} onClick={() => toggleCat('novels')}>📚 Novels</span>
-          <span className={`f-chip ${activeCats.includes('islamic') ? 'active' : ''}`} onClick={() => toggleCat('islamic')}>🕌 Islamic</span>
-          <span className={`f-chip ${activeCats.includes('psychology') ? 'active' : ''}`} onClick={() => toggleCat('psychology')}>🧠 Psychology</span>
+          <span className={`f-chip ${activeCats.includes('programming') ? 'active' : ''}`} onClick={() => toggleCat('programming')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+            Programming
+          </span>
+          <span className={`f-chip ${activeCats.includes('science') ? 'active' : ''}`} onClick={() => toggleCat('science')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 3h15"></path><path d="M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3"></path><path d="M6 14h12"></path></svg>
+            Science
+          </span>
+          <span className={`f-chip ${activeCats.includes('literature') ? 'active' : ''}`} onClick={() => toggleCat('literature')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            Literature
+          </span>
+          <span className={`f-chip ${activeCats.includes('novels') ? 'active' : ''}`} onClick={() => toggleCat('novels')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            Novels
+          </span>
+          <span className={`f-chip ${activeCats.includes('islamic') ? 'active' : ''}`} onClick={() => toggleCat('islamic')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12a3 3 0 0 1-3 3H5a2 2 0 0 0-2 2h18a2 2 0 0 0-2-2h-4a3 3 0 0 1-3-3V3z"></path></svg>
+            Islamic
+          </span>
+          <span className={`f-chip ${activeCats.includes('psychology') ? 'active' : ''}`} onClick={() => toggleCat('psychology')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"></path><path d="M12 6a4 4 0 0 1 4 4c0 2-3 5-4 5s-4-3-4-5a4 4 0 0 1 4-4z"></path></svg>
+            Psychology
+          </span>
         </div>
 
         
         <div className="filter-row">
           <span className="filter-row-label">Condition</span>
           <span className={`f-chip ${activeConds.includes('new') ? 'active' : ''}`} onClick={() => toggleCond('new')}>New</span>
+          <span className={`f-chip ${activeConds.includes('like new') ? 'active' : ''}`} onClick={() => toggleCond('like new')}>Like New</span>
           <span className={`f-chip ${activeConds.includes('good') ? 'active' : ''}`} onClick={() => toggleCond('good')}>Good</span>
           <span className={`f-chip ${activeConds.includes('fair') ? 'active' : ''}`} onClick={() => toggleCond('fair')}>Fair</span>
-          <span className={`f-chip ${activeConds.includes('worn') ? 'active' : ''}`} onClick={() => toggleCond('worn')}>Worn</span>
+          <span className={`f-chip ${activeConds.includes('poor') ? 'active' : ''}`} onClick={() => toggleCond('poor')}>Poor</span>
         </div>
 
         <div className="filter-divider"></div>
@@ -173,8 +226,8 @@ export default function HomePage() {
           <span className="filter-row-label">Price</span>
           <div className="price-range-wrap">
             <span style={{ fontSize: '.8rem', color: 'rgba(255,250,224,.5)' }}>Rs. 0</span>
-            <input type="range" min="0" max="1000" value={priceRange} step="50" onChange={(e) => setPriceRange(Number(e.target.value))}/>
-            <span className="price-val">{priceRange >= 1000 ? 'Any price' : `Up to Rs. ${priceRange}`}</span>
+            <input type="range" min="0" max="5000" value={priceRange} step="50" onChange={(e) => setPriceRange(Number(e.target.value))}/>
+            <span className="price-val">{priceRange >= 5000 ? 'Any price' : `Up to Rs. ${priceRange}`}</span>
           </div>
         </div>
 
@@ -203,10 +256,10 @@ export default function HomePage() {
             <button onClick={(e) => { e.stopPropagation(); removeTag(tag.group, tag.val); }}>×</button>
           </span>
         ))}
-        {priceRange < 1000 && (
+        {priceRange < 5000 && (
           <span className="active-tag">
             Up to Rs. {priceRange}
-            <button onClick={(e) => { e.stopPropagation(); setPriceRange(1000); }}>×</button>
+            <button onClick={(e) => { e.stopPropagation(); setPriceRange(5000); }}>×</button>
           </span>
         )}
       </div>
@@ -286,29 +339,34 @@ export default function HomePage() {
       <Link to="/browse" className="see-all">View all</Link>
     </div>
     <div className="books-grid">
-      <div className="book-card">
-        <div className="book-cover"><img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80" alt="Atomic Habits"/><span className="book-badge badge-rent">Rent</span></div>
-        <div className="book-info"><div className="book-title">Atomic Habits</div><div className="book-author">James Clear</div><div className="book-footer"><span className="book-price">Rs. 50/wk</span><Link to="/details"  className="btn-mini">Rent</Link></div></div>
-      </div>
-      <div className="book-card">
-        <div className="book-cover"><img src="https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&q=80" alt="Sapiens"/><span className="book-badge badge-free">Free</span></div>
-        <div className="book-info"><div className="book-title">Sapiens</div><div className="book-author">Yuval Noah Harari</div><div className="book-footer"><span className="book-price free">Free</span><Link to="/details"  className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link></div></div>
-      </div>
-      <div className="book-card">
-        <div className="book-cover"><img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80" alt="Deep Work"/><span className="book-badge badge-sell">Buy</span></div>
-        <div className="book-info"><div className="book-title">Deep Work</div><div className="book-author">Cal Newport</div><div className="book-footer"><span className="book-price">Rs. 350</span><Link to="/details"  className="btn-mini">Buy</Link></div></div>
-      </div>
-      <div className="book-card">
-        <div className="book-cover"><img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80" alt="Rich Dad Poor Dad"/><span className="book-badge badge-rent">Rent</span></div>
-        <div className="book-info"><div className="book-title">Rich Dad Poor Dad</div><div className="book-author">Robert Kiyosaki</div><div className="book-footer"><span className="book-price">Rs. 40/wk</span><Link to="/details"  className="btn-mini">Rent</Link></div></div>
-      </div>
+      {featuredBooks.map(b => (
+        <div className="book-card" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer' }}>
+          <div className="book-cover"><img src={b.img} alt={b.title}/><span className={`book-badge badge-${b.badge}`}>{b.badge === 'sell' ? 'Buy' : b.badge.charAt(0).toUpperCase() + b.badge.slice(1)}</span></div>
+          <div className="book-info">
+            <div className="book-title">{b.title}</div>
+            <div className="book-author">{b.author}</div>
+            <div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span className={`book-price ${b.badge === 'free' ? 'free' : ''}`}>
+                {b.badge === 'free' ? 'Free' : `${b.price}${b.unit}`}
+              </span>
+              {b.badge === 'free' ? (
+                  <Link to={`/book/${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link>
+              ) : (
+                  <Link to={`/book/${b.id}`} className="btn-mini-cart" title={b.badge === 'sell' ? 'Buy' : 'Rent'}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                  </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   </div>
 
   
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
-      <div><div className="section-label">✦ Explore</div><h2 className="section-title">Browse by <span>Category</span></h2></div>
+      <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Explore</div><h2 className="section-title">Browse by <span>Category</span></h2></div>
       <Link to="/browse" className="see-all">View All Genres</Link>
     </div>
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '14px' }}>
@@ -322,60 +380,52 @@ export default function HomePage() {
         .home-cat-name { font-weight: 700; font-size: .88rem; color: #fff; text-align: center; margin: 0; }
         .home-cat-count { font-size: .72rem; color: rgba(255,255,255,.6); margin-top: 2px; }
       `}</style>
-        <div className="home-cat-card" onClick={() => navigate('/browse/category/fiction')}>
-            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&q=80" alt="Fiction"/></div>
+        <div className="home-cat-card" onClick={() => navigate('/browse?cats=programming')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&q=80" alt="Programming"/></div>
             <div className="home-cat-overlay">
-                <div className="home-cat-name">Fiction & Lit</div>
-                <div className="home-cat-count">420+ books</div>
+                <div className="home-cat-name">Programming</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse/category/science')}>
+        <div className="home-cat-card" onClick={() => navigate('/browse?cats=science')}>
             <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=400&q=80" alt="Science"/></div>
             <div className="home-cat-overlay">
                 <div className="home-cat-name">Science</div>
-                <div className="home-cat-count">210+ books</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse/category/history')}>
-            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=400&q=80" alt="History"/></div>
+        <div className="home-cat-card" onClick={() => navigate('/browse?cats=novels')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=400&q=80" alt="Novels"/></div>
             <div className="home-cat-overlay">
-                <div className="home-cat-name">History</div>
-                <div className="home-cat-count">185+ books</div>
+                <div className="home-cat-name">Novels</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse/category/children')}>
-            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80" alt="Children"/></div>
+        <div className="home-cat-card" onClick={() => navigate('/browse?cats=self%20development')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80" alt="Self Development"/></div>
             <div className="home-cat-overlay">
-                <div className="home-cat-name">Children's</div>
-                <div className="home-cat-count">150+ books</div>
+                <div className="home-cat-name">Self Development</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse/category/business')}>
-            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&q=80" alt="Business"/></div>
+        <div className="home-cat-card" onClick={() => navigate('/browse?cats=algebra')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&q=80" alt="Algebra"/></div>
             <div className="home-cat-overlay">
-                <div className="home-cat-name">Business</div>
-                <div className="home-cat-count">310+ books</div>
+                <div className="home-cat-name">Algebra</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse/category/arts')}>
-            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80" alt="Arts"/></div>
+        <div className="home-cat-card" onClick={() => navigate('/browse?cats=mathematics')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80" alt="Mathematics"/></div>
             <div className="home-cat-overlay">
-                <div className="home-cat-name">Arts & Design</div>
-                <div className="home-cat-count">125+ books</div>
+                <div className="home-cat-name">Mathematics</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse/category/philosophy')}>
-            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80" alt="Philosophy"/></div>
+        <div className="home-cat-card" onClick={() => navigate('/browse?cats=physics')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80" alt="Physics"/></div>
             <div className="home-cat-overlay">
-                <div className="home-cat-name">Philosophy</div>
-                <div className="home-cat-count">95+ books</div>
+                <div className="home-cat-name">Physics</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse/category/tech')}>
-            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=400&q=80" alt="Tech"/></div>
+        <div className="home-cat-card" onClick={() => navigate('/browse?cats=notes')}>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=400&q=80" alt="Notes"/></div>
             <div className="home-cat-overlay">
-                <div className="home-cat-name">Tech & Code</div>
-                <div className="home-cat-count">240+ books</div>
+                <div className="home-cat-name">Notes</div>
             </div>
         </div>
     </div>
@@ -384,7 +434,7 @@ export default function HomePage() {
   
   <div style={{ marginTop: '60px', background: '#f5f0d0', borderRadius: '24px', padding: '40px' }}>
     <div className="section-header">
-      <div><div className="section-label">✦ Simple Process</div><h2 className="section-title">How BookCycle <span>Works</span></h2></div>
+      <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Simple Process</div><h2 className="section-title">How BookCycle <span>Works</span></h2></div>
     </div>
     <div className="steps-grid">
       <div className="step">
@@ -420,27 +470,21 @@ export default function HomePage() {
   
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
-      <div><div className="section-label">✦ Borrow</div><h2 className="section-title">Books for <span>Rent</span></h2></div>
+      <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Borrow</div><h2 className="section-title">Books for <span>Rent</span></h2></div>
       <Link to="/browse" className="see-all">View all</Link>
     </div>
     <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
-      <div className="book-card"><div className="book-cover"><img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80" alt="The Alchemist"/><span className="book-badge badge-rent">Rent</span></div><div className="book-info"><div className="book-title">The Alchemist</div><div className="book-author">Paulo Coelho</div><div className="book-footer"><span className="book-price">Rs. 30/wk</span><Link to="/details"  className="btn-mini">Rent</Link></div></div></div>
-      <div className="book-card"><div className="book-cover"><img src="https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=400&q=80" alt="1984"/><span className="book-badge badge-rent">Rent</span></div><div className="book-info"><div className="book-title">1984</div><div className="book-author">George Orwell</div><div className="book-footer"><span className="book-price">Rs. 35/wk</span><Link to="/details"  className="btn-mini">Rent</Link></div></div></div>
-      <div className="book-card"><div className="book-cover"><img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=80" alt="Think and Grow Rich"/><span className="book-badge badge-rent">Rent</span></div><div className="book-info"><div className="book-title">Think & Grow Rich</div><div className="book-author">Napoleon Hill</div><div className="book-footer"><span className="book-price">Rs. 45/wk</span><Link to="/details"  className="btn-mini">Rent</Link></div></div></div>
-    </div>
-  </div>
-
-  
-  <div style={{ marginTop: '60px' }}>
-    <div className="section-header">
-      <div><div className="section-label" style={{ background: 'rgba(96,108,56,.1)', color: 'var(--secondary)' }}>✦ Donate & Receive</div><h2 className="section-title">Free Knowledge <span>Shelf</span></h2></div>
-      <Link to="/browse" className="see-all">Browse shelf</Link>
-    </div>
-    <div style={{ background: 'linear-gradient(135deg,rgba(96,108,56,.07),rgba(19,73,60,.05))', border: '1.5px solid rgba(96,108,56,.2)', borderRadius: '20px', padding: '26px' }}>
-      <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
-        <div className="book-card"><div className="book-cover"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80" alt="To Kill a Mockingbird"/><span className="book-badge badge-free">Free</span></div><div className="book-info"><div className="book-title">To Kill a Mockingbird</div><div className="book-author">Harper Lee</div><div className="book-footer"><span className="book-price free">Free</span><Link to="/details"  className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link></div></div></div>
-        <div className="book-card"><div className="book-cover"><img src="https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=400&q=80" alt="The Great Gatsby"/><span className="book-badge badge-free">Free</span></div><div className="book-info"><div className="book-title">The Great Gatsby</div><div className="book-author">F. Scott Fitzgerald</div><div className="book-footer"><span className="book-price free">Free</span><Link to="/details"  className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link></div></div></div>
-        <div className="book-card"><div className="book-cover"><img src="https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400&q=80" alt="Brave New World"/><span className="book-badge badge-free">Free</span></div><div className="book-info"><div className="book-title">Brave New World</div><div className="book-author">Aldous Huxley</div><div className="book-footer"><span className="book-price free">Free</span><Link to="/details"  className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link></div></div></div>
+      <div className="book-card" onClick={() => navigate('/book/6618d3f666b6c666f666f666')} style={{ cursor: 'pointer' }}>
+        <div className="book-cover"><img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80" alt="The Alchemist"/><span className="book-badge badge-rent">Rent</span></div>
+        <div className="book-info"><div className="book-title">The Alchemist</div><div className="book-author">Paulo Coelho</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 30/wk</span><Link to="/book/6618d3f666b6c666f666f666" className="btn-mini-cart" title="Rent" style={{ color: '#fff' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div>
+      </div>
+      <div className="book-card" onClick={() => navigate('/book/6618d3f666b6c666f666f667')} style={{ cursor: 'pointer' }}>
+        <div className="book-cover"><img src="https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=400&q=80" alt="1984"/><span className="book-badge badge-rent">Rent</span></div>
+        <div className="book-info"><div className="book-title">1984</div><div className="book-author">George Orwell</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 35/wk</span><Link to="/book/6618d3f666b6c666f666f667" className="btn-mini-cart" title="Rent" style={{ color: '#fff' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div>
+      </div>
+      <div className="book-card" onClick={() => navigate('/book/6618d3f666b6c666f666f668')} style={{ cursor: 'pointer' }}>
+        <div className="book-cover"><img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=80" alt="Think and Grow Rich"/><span className="book-badge badge-rent">Rent</span></div>
+        <div className="book-info"><div className="book-title">Think & Grow Rich</div><div className="book-author">Napoleon Hill</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 45/wk</span><Link to="/book/6618d3f666b6c666f666f668" className="btn-mini-cart" title="Rent" style={{ color: '#fff' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div>
       </div>
     </div>
   </div>
@@ -448,13 +492,59 @@ export default function HomePage() {
   
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
-      <div><div className="section-label">✦ Just Listed</div><h2 className="section-title">Recently <span>Added</span></h2></div>
+      <div><div className="section-label" style={{ background: 'rgba(96,108,56,.1)', color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Donate & Receive</div><h2 className="section-title">Free Knowledge <span>Shelf</span></h2></div>
+      <Link to="/browse" className="see-all">Browse shelf</Link>
+    </div>
+    <div style={{ background: 'linear-gradient(135deg,rgba(96,108,56,.07),rgba(19,73,60,.05))', border: '1.5px solid rgba(96,108,56,.2)', borderRadius: '20px', padding: '26px' }}>
+      <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
+        {freeBooks.map(b => (
+          <div className="book-card" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer' }}>
+            <div className="book-cover">
+              <img src={b.img} alt={b.title}/>
+              <span className="book-badge badge-free">Free</span>
+            </div>
+            <div className="book-info">
+              <div className="book-title">{b.title}</div>
+              <div className="book-author">{b.author}</div>
+              <div className="book-footer">
+                <span className="book-price free">Free</span>
+                <Link to={`/book/${b.id}`} className="btn-mini-cart" style={{ color: '#fff' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                </Link>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  
+  <div style={{ marginTop: '60px' }}>
+    <div className="section-header">
+      <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Just Listed</div><h2 className="section-title">Recently <span>Added</span></h2></div>
       <Link to="/browse" className="see-all">See all new</Link>
     </div>
     <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
-      <div className="book-card book-card-h"><div className="book-cover" style={{ width: '82px', flexShrink: '0', borderRadius: '0', minHeight: '110px', height: 'auto' }}><img src="https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=200&q=80" alt="Zero to One"/><span className="book-badge badge-sell" style={{ top: '6px', right: '4px', fontSize: '.6rem', padding: '2px 6px' }}>Buy</span></div><div className="book-info" style={{ padding: '14px' }}><div className="book-title" style={{ fontSize: '.9rem' }}>Zero to One</div><div className="book-author">Peter Thiel</div><div style={{ marginTop: '5px', fontSize: '.77rem', color: 'var(--text-muted)' }}>Added 2 hrs ago</div><div style={{ marginTop: '8px' }}><span className="book-price">Rs. 400</span></div></div></div>
-      <div className="book-card book-card-h"><div className="book-cover" style={{ width: '82px', flexShrink: '0', borderRadius: '0', minHeight: '110px', height: 'auto' }}><img src="https://images.unsplash.com/photo-1476275466078-4007374efbbe?w=200&q=80" alt="Ikigai"/><span className="book-badge badge-rent" style={{ top: '6px', right: '4px', fontSize: '.6rem', padding: '2px 6px' }}>Rent</span></div><div className="book-info" style={{ padding: '14px' }}><div className="book-title" style={{ fontSize: '.9rem' }}>Ikigai</div><div className="book-author">Héctor García</div><div style={{ marginTop: '5px', fontSize: '.77rem', color: 'var(--text-muted)' }}>Added 5 hrs ago</div><div style={{ marginTop: '8px' }}><span className="book-price">Rs. 35/wk</span></div></div></div>
-      <div className="book-card book-card-h"><div className="book-cover" style={{ width: '82px', flexShrink: '0', borderRadius: '0', minHeight: '110px', height: 'auto' }}><img src="https://images.unsplash.com/photo-1509021436665-8f07dbf5bf1d?w=200&q=80" alt="Dune"/><span className="book-badge badge-free" style={{ top: '6px', right: '4px', fontSize: '.6rem', padding: '2px 6px' }}>Free</span></div><div className="book-info" style={{ padding: '14px' }}><div className="book-title" style={{ fontSize: '.9rem' }}>Dune</div><div className="book-author">Frank Herbert</div><div style={{ marginTop: '5px', fontSize: '.77rem', color: 'var(--text-muted)' }}>Added 1 day ago</div><div style={{ marginTop: '8px' }}><span className="book-price free">Free</span></div></div></div>
+      {recentBooks.map(b => (
+        <div className="book-card book-card-h" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer' }}>
+          <div className="book-cover" style={{ width: '82px', flexShrink: '0', borderRadius: '0', minHeight: '110px', height: 'auto' }}>
+            <img src={b.img} alt={b.title}/>
+            <span className={`book-badge badge-${b.badge}`} style={{ top: '6px', right: '4px', fontSize: '.6rem', padding: '2px 6px' }}>{b.badge === 'sell' ? 'Buy' : b.badge.charAt(0).toUpperCase() + b.badge.slice(1)}</span>
+          </div>
+          <div className="book-info" style={{ padding: '14px' }}>
+            <div className="book-title" style={{ fontSize: '.9rem' }}>{b.title}</div>
+            <div className="book-author">{b.author}</div>
+            <div style={{ marginTop: '5px', fontSize: '.77rem', color: 'var(--text-muted)' }}>Added {b.timeAgo}</div>
+            <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span className={`book-price ${b.badge === 'free' ? 'free' : ''}`}>{b.badge === 'free' ? 'Free' : `${b.price}${b.unit}`}</span>
+              <Link to={`/book/${b.id}`} className="btn-mini-cart" style={{ color: '#fff' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+              </Link>
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   </div>
 
@@ -479,10 +569,10 @@ export default function HomePage() {
     <div className="widget-title">
       Top Rented Books
     </div>
-    <div className="top-book-row"><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=80&q=75" alt="Atomic Habits"/></div><div className="top-book-info"><div className="top-book-title">Atomic Habits</div><div className="top-book-meta">Rented 124 times</div></div></div>
-    <div className="top-book-row"><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1589998059171-988d887df646?w=80&q=75" alt="Sapiens"/></div><div className="top-book-info"><div className="top-book-title">Sapiens</div><div className="top-book-meta">Rented 98 times</div></div></div>
-    <div className="top-book-row"><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=80&q=75" alt="The Alchemist"/></div><div className="top-book-info"><div className="top-book-title">The Alchemist</div><div className="top-book-meta">Rented 87 times</div></div></div>
-    <div className="top-book-row"><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=80&q=75" alt="1984"/></div><div className="top-book-info"><div className="top-book-title">1984</div><div className="top-book-meta">Rented 74 times</div></div></div>
+    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f669')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=80&q=75" alt="Atomic Habits"/></div><div className="top-book-info"><div className="top-book-title">Atomic Habits</div><div className="top-book-meta">Rented 124 times</div></div></div>
+    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f670')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1589998059171-988d887df646?w=80&q=75" alt="Sapiens"/></div><div className="top-book-info"><div className="top-book-title">Sapiens</div><div className="top-book-meta">Rented 98 times</div></div></div>
+    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f666')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=80&q=75" alt="The Alchemist"/></div><div className="top-book-info"><div className="top-book-title">The Alchemist</div><div className="top-book-meta">Rented 87 times</div></div></div>
+    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f667')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=80&q=75" alt="1984"/></div><div className="top-book-info"><div className="top-book-title">1984</div><div className="top-book-meta">Rented 74 times</div></div></div>
   </div>
 
   
@@ -490,9 +580,9 @@ export default function HomePage() {
     <div className="widget-title">
       Top Selling Books
     </div>
-    <div className="top-book-row"><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=80&q=75" alt="Zero to One"/></div><div className="top-book-info"><div className="top-book-title">Zero to One</div><div className="top-book-meta">Sold 56 · Rs. 350 avg</div></div></div>
-    <div className="top-book-row"><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=80&q=75" alt="Rich Dad Poor Dad"/></div><div className="top-book-info"><div className="top-book-title">Rich Dad Poor Dad</div><div className="top-book-meta">Sold 48 · Rs. 280 avg</div></div></div>
-    <div className="top-book-row"><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=80&q=75" alt="Deep Work"/></div><div className="top-book-info"><div className="top-book-title">Deep Work</div><div className="top-book-meta">Sold 41 · Rs. 310 avg</div></div></div>
+    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f671')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=80&q=75" alt="Zero to One"/></div><div className="top-book-info"><div className="top-book-title">Zero to One</div><div className="top-book-meta">Sold 56 · Rs. 350 avg</div></div></div>
+    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f672')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=80&q=75" alt="Rich Dad Poor Dad"/></div><div className="top-book-info"><div className="top-book-title">Rich Dad Poor Dad</div><div className="top-book-meta">Sold 48 · Rs. 280 avg</div></div></div>
+    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f673')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=80&q=75" alt="Deep Work"/></div><div className="top-book-info"><div className="top-book-title">Deep Work</div><div className="top-book-meta">Sold 41 · Rs. 310 avg</div></div></div>
   </div>
 
   
@@ -560,69 +650,26 @@ export default function HomePage() {
 </section>
 
 
-<footer style={{ background: '#0d2e26', color: 'rgba(255,250,224,.75)', padding: '60px 5% 30px' }}>
+<footer className="footer">
   <div className="footer-grid">
-    <div className="footer-brand" style={{ display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'flex-start' }}>
-      <Link to="#" className="logo" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontFamily: "'Playfair Display', serif", fontSize: '1.8rem', fontWeight: 700, color: 'var(--bg)', textDecoration: 'none', lineHeight: 1 }}>
-        <div className="logo-icon" style={{ width: '64px', height: '64px' }}><img src={IMAGES.img_0} alt="BookCycle logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }}/></div>
-        BookCycle
+    <div>
+      <Link to="/" className="footer-brand">
+        <div className="f-logo"><img src={IMAGES.img_0} alt="BookCycle"/></div>
+        <span className="footer-brand-name">BookCycle</span>
       </Link>
-      <p style={{ fontSize: '.88rem', lineHeight: 1.7, maxWidth: '260px', marginTop: '14px' }}>Islamabad's community book platform. Share, rent, and discover books across the city. Making knowledge accessible to all.</p>
-      <div className="social-links" style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-        <Link to="#" className="social-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></Link>
-        <Link to="#" className="social-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></Link>
-        <Link to="#" className="social-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></Link>
-        <Link to="#" className="social-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></Link>
+      <p className="footer-desc">Islamabad's community book platform. Share, rent, and discover books across the city.</p>
+      <div className="f-social" style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
+        <Link to="#" className="f-soc"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></Link>
+        <Link to="#" className="f-soc"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></Link>
+        <Link to="#" className="f-soc"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></Link>
+        <Link to="#" className="f-soc"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></Link>
       </div>
     </div>
-    <div className="footer-col">
-      <h4 style={{ color: 'var(--bg)', fontWeight: 700, fontSize: '.95rem', marginBottom: '18px' }}>Platform</h4>
-      <ul style={{ listStyle: 'none' }}>
-        <li style={{ marginBottom: '10px' }}><Link to="/browse" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Browse Books</Link></li>
-        <li style={{ marginBottom: '10px' }}><Link to="/browse" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Rent a Book</Link></li>
-        <li style={{ marginBottom: '10px' }}><Link to="/browse" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Free Shelf</Link></li>
-        <li style={{ marginBottom: '10px' }}><Link to="/seller" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Sell Your Book</Link></li>
-      </ul>
-    </div>
-    <div className="footer-col">
-      <h4 style={{ color: 'var(--bg)', fontWeight: 700, fontSize: '.95rem', marginBottom: '18px' }}>Company</h4>
-      <ul style={{ listStyle: 'none' }}>
-        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>About Us</Link></li>
-        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>How It Works</Link></li>
-        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Blog</Link></li>
-        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Press</Link></li>
-        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Careers</Link></li>
-      </ul>
-    </div>
-    <div className="footer-col">
-      <h4 style={{ color: 'var(--bg)', fontWeight: 700, fontSize: '.95rem', marginBottom: '18px' }}>Contact</h4>
-      <ul style={{ listStyle: 'none' }}>
-        <li style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '10px' }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,250,224,.45)" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          <Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>contact@bookcycle.com</Link>
-        </li>
-        <li style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '10px' }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,250,224,.45)" strokeWidth="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.04 1.18 2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z"/></svg>
-          <Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>+92 300 1234567</Link>
-        </li>
-        <li style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '10px' }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,250,224,.45)" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          <Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>F-7, Islamabad</Link>
-        </li>
-        <li style={{ marginTop: '12px', marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Help Center</Link></li>
-        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Report an Issue</Link></li>
-        <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Community Forum</Link></li>
-      </ul>
-    </div>
+    <div className="footer-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/browse?tab=rent">Rent a Book</Link></li><li><Link to="/browse?tab=share">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div>
+    <div className="footer-col"><h4>Company</h4><ul><li><Link to="#">About Us</Link></li><li><Link to="#">How It Works</Link></li><li><Link to="#">Blog</Link></li><li><Link to="#">Careers</Link></li></ul></div>
+    <div className="footer-col"><h4>Contact</h4><ul><li><Link to="#">contact@bookcycle.com</Link></li><li><Link to="#">+92 300 1234567</Link></li><li><Link to="#">F-7, Islamabad</Link></li><li><Link to="#">Help Center</Link></li></ul></div>
   </div>
-  <div className="footer-bottom" style={{ borderTop: '1px solid rgba(255,250,224,.1)', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-    <p style={{ fontSize: '.82rem' }}>© 2025 BookCycle. All rights reserved. Made with love in Islamabad.</p>
-    <div className="footer-policies" style={{ display: 'flex', gap: '24px' }}>
-      <Link to="#" style={{ color: 'rgba(255,250,224,.45)', textDecoration: 'none', fontSize: '.82rem' }}>Privacy Policy</Link>
-      <Link to="#" style={{ color: 'rgba(255,250,224,.45)', textDecoration: 'none', fontSize: '.82rem' }}>Terms of Service</Link>
-      <Link to="#" style={{ color: 'rgba(255,250,224,.45)', textDecoration: 'none', fontSize: '.82rem' }}>Cookie Policy</Link>
-    </div>
-  </div>
+  <div className="footer-bottom"><p>© 2025 BookCycle. All rights reserved.</p><div className="footer-links"><Link to="#">Privacy Policy</Link><Link to="#">Terms of Service</Link><Link to="#">Cookie Policy</Link></div></div>
 </footer>
 
 

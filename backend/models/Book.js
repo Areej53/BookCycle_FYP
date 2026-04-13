@@ -11,7 +11,7 @@ const BookSchema = new mongoose.Schema({
   },
   category: { 
     type: String, 
-    enum: ['Fiction', 'Non-Fiction', 'Academic', 'Sci-Fi', 'Romance', 'Technology', 'Other'],
+    enum: ['Programming', 'Science', 'Novels', 'Self Development', 'Algebra', 'Mathematics', 'Physics', 'Notes', 'Other'],
     required: [true, 'Please provide category'],
     default: 'Other'
   },
@@ -21,7 +21,14 @@ const BookSchema = new mongoose.Schema({
     required: [true, 'Please specify exchange type']
   },
   price: { type: Number, default: 0 },
+  rentWeek: { type: Number, default: 0 },
+  rentMonth: { type: Number, default: 0 },
+  securityDeposit: { type: Number, default: 0 },
   images: [{ type: String }],
+  image: { type: String },
+  pdf: { type: String },
+  subject: { type: String },
+  duration: { type: String },
   status: {
     type: String,
     enum: ['Available', 'Pending', 'Unavailable'],

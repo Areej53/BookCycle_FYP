@@ -100,6 +100,10 @@ export default function SellerAddNotesPage() {
                 category: 'Notes',
                 exchangeType: sellerData.exchangeType || 'Sell',
                 price: sellerData.exchangeType === 'Sell' ? Number(sellerData.price) : (sellerData.exchangeType === 'Rent' ? Number(sellerData.rentWeek) : 0),
+<<<<<<< HEAD
+=======
+                duration: sellerData.duration || '1 Month',
+>>>>>>> main
                 rentWeek: sellerData.rentWeek ? Number(sellerData.rentWeek) : 0,
                 rentMonth: sellerData.rentMonth ? Number(sellerData.rentMonth) : 0,
                 pdf: sellerData.pdf
@@ -198,9 +202,22 @@ export default function SellerAddNotesPage() {
           <div className={`cond-pill ${sellerData.condition === 'Fair' || sellerData.condition === 'Poor' ? 'active-worn' : ''}`} onClick={() => handleCondition('Fair')}>Worn / Fair</div>
         </div>
       </div>
+<<<<<<< HEAD
     </div>
 
 
+=======
+      <div className="field">
+        <label>Available Duration</label>
+        <select name="duration" value={sellerData.duration} onChange={handleChange}>
+          <option value="1w">1 Week</option><option value="2w">2 Weeks</option>
+          <option value="1m">1 Month</option><option value="3m">3 Months</option>
+          <option value="open">Open / Until Taken</option>
+        </select>
+      </div>
+    </div>
+
+>>>>>>> main
     <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiDollarSign /></div>Pricing</div>
     {sellerData.exchangeType === 'Sell' && (
         <div className="pricing-section show" style={{display:'block'}}>
@@ -213,11 +230,21 @@ export default function SellerAddNotesPage() {
             </div>
             {errors.price && <span className="err-msg" style={{ display: 'block' }}>{errors.price}</span>}
             </div>
+<<<<<<< HEAD
+=======
+            <div className="field">
+            <label>Negotiable?</label>
+            <select name="negotiable" value={sellerData.negotiable} onChange={handleChange}><option value="yes">Yes</option><option value="no">No</option></select>
+            </div>
+>>>>>>> main
         </div>
         </div>
     )}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
     {sellerData.exchangeType === 'Rent' && (
         <div className="pricing-section show" style={{display:'block'}}>
         <div className="form-grid" style={{ marginBottom: '24px' }}>

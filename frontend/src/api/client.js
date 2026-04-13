@@ -53,6 +53,45 @@ export const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+// A lightweight HTTP GET cache to eliminate DB load during rapid page navigations
+const getCache = new Map();
+const ongoingGets = new Map();
+const CACHE_TTL_MS = 15000; // 15 seconds
+
+const originalGet = api.get;
+
+api.get = async (url, config = {}) => {
+  // Try not to cache volatile search queries heavily, but do cache static routes
+  const isSearch = url.includes('/search') || config.params?.q;
+  const key = url + JSON.stringify(config.params || {}) + JSON.stringify(config.headers || {});
+  
+  if (!isSearch && getCache.has(key)) {
+    const cached = getCache.get(key);
+    if (Date.now() - cached.timestamp < CACHE_TTL_MS) {
+      return Promise.resolve(cached.res);
+    }
+  }
+
+  // Prevent duplicate concurrent requests immediately starting alongside each other
+  if (ongoingGets.has(key)) {
+    return ongoingGets.get(key);
+  }
+
+  const promise = originalGet.call(api, url, config).then(res => {
+    if (!isSearch) {
+      getCache.set(key, { res, timestamp: Date.now() });
+    }
+    ongoingGets.delete(key);
+    return res;
+  }).catch(err => {
+    ongoingGets.delete(key);
+    throw err;
+  });
+
+  ongoingGets.set(key, promise);
+  return promise;
+};
+
 const BACKEND_DOWN =
   "Backend is not running or the dev server cannot reach it. Open a terminal, run: cd backend && npm run dev — then check that PORT in backend/.env matches VITE_PROXY_TARGET in frontend/.env (both 5000). Restart frontend after changing .env (npm run dev).";
 

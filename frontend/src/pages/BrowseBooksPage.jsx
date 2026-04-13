@@ -4,22 +4,39 @@ import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
-
+import RecommendationWidget from '../components/RecommendationWidget';
+import useRecommendations from '../hooks/useRecommendations';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 export default function BrowseBooksPage() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [books, setBooks] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [selectedPdf, setSelectedPdf] = useState(null);
+    const { recommended } = useRecommendations();
 
     const initialTab = searchParams.get('tab') || 'all';
+    const initCatsString = searchParams.get('cats');
+    const initCats = initCatsString ? initCatsString.toLowerCase().split(',') : [];
 
     const [localQuery, setLocalQuery] = useState('');
-    const [localCats, setLocalCats] = useState([]);
+    const [localCats, setLocalCats] = useState(initCats);
     const [localConds, setLocalConds] = useState([]);
     const [localType, setLocalType] = useState(initialTab === 'all' ? [] : [initialTab === 'free' ? 'share' : initialTab]);
     const [maxPrice, setMaxPrice] = useState('');
     const [sort, setSort] = useState('recent');
+
+    const getImageUrl = (book) => {
+        const imagePath = book.image || (book.images && book.images[0]);
+        if (!imagePath) {
+            if (book.category === 'Notes') return 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=400&q=80';
+            return 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80';
+        }
+        if (imagePath.startsWith('http') || imagePath.startsWith('data:image')) return imagePath;
+        return `http://localhost:5000${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
+    };
 
     useEffect(() => {
         const tab = searchParams.get('tab') || 'all';
@@ -55,46 +72,25 @@ export default function BrowseBooksPage() {
     }, [localCats, localConds, localType, maxPrice, sort]); // refetch on filter change
 
     const handleSearch = () => {
-        if (localQuery.trim()) {
-            navigate('/browse/search?q=' + encodeURIComponent(localQuery));
-        }
+        const params = new URLSearchParams();
+        if (localQuery.trim()) params.set('q', localQuery.trim());
+        if (localCats.length) params.set('cats', localCats.join(','));
+        if (localConds.length) params.set('conds', localConds.join(','));
+        if (localType.length && !localType.includes('all')) params.set('type', localType.join(','));
+        if (maxPrice) params.set('price', maxPrice);
+        if (sort) params.set('sort', sort);
+        
+        // Only navigate if there's actually a search query, or keep the original behavior 
+        // to navigate when search button is clicked. We navigate to search results page
+        // so it acts as the global search page.
+        navigate(`/browse/search?${params.toString()}`);
     };
 
     const toggleArray = (arr, val) => arr.includes(val) ? arr.filter(i => i !== val) : [...arr, val]; 
     return (
         <div className="BrowseBooksPage">
             
-<nav className="navbar">
-  <Link to="/home" className="logo">
-    <div className="logo-icon"><img src={IMAGES.img_0} alt="BookCycle"/></div>
-    <span className="logo-text">BookCycle</span>
-  </Link>
-  <ul className="nav-links">
-    <li><Link to="/home">Home</Link></li>
-    <li><Link to="/browse" className="browse-active">Browse</Link></li>
-    <li><Link to="/seller">Sell</Link></li>
-    
-    {user ? (
-        <>
-            <li><span className="nav-user" style={{ color: 'var(--text)', fontWeight: 600 }}>Hi, {user.name}</span></li>
-            <li><Link to="/logout" className="nav-cta" style={{ marginLeft: 10 }}>Logout</Link></li>
-        </>
-    ) : (
-        <li><Link to="/login" className="nav-cta">Login</Link></li>
-    )}
-    <li>
-      <Link to="/cart" className="cart-btn" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)' }}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="9" cy="21" r="1"></circle>
-          <circle cx="20" cy="21" r="1"></circle>
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-        </svg>
-        <span className="cart-badge" style={{ position: 'absolute', top: '-6px', right: '-10px', background: 'var(--cta)', color: '#fff', fontSize: '0.65rem', fontWeight: 700, padding: '2px 6px', borderRadius: '10px' }}>3</span>
-      </Link>
-    </li>
-    <li><Link to="/seller/add"  className="nav-cta" >List a Book</Link></li>
-  </ul>
-</nav>
+<Navbar cartCount={0} />
 <div className="browse-hero">
   <div className="browse-hero-inner">
     <h1>Browse <em>Books</em></h1>
@@ -114,9 +110,9 @@ export default function BrowseBooksPage() {
     <div className="tabs-wrap">
       <div className="tab-row" id="tab-row">
         <button className={`tab ${localType.length === 0 ? 'active' : ''}`} onClick={() => setLocalType([])}>All Books</button>
-        <button className="tab" onClick={function(){}}>For Sale</button>
-        <Link to="/details"  className="tab" >For Rent</Link>
-        <button className="tab" onClick={function(){}}>Free Shelf</button>
+        <button className={`tab ${localType.includes('sell') ? 'active' : ''}`} onClick={() => setLocalType(["sell"])}>For Sale</button>
+        <button className={`tab ${localType.includes('rent') ? 'active' : ''}`} onClick={() => setLocalType(["rent"])}>For Rent</button>
+        <button className={`tab ${localType.includes('share') ? 'active' : ''}`} onClick={() => setLocalType(["share"])}>Free Shelf</button>
       </div>
     </div>
   </div>
@@ -136,10 +132,11 @@ export default function BrowseBooksPage() {
       <label className="filter-opt"><input type="checkbox" value="Programming" checked={localCats.includes('programming')} onChange={() => setLocalCats(toggleArray(localCats, 'programming'))}/> Programming</label>
       <label className="filter-opt"><input type="checkbox" value="Science" checked={localCats.includes('science')} onChange={() => setLocalCats(toggleArray(localCats, 'science'))}/> Science</label>
       <label className="filter-opt"><input type="checkbox" value="Novels" checked={localCats.includes('novels')} onChange={() => setLocalCats(toggleArray(localCats, 'novels'))}/> Novels</label>
-      <label className="filter-opt"><input type="checkbox" value="Self-Development" checked={localCats.includes('self-development')} onChange={() => setLocalCats(toggleArray(localCats, 'self-development'))}/> Self-Development</label>
+      <label className="filter-opt"><input type="checkbox" value="Self Development" checked={localCats.includes('self development')} onChange={() => setLocalCats(toggleArray(localCats, 'self development'))}/> Self Development</label>
       <label className="filter-opt"><input type="checkbox" value="Algebra" checked={localCats.includes('algebra')} onChange={() => setLocalCats(toggleArray(localCats, 'algebra'))}/> Algebra</label>
       <label className="filter-opt"><input type="checkbox" value="Mathematics" checked={localCats.includes('mathematics')} onChange={() => setLocalCats(toggleArray(localCats, 'mathematics'))}/> Mathematics</label>
       <label className="filter-opt"><input type="checkbox" value="Physics" checked={localCats.includes('physics')} onChange={() => setLocalCats(toggleArray(localCats, 'physics'))}/> Physics</label>
+      <label className="filter-opt"><input type="checkbox" value="Notes" checked={localCats.includes('notes')} onChange={() => setLocalCats(toggleArray(localCats, 'notes'))}/> Notes</label>
     </div>
   </div>
   <div className="filter-section">
@@ -154,17 +151,19 @@ export default function BrowseBooksPage() {
   <div className="filter-section">
     <div className="filter-label">Type</div>
     <div className="filter-opts">
-      <label className="filter-opt"><input type="checkbox" value="buy" checked={localCats.includes('buy')} onChange={() => setLocalCats(toggleArray(localCats, 'buy'))}/> For Sale</label>
-      <label className="filter-opt"><input type="checkbox" value="rent" checked={localCats.includes('rent')} onChange={() => setLocalCats(toggleArray(localCats, 'rent'))}/> For Rent</label>
-      <label className="filter-opt"><input type="checkbox" value="free" checked={localCats.includes('free')} onChange={() => setLocalCats(toggleArray(localCats, 'free'))}/> Free Shelf</label>
+      <label className="filter-opt"><input type="checkbox" value="sell" checked={localType.includes('sell')} onChange={() => setLocalType(toggleArray(localType, 'sell'))}/> For Sale</label>
+      <label className="filter-opt"><input type="checkbox" value="rent" checked={localType.includes('rent')} onChange={() => setLocalType(toggleArray(localType, 'rent'))}/> For Rent</label>
+      <label className="filter-opt"><input type="checkbox" value="share" checked={localType.includes('share')} onChange={() => setLocalType(toggleArray(localType, 'share'))}/> Free Shelf</label>
     </div>
   </div>
   <div className="filter-section">
     <div className="filter-label">Condition</div>
     <div className="filter-opts">
-      <label className="filter-opt"><input type="checkbox" value="Like New" checked={localCats.includes('like new')} onChange={() => setLocalCats(toggleArray(localCats, 'like new'))}/> Like New</label>
-      <label className="filter-opt"><input type="checkbox" value="Good" checked={localCats.includes('good')} onChange={() => setLocalCats(toggleArray(localCats, 'good'))}/> Good</label>
-      <label className="filter-opt"><input type="checkbox" value="Used" checked={localCats.includes('used')} onChange={() => setLocalCats(toggleArray(localCats, 'used'))}/> Used</label>
+      <label className="filter-opt"><input type="checkbox" value="New" checked={localConds.includes('new')} onChange={() => setLocalConds(toggleArray(localConds, 'new'))}/> New</label>
+      <label className="filter-opt"><input type="checkbox" value="Like New" checked={localConds.includes('like new')} onChange={() => setLocalConds(toggleArray(localConds, 'like new'))}/> Like New</label>
+      <label className="filter-opt"><input type="checkbox" value="Good" checked={localConds.includes('good')} onChange={() => setLocalConds(toggleArray(localConds, 'good'))}/> Good</label>
+      <label className="filter-opt"><input type="checkbox" value="Fair" checked={localConds.includes('fair')} onChange={() => setLocalConds(toggleArray(localConds, 'fair'))}/> Fair</label>
+      <label className="filter-opt"><input type="checkbox" value="Poor" checked={localConds.includes('poor')} onChange={() => setLocalConds(toggleArray(localConds, 'poor'))}/> Poor</label>
     </div>
   </div>
 </div>
@@ -185,9 +184,9 @@ export default function BrowseBooksPage() {
       {isLoading ? (
         <div style={{gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: 'var(--muted)'}}>Loading books...</div>
       ) : books.map((book, idx) => (
-        <div className="book-card" key={book._id} style={{ animationDelay: `${idx * 0.04}s` }} onClick={() => navigate(`/details?id=${book._id}`)}>
+        <div className="book-card" key={book._id} style={{ animationDelay: `${idx * 0.04}s` }} onClick={() => navigate(`/book/${book._id}`)}>
           <div className="bc-img-wrap">
-            <img src={book.images?.[0] ? 'http://localhost:5000' + book.images[0] : 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80'} alt={book.title} className="bc-img"/>
+            <img src={getImageUrl(book)} alt={book.title} className="bc-img"/>
             {book.exchangeType === 'Sell' && <span className="tb tb-buy">Buy</span>}
             {book.exchangeType === 'Rent' && <span className="tb tb-rent">Rent</span>}
             {book.exchangeType === 'Share' && <span className="tb tb-free">Free</span>}
@@ -197,34 +196,37 @@ export default function BrowseBooksPage() {
             <div className="bc-title">{book.title}</div>
             <div className="bc-author">by {book.author}</div>
             <div className="bc-cond">Condition: <strong>{book.condition}</strong></div>
-            <div className="price-line">
-                {book.exchangeType === 'Share' ? (
-                  <span className="free-tag">🎁 Free Shelf</span>
+            <div className="price-line" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+                {book.category === 'Notes' && book.pdf ? (
+                    <button className="btn-mini" style={{ background: 'var(--primary)', width: '100%', display: 'flex', justifyContent: 'center', gap: '8px' }} onClick={(e) => { e.stopPropagation(); setSelectedPdf(book.pdf); }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        View PDF
+                    </button>
                 ) : (
                   <>
-                  <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. {book.price}</span>
-                  {book.exchangeType === 'Rent' && <span className="price-unit">/wk</span>}
+                    <div>
+                      <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>{book.exchangeType === 'Share' ? 'Free' : `Rs. ${book.price}`}</span>
+                      {book.exchangeType === 'Rent' && <span className="price-unit">/wk</span>}
+                    </div>
+                    <Link to={`/book/${book._id}`} className="btn-mini-cart" style={{ color: '#fff' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link>
                   </>
                 )}
-            </div>
-            <div className="bc-actions">
-              <Link to={`/details?id=${book._id}`} className="btn-details">View Details</Link>
             </div>
           </div>
         </div>
       ))}
     </div>
-    {!isLoading && books.length === 0 && <div className="no-results" id="no-results" style={{ display: 'none' }}>
+    {!isLoading && books.length === 0 && <div className="no-results" id="no-results">
       <div className="no-results-icon" style={{ opacity: 0.7, marginBottom: '10px' }}>
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
       </div>
-      <div className="no-results-title">No books found</div>
-      <div className="no-results-text">Try adjusting your filters or search term.<br/>Here are some popular categories:</div>
+      <div className="no-results-title">No books found matching your search and filters</div>
+      <div className="no-results-text">Try removing some filters or check your spelling.<br/>Here are some popular categories:</div>
       <div className="no-results-cats">
-        <span className="no-results-cat" onClick={function(){}}>Programming</span>
-        <span className="no-results-cat" onClick={function(){}}>Novels</span>
-        <span className="no-results-cat" onClick={function(){}}>Mathematics</span>
-        <span className="no-results-cat" onClick={function(){}}>Physics</span>
+        <span className="no-results-cat" onClick={() => { setLocalCats(['programming']); setLocalQuery(''); }}>Programming</span>
+        <span className="no-results-cat" onClick={() => { setLocalCats(['novels']); setLocalQuery(''); }}>Novels</span>
+        <span className="no-results-cat" onClick={() => { setLocalCats(['mathematics']); setLocalQuery(''); }}>Mathematics</span>
+        <span className="no-results-cat" onClick={() => { setLocalCats(['physics']); setLocalQuery(''); }}>Physics</span>
       </div>
     </div>}
 
@@ -232,23 +234,19 @@ export default function BrowseBooksPage() {
     <div style={{ marginTop: '52px' }}>
       <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.2rem', fontWeight: '700', color: 'var(--primary)', marginBottom: '16px' }}>Recommended for You</div>
       <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '8px' }}>
-        {[
-          { title: "Atomic Habits", author: "James Clear", price: "Rs. 50/wk", img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80", color: "var(--cta)" },
-          { title: "Deep Work", author: "Cal Newport", price: "Rs. 350", img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80", color: "var(--cta)" },
-          { title: "Sapiens", author: "Yuval Noah Harari", price: "Free", img: "https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&q=80", color: "var(--secondary)" },
-          { title: "Rich Dad Poor Dad", author: "Robert Kiyosaki", price: "Rs. 40/wk", img: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80", color: "var(--cta)" },
-          { title: "The Alchemist", author: "Paulo Coelho", price: "Rs. 30/wk", img: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80", color: "var(--cta)" },
-          { title: "Introduction to Algebra", author: "Michael Artin", price: "Rs. 280", img: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&q=80", color: "var(--cta)" }
-        ].map((bk, idx) => (
-            <div key={idx} style={{ flex: '0 0 190px', background: 'var(--card-bg, #fff)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} 
+        {recommended && recommended.length > 0 ? recommended.map((bk, idx) => (
+            <div key={bk._id || idx} style={{ flex: '0 0 190px', background: 'var(--card-bg, #fff)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'all .2s' }} 
+                 onClick={() => navigate(`/book/${bk._id}`)}
                  onMouseOver={(e)=>{e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow='0 8px 24px rgba(19,73,60,.12)'}} 
                  onMouseOut={(e)=>{e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''}}>
-                <img src={bk.img} style={{ width: '100%', height: '130px', objectFit: 'cover' }} alt={bk.title} />
+                <img src={getImageUrl(bk)} style={{ width: '100%', height: '130px', objectFit: 'cover' }} alt={bk.title} />
                 <div style={{ padding: '10px 12px' }}>
                     <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bk.title}</div>
-                    <div style={{ fontSize: '.74rem', color: 'var(--muted)', margin: '2px 0' }}>by {bk.author}</div>
+                    <div style={{ fontSize: '.74rem', color: 'var(--muted)', margin: '2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>by {bk.author}</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
-                        <div style={{ fontSize: '.78rem', fontWeight: '700', color: bk.color }}>{bk.price}</div>
+                        <div style={{ fontSize: '.78rem', fontWeight: '700', color: bk.exchangeType === 'Share' ? 'var(--secondary)' : 'var(--cta)' }}>
+                            {bk.exchangeType === 'Share' ? 'Free' : `Rs. ${bk.price}${bk.exchangeType === 'Rent' ? '/wk' : ''}`}
+                        </div>
                         <button style={{ 
                             background: 'var(--primary)', 
                             color: '#fff', 
@@ -270,52 +268,30 @@ export default function BrowseBooksPage() {
                     </div>
                 </div>
             </div>
-        ))}
+        )) : <div style={{ padding: '20px', color: 'var(--muted)' }}>No recommendations yet.</div>}
       </div>
     </div>
   </main>
 
   
   <aside className="right-sidebar">
-    <div className="rec-widget">
-  <div className="rec-head">
-    <span className="rec-title"><span className="rec-dot"></span>Recommended for You</span>
-    <span className="rec-badge">Trending</span>
-  </div>
-  <div className="rec-list">
-    <div className="rec-book" onClick={function(){}}><div className="rec-img"><img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=120&q=80" alt="Atomic Habits"/></div><div style={{ flex: '1', minWidth: '0' }}><div className="rec-book-title">Atomic Habits</div><div className="rec-author">James Clear</div><div className="rec-stars">★★★★★</div><div className="rec-bottom"><span className="rec-price">Rs. 50/wk</span><Link to="/details"  className="rec-action" style={{ background: 'var(--cta)' }} >Rent</Link></div></div></div>
-    <div className="rec-book" onClick={function(){}}><div className="rec-img"><img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=120&q=80" alt="Deep Work"/></div><div style={{ flex: '1', minWidth: '0' }}><div className="rec-book-title">Deep Work</div><div className="rec-author">Cal Newport</div><div className="rec-stars">★★★★★</div><div className="rec-bottom"><span className="rec-price">Rs. 350</span><Link to="/details"  className="rec-action" style={{ background: 'var(--cta)' }} >Buy</Link></div></div></div>
-    <div className="rec-book" onClick={function(){}}><div className="rec-img"><img src="https://images.unsplash.com/photo-1589998059171-988d887df646?w=120&q=80" alt="Sapiens"/></div><div style={{ flex: '1', minWidth: '0' }}><div className="rec-book-title">Sapiens</div><div className="rec-author">Y.N. Harari</div><div className="rec-stars">★★★★☆</div><div className="rec-bottom"><span className="rec-price free-price">Free</span><Link to="/details"  className="rec-action" style={{ background: 'var(--secondary)' }} >Claim</Link></div></div></div>
-    <div className="rec-book" onClick={function(){}}><div className="rec-img"><img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=120&q=80" alt="Rich Dad Poor Dad"/></div><div style={{ flex: '1', minWidth: '0' }}><div className="rec-book-title">Rich Dad Poor Dad</div><div className="rec-author">R. Kiyosaki</div><div className="rec-stars">★★★★☆</div><div className="rec-bottom"><span className="rec-price">Rs. 40/wk</span><Link to="/details"  className="rec-action" style={{ background: 'var(--cta)' }} >Rent</Link></div></div></div>
-    <div className="rec-book" onClick={function(){}}><div className="rec-img"><img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=120&q=80" alt="The Alchemist"/></div><div style={{ flex: '1', minWidth: '0' }}><div className="rec-book-title">The Alchemist</div><div className="rec-author">Paulo Coelho</div><div className="rec-stars">★★★★★</div><div className="rec-bottom"><span className="rec-price">Rs. 30/wk</span><Link to="/details"  className="rec-action" style={{ background: 'var(--cta)' }} >Rent</Link></div></div></div>
-  </div>
-  <div className="rec-footer"><Link to="/browse">Browse all books →</Link></div>
-</div>
+    <RecommendationWidget />
   </aside>
 </div>
 
-<footer className="footer">
-  <div className="footer-grid">
-    <div>
-      <Link to="/home" className="footer-brand">
-        <div className="f-logo"><img src={IMAGES.img_0} alt="BookCycle"/></div>
-        <span className="footer-brand-name">BookCycle</span>
-      </Link>
-      <p className="footer-desc">Islamabad's community book platform. Share, rent, and discover books across the city.</p>
-      <div className="f-social" style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
-        <Link to="#" className="f-soc"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></Link>
-        <Link to="#" className="f-soc"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></Link>
-        <Link to="#" className="f-soc"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></Link>
-        <Link to="#" className="f-soc"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></Link>
-      </div>
-    </div>
-    <div className="footer-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/browse?tab=rent">Rent a Book</Link></li><li><Link to="/browse?tab=free">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div>
-    <div className="footer-col"><h4>Company</h4><ul><li><Link to="#">About Us</Link></li><li><Link to="#">How It Works</Link></li><li><Link to="#">Blog</Link></li><li><Link to="#">Careers</Link></li></ul></div>
-    <div className="footer-col"><h4>Contact</h4><ul><li><Link to="#"><span className="__cf_email__" data-cfemail="771f121b1b18371518181c140e141b1259071c">[email&#160;protected]</span></Link></li><li><Link to="#">+92 300 1234567</Link></li><li><Link to="#">F-7, Islamabad</Link></li><li><Link to="#">Help Center</Link></li></ul></div>
-  </div>
-  <div className="footer-bottom"><p>© 2025 BookCycle. All rights reserved.</p><div className="footer-links"><Link to="#">Privacy Policy</Link><Link to="#">Terms of Service</Link><Link to="#">Cookie Policy</Link></div></div>
-</footer>
+<Footer />
 <div className="toast" id="toast"><span className="toast-dot"></span><span id="toast-msg"></span></div>
+
+{selectedPdf && (
+    <div className="pdf-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', flexDirection: 'column' }} onClick={() => setSelectedPdf(null)} onContextMenu={(e) => e.preventDefault()}>
+        <div style={{ padding: '15px 20px', display: 'flex', justifyContent: 'flex-end', background: '#222' }}>
+            <button onClick={() => setSelectedPdf(null)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer' }}>Close ✕</button>
+        </div>
+        <div style={{ flex: 1, padding: '20px', display: 'flex', justifyContent: 'center' }} onClick={(e) => e.stopPropagation()}>
+            <iframe src={selectedPdf + '#toolbar=0'} style={{ width: '100%', maxWidth: '900px', height: '100%', border: 'none', borderRadius: '8px', background: '#fff' }} title="PDF Viewer" />
+        </div>
+    </div>
+)}
 
         </div>
     );
