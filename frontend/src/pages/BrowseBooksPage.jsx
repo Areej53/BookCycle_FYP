@@ -17,9 +17,20 @@ export default function BrowseBooksPage() {
     const [localQuery, setLocalQuery] = useState('');
     const [localCats, setLocalCats] = useState([]);
     const [localConds, setLocalConds] = useState([]);
-    const [localType, setLocalType] = useState(initialTab === 'all' ? [] : [initialTab]);
+    const [localType, setLocalType] = useState(initialTab === 'all' ? [] : [initialTab === 'free' ? 'share' : initialTab]);
     const [maxPrice, setMaxPrice] = useState('');
     const [sort, setSort] = useState('recent');
+
+    useEffect(() => {
+        const tab = searchParams.get('tab') || 'all';
+        if (tab === 'free') {
+            setLocalType(['share']);
+        } else if (tab === 'all') {
+            setLocalType([]);
+        } else {
+            setLocalType([tab]);
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         const fetchBooks = async () => {
