@@ -570,22 +570,22 @@ export default function HomePage() {
             <div className="book-title" style={{ fontSize: '.9rem' }}>{b.title}</div>
             <div className="book-author">{b.author}</div>
             <div style={{ marginTop: '5px', fontSize: '.77rem', color: 'var(--text-muted)' }}>Added {b.timeAgo}</div>
-            <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span className={`book-price ${b.badge === 'free' ? 'free' : ''}`}>{b.badge === 'free' ? 'Free' : `${b.price}${b.unit}`}</span>
-              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                <button 
+            <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <span className={`book-price ${b.badge === 'free' ? 'free' : ''}`} style={{ flexShrink: 0 }}>{b.badge === 'free' ? 'Free' : `${b.price}${b.unit}`}</span>
+              <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginLeft: 'auto' }}>
+                <button
                     onClick={(e) => { e.stopPropagation(); toggleWishlist(b); }}
-                    style={{ 
-                        background: 'none', border: '1.2px solid var(--border)', 
-                        borderRadius: '50%', width: '26px', height: '26px', 
-                        display: 'grid', placeItems: 'center', cursor: 'pointer', 
+                    style={{
+                        background: 'none', border: '1.2px solid var(--border)',
+                        borderRadius: '50%', width: '26px', height: '26px',
+                        display: 'grid', placeItems: 'center', cursor: 'pointer',
                         color: isInWishlist(b.id) ? 'var(--cta)' : 'var(--text-muted)',
                         transition: 'all .2s'
                     }}
                 >
                     <FiHeart size={11} fill={isInWishlist(b.id) ? "var(--cta)" : "none"} />
                 </button>
-                <Link to={`/book/${b.id}`} className="btn-mini-cart" style={{ color: '#fff' }}>
+                <Link to={`/book/${b.id}`} className="btn-mini-cart" style={{ color: '#fff' }} onClick={e => e.stopPropagation()}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                 </Link>
               </div>
