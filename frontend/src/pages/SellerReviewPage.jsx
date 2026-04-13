@@ -15,6 +15,20 @@ export default function SellerReviewPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    React.useEffect(() => {
+        if (!sellerData.category) {
+            navigate('/seller');
+        }
+    }, [sellerData.category, navigate]);
+
+    const handleEdit = () => {
+        if (sellerData.category === 'Notes') {
+            navigate('/seller/notes/add');
+        } else {
+            navigate('/seller/add');
+        }
+    };
+
     const handlePublish = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -89,7 +103,7 @@ export default function SellerReviewPage() {
         <span className="prev-badge" style={{ background: 'rgba(96,108,56,.2)', color: 'rgba(255,250,224,.7)' }}>{sellerData.condition || 'New'}</span>
       </div>
     </div>
-    <button className="edit-btn" style={{ display: 'flex', alignItems: 'center', gap: '5px' }} onClick={() => navigate('/seller/add')}><FiEdit3 /> Edit</button>
+    <button className="edit-btn" style={{ display: 'flex', alignItems: 'center', gap: '5px' }} onClick={handleEdit}><FiEdit3 /> Edit</button>
   </div>
   <div className="fields-grid">
     <div className="field-row"><div className="field-lbl">Listing Type</div><div className="field-val">{sellerData.exchangeType}</div></div>
@@ -128,7 +142,7 @@ export default function SellerReviewPage() {
 </div>
 
 <div className="rev-actions">
-  <Link to="/seller/add" className="btn-back-rev">← Back: Edit Book</Link>
+  <button className="btn-back-rev" style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }} onClick={handleEdit}>← Back: Edit Book</button>
   <button onClick={handlePublish} disabled={loading} className="btn-publish">{loading ? 'Publishing...' : '✓ Publish Book Now'}</button>
 </div>
 </main>

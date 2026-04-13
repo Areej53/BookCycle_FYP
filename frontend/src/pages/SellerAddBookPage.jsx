@@ -13,6 +13,12 @@ export default function SellerAddBookPage() {
     const [errors, setErrors] = useState({});
     const fileInputRef = useRef(null);
 
+    React.useEffect(() => {
+        if (!sellerData.category || sellerData.category === 'Notes') {
+            navigate('/seller');
+        }
+    }, [sellerData.category, navigate]);
+
     const handleChange = (e) => {
         updateSellerData({ [e.target.name]: e.target.value });
         if (errors[e.target.name]) {

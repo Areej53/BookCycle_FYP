@@ -26,10 +26,18 @@ export default function SellerAddNotesPage() {
     const fileInputRef = useRef(null);
 
     useEffect(() => {
+        // Strict enforcement: if no category is in context, they skipped the selection page.
+        // However, we only redirect if it's completely empty, allowing them to proceed if they 
+        // somehow landed here but intended for Notes.
+        if (!sellerData.category) {
+            navigate('/seller');
+            return;
+        }
+        
         if (sellerData.category !== 'Notes') {
             updateSellerData({ category: 'Notes' });
         }
-    }, [sellerData.category, updateSellerData]);
+    }, [sellerData.category, updateSellerData, navigate]);
 
     const handleChange = (e) => {
         updateSellerData({ [e.target.name]: e.target.value });
@@ -288,7 +296,7 @@ export default function SellerAddNotesPage() {
 
     <div className="form-actions" style={{ marginTop: '30px' }}>
       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-        <button className="btn-back" onClick={() => navigate('/seller/categories')}>← Back</button>
+        <button className="btn-back" onClick={() => navigate('/seller')}>← Back</button>
       </div>
       <button className="btn-next-form" onClick={handlePublish} disabled={loading}>{loading ? 'Publishing...' : 'Publish Notes ✓'}</button>
     </div>
