@@ -562,7 +562,10 @@ export default function Home({ onNavigate }) {
             <div className="h-footer-col">
               <h4>Platform</h4>
               <ul>
-                {["Browse Books", "Rent a Book", "Free Shelf", "Sell Your Book"].map(l => <li key={l}><a href="#">{l}</a></li>)}
+                <li><a onClick={() => navigate('/browse')}>Browse Books</a></li>
+                <li><a onClick={() => navigate('/browse?tab=rent')}>Rent a Book</a></li>
+                <li><a onClick={() => navigate('/browse?tab=free')}>Free Shelf</a></li>
+                <li><a onClick={() => navigate('/seller')}>Sell Your Book</a></li>
               </ul>
             </div>
             <div className="h-footer-col">

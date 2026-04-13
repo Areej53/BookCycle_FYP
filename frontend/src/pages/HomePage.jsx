@@ -267,7 +267,7 @@ export default function HomePage() {
 
     <div className="hero-btns">
       <Link to="/browse" className="btn-primary">Browse Books</Link>
-      <Link to="/seller/add" className="btn-outline">List Your Book</Link>
+      <Link to="/seller" className="btn-outline">List Your Book</Link>
     </div>
     <div className="hero-stats">
       <div className="stat"><div className="stat-num" style={{ color: 'var(--accent)', fontSize: '1.8rem', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>2,400+</div><div className="stat-label" style={{ color: 'rgba(255,250,224,.55)', fontSize: '.8rem' }}>Books Available</div></div>
@@ -604,7 +604,7 @@ export default function HomePage() {
     <div className="donate-widget-body">
       <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)', marginBottom: '8px' }}>Got Books to Share?</div>
       <p style={{ fontSize: '.85rem', color: 'rgba(19,73,60,.75)', marginBottom: '16px', lineHeight: '1.6' }}>Donate your books and spread knowledge across Islamabad.</p>
-      <Link to="/seller/add" className="btn-primary" style={{ display: 'inline-block', padding: '10px 24px' }}>Donate Now</Link>
+      <Link to="/seller" className="btn-primary" style={{ display: 'inline-block', padding: '10px 24px' }}>Donate Now</Link>
     </div>
   </div>
 
@@ -645,7 +645,7 @@ export default function HomePage() {
     <div className="section-label" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', display: 'inline-flex', marginBottom: '20px' }}>✦ Join 840+ Members</div>
     <h2>Ready to Share Your Books?</h2>
     <p>List your book in under 2 minutes. Let it find a new reader today.</p>
-    <Link to="/seller/add" className="btn-white">Add Your Book →</Link>
+    <Link to="/seller" className="btn-white">Add Your Book →</Link>
   </div>
 </section>
 
