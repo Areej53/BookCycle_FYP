@@ -561,12 +561,12 @@ export default function HomePage() {
     </div>
     <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
       {recentBooks.map(b => (
-        <div className="book-card book-card-h" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer', position: 'relative' }}>
+        <div className="book-card book-card-h" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer', position: 'relative', display: 'flex', width: '100%' }}>
           <div className="book-cover" style={{ width: '82px', flexShrink: '0', borderRadius: '0', minHeight: '110px', height: 'auto', position: 'relative' }}>
             <img src={b.img} alt={b.title}/>
             <span className={`book-badge badge-${b.badge}`} style={{ top: '6px', right: '4px', fontSize: '.6rem', padding: '2px 6px' }}>{b.badge === 'sell' ? 'Buy' : b.badge.charAt(0).toUpperCase() + b.badge.slice(1)}</span>
           </div>
-          <div className="book-info" style={{ padding: '14px' }}>
+          <div className="book-info" style={{ padding: '14px', flex: 1, minWidth: 0 }}>
             <div className="book-title" style={{ fontSize: '.9rem' }}>{b.title}</div>
             <div className="book-author">{b.author}</div>
             <div style={{ marginTop: '5px', fontSize: '.77rem', color: 'var(--text-muted)' }}>Added {b.timeAgo}</div>

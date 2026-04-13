@@ -79,7 +79,7 @@ export default function Navbar() {
               {cartCount > 0 && (
                 <span style={{
                   position: 'absolute', top: '-6px', right: '-12px',
-                  background: 'var(--cta)', color: '#fff', fontSize: '0.65rem',
+                  background: '#7ec8a4', color: '#fff', fontSize: '0.65rem',
                   fontWeight: 'bold', padding: '1px 6px', borderRadius: '10px',
                   boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                 }}>

@@ -51,12 +51,15 @@ export default function WishlistPage() {
                 ) : (
                     <div className="wishlist-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
                         {wishlist.map((book, idx) => (
-                            <div key={book.id || idx} className="wish-card" style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: '20px', overflow: 'hidden', transition: 'all .3s ease', position: 'relative', animation: `fadeUp .5s ease ${idx * 0.1}s both` }}>
+                            <div key={book.id || idx} className="wish-card" 
+                                onClick={() => navigate(`/book/${book.id || book._id}`)}
+                                style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: '20px', overflow: 'hidden', transition: 'all .3s ease', position: 'relative', animation: `fadeUp .5s ease ${idx * 0.1}s both`, cursor: 'pointer' }}
+                            >
                                 <div style={{ height: '220px', overflow: 'hidden', position: 'relative' }}>
                                     <img src={book.img} alt={book.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                     <button 
-                                        onClick={() => toggleWishlist(book)}
-                                        style={{ position: 'absolute', top: '15px', right: '15px', background: '#fff', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'grid', placeItems: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', color: 'var(--cta)' }}
+                                        onClick={(e) => { e.stopPropagation(); toggleWishlist(book); }}
+                                        style={{ position: 'absolute', top: '15px', right: '15px', background: '#fff', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'grid', placeItems: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', color: 'var(--cta)', zIndex: 10 }}
                                     >
                                         <FiHeart fill="var(--cta)" />
                                     </button>
@@ -78,7 +81,7 @@ export default function WishlistPage() {
                                         </div>
                                         <div style={{ display: 'flex', gap: '8px' }}>
                                             <button 
-                                                onClick={() => navigate(`/book/${book.id}`)}
+                                                onClick={(e) => { e.stopPropagation(); navigate(`/book/${book.id || book._id}`); }}
                                                 style={{ background: 'var(--bg)', border: 'none', borderRadius: '50%', width: '38px', height: '38px', display: 'grid', placeItems: 'center', cursor: 'pointer', transition: 'background .2s', color: 'var(--primary)' }}
                                                 title="View Details"
                                             >
@@ -86,7 +89,7 @@ export default function WishlistPage() {
                                             </button>
                                             <button 
                                                 onClick={() => handleMoveToCart(book)}
-                                                style={{ background: 'var(--cta)', border: 'none', borderRadius: '50%', width: '38px', height: '38px', display: 'grid', placeItems: 'center', cursor: 'pointer', transition: 'transform .2s', color: '#fff', boxShadow: '0 4px 12px rgba(188,108,37,.35)' }}
+                                                style={{ background: 'var(--primary)', border: 'none', borderRadius: '50%', width: '38px', height: '38px', display: 'grid', placeItems: 'center', cursor: 'pointer', transition: 'transform .2s', color: '#fff' }}
                                                 className="hover-pop"
                                                 title="Add to Cart"
                                             >
