@@ -99,7 +99,7 @@ export default function CategoryResultsPage() {
             )}
 
             <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '30px', margin: 0, padding: 0 }}>
-                <li><Link to="/browse">Browse</Link></li>
+                <li><Link to="/browse">Explore</Link></li>
                 <li><Link to="/seller">Sell</Link></li>
                 {user ? (
                     <li><Link to="/logout" className="nav-cta">Logout</Link></li>
@@ -113,7 +113,7 @@ export default function CategoryResultsPage() {
   <div className="cat-hero-inner">
     <div className="cat-breadcrumb">
       <Link to="/">Home</Link>›
-      <Link to="/browse">Browse</Link>›
+      <Link to="/browse">Explore</Link>›
       <span id="crumb-cat">Results</span>
     </div>
     <h1 id="page-heading">Category: <em id="heading-cat">{cats || 'All Books'}</em></h1>
@@ -253,9 +253,9 @@ export default function CategoryResultsPage() {
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
       </div>
       <div className="no-results-title">No books found matching your search and filters</div>
-      <div className="no-results-text">Try removing some filters or check your spelling.<br/>You can also browse by category below:</div>
+      <div className="no-results-text">Try removing some filters or check your spelling.<br/>You can also explore by category below:</div>
       <div className="no-results-cats">
-        <span className="no-results-cat" onClick={() => navigate('/browse')}>Browse All</span>
+        <span className="no-results-cat" onClick={() => navigate('/browse')}>Explore All</span>
         <span className="no-results-cat" onClick={() => navigate('/browse?cats=novels')}>Novels</span>
         <span className="no-results-cat" onClick={() => navigate('/browse?cats=mathematics')}>Mathematics</span>
       </div>
@@ -282,7 +282,7 @@ export default function CategoryResultsPage() {
         <Link to="#" className="f-soc"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></Link>
       </div>
     </div>
-    <div className="footer-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/browse?tab=rent">Rent a Book</Link></li><li><Link to="/browse?tab=free">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div>
+    <div className="footer-col"><h4>Platform</h4><ul><li><Link to="/browse">Explore Books</Link></li><li><Link to="/browse?tab=rent">Rent a Book</Link></li><li><Link to="/browse?tab=free">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div>
     <div className="footer-col"><h4>Company</h4><ul><li><Link to="#">About Us</Link></li><li><Link to="#">How It Works</Link></li><li><Link to="#">Blog</Link></li><li><Link to="#">Careers</Link></li></ul></div>
     <div className="footer-col"><h4>Contact</h4><ul><li><Link to="#"><span className="__cf_email__" data-cfemail="b0d8d5dcdcdff0d2dfdfdbd3c9d3dcd59ec0db">[email&#160;protected]</span></Link></li><li><Link to="#">+92 300 1234567</Link></li><li><Link to="#">F-7, Islamabad</Link></li><li><Link to="#">Help Center</Link></li></ul></div>
   </div>

@@ -4,14 +4,14 @@
 :root {
   --color-primary: #13493C;     /* Main headings and focused input borders */
   --color-secondary: #606C38;   /* Secondary buttons (like Google) and text links */
-  --color-bg: #FFFAE0;          /* The main global background color for the entire app */
+  --color-bg: #F7F9F8;          /* Professional light sage-gray background */
   --color-accent: #DDA15E;      /* Highlights or light accent elements */
   --color-cta: #BC6C25;         /* Primary Call-to-Action buttons (Log In / Sign Up) */
   --color-text: #13493C;        /* Main regular text and text typed inside inputs */
   --color-muted-text: #606C38;  /* Sub-text, descriptions, and labels */
-  --color-border: #d8d0b0;      /* Standard borders for input fields */
+  --color-border: #E0E4E2;      /* Professional light gray border */
   --color-input-bg: #ffffff;    /* The background color of the input fields (White) */
-  --color-placeholder: #a8a8a8; /* The color of the placeholder text inside inputs */
+  --color-placeholder: #94A3B8; /* Professional grey placeholder */
 }
 
 * {
@@ -29,17 +29,18 @@ body {
   :root {
     --primary: #13493C;
     --secondary: #606C38;
-    --bg: #FFFAE0;
+    --bg: #F7F9F8;
     --accent: #DDA15E;
     --cta: #BC6C25;
     --text-dark: #1a1a1a;
     --text-muted: #6b6b5a;
     --card-bg: #fff;
-    --border: #e8e0c4;
+    --border: #E0E4E2;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
   body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-dark); overflow-x: hidden; }
+  ::placeholder { color: var(--color-placeholder); opacity: 1; } /* Global professional grey */
 
   /* â”€â”€ NAVBAR â”€â”€ */
   nav {
@@ -88,7 +89,7 @@ body {
   .search-box { display: flex; align-items: center; background: rgba(255,250,224,.1); border: 1.5px solid rgba(255,250,224,.22); border-radius: 50px; padding: 6px 6px 6px 20px; transition: border-color .2s, border-radius .2s; position: relative; z-index: 9999; overflow: hidden; }
   .search-box.open { border-color: var(--accent); border-radius: 20px 20px 0 0; }
   .search-box input { flex: 1; background: transparent; border: none; outline: none; color: var(--bg); font-size: .97rem; font-family: 'Inter', sans-serif; caret-color: var(--accent); }
-  .search-box input::placeholder { color: rgba(255,250,224,.4); }
+  .search-box input::placeholder { color: #94A3B8; }
   .search-box button { background: var(--accent); color: var(--primary); border: none; cursor: pointer; padding: 10px 22px; border-radius: 40px; font-weight: 600; font-size: .9rem; transition: background .2s; flex-shrink: 0; }
   .search-box button:hover { background: var(--cta); color: #fff; }
 

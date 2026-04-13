@@ -45,7 +45,7 @@ export default function WishlistPage() {
                         <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.8rem', color: 'var(--primary)', marginBottom: '12px' }}>Your wishlist is empty</h2>
                         <p style={{ color: 'var(--text-muted)', maxWidth: '400px', margin: '0 auto 32px', lineHeight: 1.6 }}>Explore Islamabad's largest community library and save the books you love for later.</p>
                         <Link to="/browse" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-                            Start Browsing <FiArrowRight />
+                            Explore More Books <FiArrowRight />
                         </Link>
                     </div>
                 ) : (

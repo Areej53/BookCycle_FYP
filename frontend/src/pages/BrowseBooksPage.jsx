@@ -96,7 +96,7 @@ export default function BrowseBooksPage() {
 <Navbar cartCount={0} />
 <div className="browse-hero">
   <div className="browse-hero-inner">
-    <h1>Browse <em>Books</em></h1>
+    <h1>Explore <em>Books</em></h1>
     <p className="browse-hero-sub">Explore 12+ books available to buy, rent, or claim free across Islamabad.</p>
     <div className="search-wrap">
       <div className="search-bar">

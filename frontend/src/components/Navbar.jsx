@@ -44,7 +44,7 @@ export default function Navbar() {
 
       <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '25px', margin: 0, padding: 0 }}>
         {!isHome && <li><Link to="/home" style={getLinkStyle(false)}>Home</Link></li>}
-        <li><Link to="/browse" style={getLinkStyle(isBrowse)}>Browse</Link></li>
+        <li><Link to="/browse" style={getLinkStyle(isBrowse)}>Explore</Link></li>
         <li><Link to="/browse?tab=free" style={getLinkStyle(isFreeShelf)}>Free Shelf</Link></li>
         <li><Link to="/seller" style={getLinkStyle(isSell)}>Sell</Link></li>
 

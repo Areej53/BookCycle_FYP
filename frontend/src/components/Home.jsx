@@ -32,7 +32,7 @@ const styles = `
   .h-nav-link:hover { color:var(--bg); background:rgba(255,250,224,.1); }
   .h-nav-search { display:flex; align-items:center; gap:9px; background:rgba(255,250,224,.1); border:1px solid rgba(255,250,224,.2); border-radius:50px; padding:7px 16px; }
   .h-nav-search input { background:transparent; border:none; outline:none; color:var(--bg); font-size:.87rem; width:160px; font-family:'DM Sans',sans-serif; }
-  .h-nav-search input::placeholder { color:rgba(255,250,224,.5); }
+  .h-nav-search input::placeholder { color: #94A3B8; }
   .h-nav-links { display: flex; align-items: center; gap: 30px; margin: 0; padding: 0; list-style: none; }
   .h-nav-links a { color: rgba(255,250,224,0.85); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.15s; }
   .h-nav-links a:hover { color: #fff; }
@@ -205,7 +205,7 @@ const FEATURED_BOOKS = [
 ];
 
 const HOW_STEPS = [
-  { num: "1", icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>, title: "Browse Listings", desc: "Search books by title, category, or location across Islamabad." },
+  { num: "1", icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>, title: "Explore Listings", desc: "Search books by title, category, or location across Islamabad." },
   { num: "2", icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>, title: "Send a Request", desc: "Contact the owner or seller with a single tap." },
   { num: "3", icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>, title: "Meet & Exchange", desc: "Meet at a convenient spot to buy, rent, or pick up." },
   { num: "4", icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>, title: "Enjoy Reading", desc: "Dive into your new book. Return rentals on time to earn trust." },
@@ -312,7 +312,7 @@ export default function Home({ onNavigate }) {
           </div>
 
           <ul className="h-nav-links">
-            <li><button className="h-nav-link" onClick={() => navigate('/browse')}>Browse</button></li>
+            <li><button className="h-nav-link" onClick={() => navigate('/browse')}>Explore</button></li>
             <li><button className="h-nav-link" onClick={() => navigate('/seller')}>Sell</button></li>
             <li><button className="h-nav-cta" onClick={() => onNavigate?.("login")}>Login</button></li>
           </ul>
@@ -329,7 +329,7 @@ export default function Home({ onNavigate }) {
               <h1 className="h-hero-title">Share, Rent, and<br /><em>Discover Books</em><br />Around You</h1>
               <p className="h-hero-sub">Find affordable books, rent for short-term use, or share yours with others. Over 900+ books available across Islamabad.</p>
               <div className="h-hero-btns">
-                <button className="h-btn-primary" onClick={() => navigate('/browse')}>Browse Books</button>
+                <button className="h-btn-primary" onClick={() => navigate('/browse')}>Explore Books</button>
                 <button className="h-btn-outline" onClick={() => onNavigate?.("register")}>Join BookCycle</button>
               </div>
               <div className="h-hero-stats">
@@ -380,7 +380,7 @@ export default function Home({ onNavigate }) {
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                       </button>
                     </div>
-                    <div className="h-bstars">{b.stars}</div>
+
                   </div>
                 </div>
               ))}
@@ -416,11 +416,7 @@ export default function Home({ onNavigate }) {
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                       </button>
                     </div>
-                    <div className="h-bstars" style={{ display: 'flex', gap: '2px' }}>
-                      {[...Array(5)].map((_, i) => (
-                        <svg key={i} width="10" height="10" viewBox="0 0 24 24" fill={i < Math.floor(b.stars.length) ? "var(--accent)" : "none"} stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                      ))}
-                    </div>
+
                   </div>
                 </div>
               ))}
@@ -460,7 +456,7 @@ export default function Home({ onNavigate }) {
                   <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> 
                   Explore
                 </div>
-                <h2 className="h-section-title">Browse by <em>Category</em></h2>
+                <h2 className="h-section-title">Explore by <em>Category</em></h2>
               </div>
               <button className="h-see-all">All categories →</button>
             </div>
@@ -487,7 +483,7 @@ export default function Home({ onNavigate }) {
               </div>
               <div>
                 <h2>The <em>Free Shelf</em> — Books That Find New Homes</h2>
-                <p>Community members donate books they've finished. Browse free listings and claim yours before they're gone.</p>
+                <p>Community members donate books they've finished. Explore free listings and claim yours before they're gone.</p>
                 <button className="h-btn-free" onClick={() => setShowPopup(true)}>Claim a Free Book</button>
               </div>
               <div className="h-free-books-row">
@@ -536,7 +532,7 @@ export default function Home({ onNavigate }) {
             <p>Join thousands of readers in Islamabad who are sharing, renting, and discovering books through BookCycle.</p>
             <div className="h-cta-btns">
               <button className="h-btn-primary" onClick={() => onNavigate?.("register")}>Create Free Account</button>
-              <button className="h-btn-outline">Browse Books</button>
+              <button className="h-btn-outline" onClick={() => navigate('/browse')}>Explore Books</button>
             </div>
           </div>
         </section>
@@ -562,7 +558,7 @@ export default function Home({ onNavigate }) {
             <div className="h-footer-col">
               <h4>Platform</h4>
               <ul>
-                <li><a onClick={() => navigate('/browse')}>Browse Books</a></li>
+                <li><a onClick={() => navigate('/browse')}>Explore Books</a></li>
                 <li><a onClick={() => navigate('/browse?tab=rent')}>Rent a Book</a></li>
                 <li><a onClick={() => navigate('/browse?tab=free')}>Free Shelf</a></li>
                 <li><a onClick={() => navigate('/seller')}>Sell Your Book</a></li>
