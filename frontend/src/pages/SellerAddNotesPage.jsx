@@ -136,7 +136,7 @@ export default function SellerAddNotesPage() {
   </div>
   <div className="form-body">
 
-    <div className="section-title"><div className="st-icon">📄</div>Notes Information</div>
+    <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiFileText /></div>Notes Information</div>
     <div className="form-grid">
       <div className="field span2">
         <label>Notes Topic / Title <span className="req">*</span></label>
@@ -166,20 +166,20 @@ export default function SellerAddNotesPage() {
       </div>
     </div>
 
-    <div className="section-title" style={{ marginTop: '30px' }}><div className="st-icon">📋</div>Listing Type</div>
+    <div className="section-title" style={{ marginTop: '30px' }}><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiList /></div>Listing Type</div>
     <div className="listing-grid">
       <div className={`listing-opt ${sellerData.exchangeType === 'Sell' ? 'active' : ''}`} onClick={() => handleListingType('Sell')}>
-        <div className="lo-icon">💰</div><div className="lo-name">Sell</div><div className="lo-sub">Fixed price for buyers.</div>
+        <div className="lo-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiDollarSign /></div><div className="lo-name">Sell</div><div className="lo-sub">Fixed price for buyers.</div>
       </div>
       <div className={`listing-opt ${sellerData.exchangeType === 'Rent' ? 'active' : ''}`} onClick={() => handleListingType('Rent')}>
-        <div className="lo-icon">🔄</div><div className="lo-name">Rent</div><div className="lo-sub">Weekly or monthly rental.</div>
+        <div className="lo-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiRepeat /></div><div className="lo-name">Rent</div><div className="lo-sub">Weekly or monthly rental.</div>
       </div>
       <div className={`listing-opt ${sellerData.exchangeType === 'Share' ? 'active' : ''}`} onClick={() => handleListingType('Share')}>
-        <div className="lo-icon">🎁</div><div className="lo-name">Free Shelf</div><div className="lo-sub">Donate your book free.</div>
+        <div className="lo-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiGift /></div><div className="lo-name">Free Shelf</div><div className="lo-sub">Donate your book free.</div>
       </div>
     </div>
 
-    <div className="section-title"><div className="st-icon">✅</div>Condition &amp; Availability</div>
+    <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiCheckCircle /></div>Condition &amp; Availability</div>
     <div className="form-grid" style={{ marginBottom: '24px' }}>
       <div className="field">
         <label>Condition <span className="req">*</span></label>
@@ -199,7 +199,7 @@ export default function SellerAddNotesPage() {
       </div>
     </div>
 
-    <div className="section-title"><div className="st-icon">💰</div>Pricing</div>
+    <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiDollarSign /></div>Pricing</div>
     {sellerData.exchangeType === 'Sell' && (
         <div className="pricing-section show" style={{display:'block'}}>
         <div className="form-grid" style={{ marginBottom: '24px' }}>
@@ -256,12 +256,13 @@ export default function SellerAddNotesPage() {
     )}
 
     {sellerData.exchangeType === 'Share' && (
-        <div className="pricing-section show free-info" style={{ marginBottom: '24px', display:'block' }}>
-        🎁 These notes will be listed FREE on the Knowledge Shelf. No price needed.
+        <div className="pricing-section show free-info" style={{ marginBottom: '24px', display:'flex', alignItems: 'center', gap: '8px' }}>
+          <FiGift style={{ fontSize: '1.2rem', color: 'var(--cta)' }} />
+          These notes will be listed FREE on the Knowledge Shelf. No price needed.
         </div>
     )}
 
-    <div className="section-title"><div className="st-icon">📝</div>Description</div>
+    <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiAlignLeft /></div>Description</div>
     <div className="field">
       <label>Notes Description <span className="req">*</span></label>
       <textarea name="description" value={sellerData.description} onChange={handleChange} rows="4" placeholder="Describe the notes — content, what chapters it covers, why it's useful…"></textarea>
@@ -282,7 +283,7 @@ export default function SellerAddNotesPage() {
           </div>
       ) : (
           <div>
-              <div className="dz-icon">📤</div>
+              <div className="dz-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiUploadCloud /></div>
               <div className="dz-title">Click to select PDF here</div>
               <div className="dz-sub">PDF format only · Max 2MB</div>
           </div>

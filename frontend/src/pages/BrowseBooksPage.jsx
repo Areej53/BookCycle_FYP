@@ -61,9 +61,18 @@ export default function BrowseBooksPage() {
     }, [localCats, localConds, localType, maxPrice, sort]); // refetch on filter change
 
     const handleSearch = () => {
-        if (localQuery.trim()) {
-            navigate('/browse/search?q=' + encodeURIComponent(localQuery));
-        }
+        const params = new URLSearchParams();
+        if (localQuery.trim()) params.set('q', localQuery.trim());
+        if (localCats.length) params.set('cats', localCats.join(','));
+        if (localConds.length) params.set('conds', localConds.join(','));
+        if (localType.length && !localType.includes('all')) params.set('type', localType.join(','));
+        if (maxPrice) params.set('price', maxPrice);
+        if (sort) params.set('sort', sort);
+        
+        // Only navigate if there's actually a search query, or keep the original behavior 
+        // to navigate when search button is clicked. We navigate to search results page
+        // so it acts as the global search page.
+        navigate(`/browse/search?${params.toString()}`);
     };
 
     const toggleArray = (arr, val) => arr.includes(val) ? arr.filter(i => i !== val) : [...arr, val]; 
@@ -90,9 +99,9 @@ export default function BrowseBooksPage() {
     <div className="tabs-wrap">
       <div className="tab-row" id="tab-row">
         <button className={`tab ${localType.length === 0 ? 'active' : ''}`} onClick={() => setLocalType([])}>All Books</button>
-        <button className="tab" onClick={function(){}}>For Sale</button>
-        <Link to="/details"  className="tab" >For Rent</Link>
-        <button className="tab" onClick={function(){}}>Free Shelf</button>
+        <button className={`tab ${localType.includes('sell') ? 'active' : ''}`} onClick={() => setLocalType(["sell"])}>For Sale</button>
+        <button className={`tab ${localType.includes('rent') ? 'active' : ''}`} onClick={() => setLocalType(["rent"])}>For Rent</button>
+        <button className={`tab ${localType.includes('share') ? 'active' : ''}`} onClick={() => setLocalType(["share"])}>Free Shelf</button>
       </div>
     </div>
   </div>
@@ -131,17 +140,19 @@ export default function BrowseBooksPage() {
   <div className="filter-section">
     <div className="filter-label">Type</div>
     <div className="filter-opts">
-      <label className="filter-opt"><input type="checkbox" value="buy" checked={localCats.includes('buy')} onChange={() => setLocalCats(toggleArray(localCats, 'buy'))}/> For Sale</label>
-      <label className="filter-opt"><input type="checkbox" value="rent" checked={localCats.includes('rent')} onChange={() => setLocalCats(toggleArray(localCats, 'rent'))}/> For Rent</label>
-      <label className="filter-opt"><input type="checkbox" value="free" checked={localCats.includes('free')} onChange={() => setLocalCats(toggleArray(localCats, 'free'))}/> Free Shelf</label>
+      <label className="filter-opt"><input type="checkbox" value="sell" checked={localType.includes('sell')} onChange={() => setLocalType(toggleArray(localType, 'sell'))}/> For Sale</label>
+      <label className="filter-opt"><input type="checkbox" value="rent" checked={localType.includes('rent')} onChange={() => setLocalType(toggleArray(localType, 'rent'))}/> For Rent</label>
+      <label className="filter-opt"><input type="checkbox" value="share" checked={localType.includes('share')} onChange={() => setLocalType(toggleArray(localType, 'share'))}/> Free Shelf</label>
     </div>
   </div>
   <div className="filter-section">
     <div className="filter-label">Condition</div>
     <div className="filter-opts">
-      <label className="filter-opt"><input type="checkbox" value="Like New" checked={localCats.includes('like new')} onChange={() => setLocalCats(toggleArray(localCats, 'like new'))}/> Like New</label>
-      <label className="filter-opt"><input type="checkbox" value="Good" checked={localCats.includes('good')} onChange={() => setLocalCats(toggleArray(localCats, 'good'))}/> Good</label>
-      <label className="filter-opt"><input type="checkbox" value="Used" checked={localCats.includes('used')} onChange={() => setLocalCats(toggleArray(localCats, 'used'))}/> Used</label>
+      <label className="filter-opt"><input type="checkbox" value="New" checked={localConds.includes('new')} onChange={() => setLocalConds(toggleArray(localConds, 'new'))}/> New</label>
+      <label className="filter-opt"><input type="checkbox" value="Like New" checked={localConds.includes('like new')} onChange={() => setLocalConds(toggleArray(localConds, 'like new'))}/> Like New</label>
+      <label className="filter-opt"><input type="checkbox" value="Good" checked={localConds.includes('good')} onChange={() => setLocalConds(toggleArray(localConds, 'good'))}/> Good</label>
+      <label className="filter-opt"><input type="checkbox" value="Fair" checked={localConds.includes('fair')} onChange={() => setLocalConds(toggleArray(localConds, 'fair'))}/> Fair</label>
+      <label className="filter-opt"><input type="checkbox" value="Poor" checked={localConds.includes('poor')} onChange={() => setLocalConds(toggleArray(localConds, 'poor'))}/> Poor</label>
     </div>
   </div>
 </div>
@@ -180,18 +191,13 @@ export default function BrowseBooksPage() {
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                         View PDF
                     </button>
-                ) : book.exchangeType === 'Share' ? (
-                  <>
-                    <span className="free-tag">🎁 Free Shelf</span>
-                    <Link to={`/book/${book._id}`} className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link>
-                  </>
                 ) : (
                   <>
                     <div>
-                      <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. {book.price}</span>
+                      <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>{book.exchangeType === 'Share' ? 'Free' : `Rs. ${book.price}`}</span>
                       {book.exchangeType === 'Rent' && <span className="price-unit">/wk</span>}
                     </div>
-                    <Link to={`/book/${book._id}`} className="btn-mini-cart"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link>
+                    <Link to={`/book/${book._id}`} className="btn-mini-cart" style={{ color: '#fff' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link>
                   </>
                 )}
             </div>
@@ -203,8 +209,8 @@ export default function BrowseBooksPage() {
       <div className="no-results-icon" style={{ opacity: 0.7, marginBottom: '10px' }}>
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
       </div>
-      <div className="no-results-title">No books available yet</div>
-      <div className="no-results-text">Try adjusting your filters or search term.<br/>Here are some popular categories:</div>
+      <div className="no-results-title">No books found matching your search and filters</div>
+      <div className="no-results-text">Try removing some filters or check your spelling.<br/>Here are some popular categories:</div>
       <div className="no-results-cats">
         <span className="no-results-cat" onClick={() => { setLocalCats(['programming']); setLocalQuery(''); }}>Programming</span>
         <span className="no-results-cat" onClick={() => { setLocalCats(['novels']); setLocalQuery(''); }}>Novels</span>

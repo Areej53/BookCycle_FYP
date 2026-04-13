@@ -210,8 +210,9 @@ export default function SellerAddBookPage() {
     )}
 
     {sellerData.exchangeType === 'Share' && (
-        <div className="pricing-section show free-info" style={{ marginBottom: '24px', display:'block' }}>
-        🎁 This book will be listed FREE on the Knowledge Shelf. No price needed.
+        <div className="pricing-section show free-info" style={{ marginBottom: '24px', display:'flex', alignItems: 'center', gap: '8px' }}>
+          <FiGift style={{ fontSize: '1.2rem', color: 'var(--cta)' }} />
+          This book will be listed FREE on the Knowledge Shelf. No price needed.
         </div>
     )}
 
