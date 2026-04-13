@@ -158,6 +158,5 @@ export default function BookDetailsPage() {
 
             <Footer />
         </div>
-        </div>
     );
 }
