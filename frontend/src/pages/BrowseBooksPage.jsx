@@ -6,10 +6,13 @@ import { Link } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import RecommendationWidget from '../components/RecommendationWidget';
 import useRecommendations from '../hooks/useRecommendations';
+import { useWishlist } from '../context/WishlistContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { FiHeart } from 'react-icons/fi';
 export default function BrowseBooksPage() {
     const { user } = useAuth();
+    const { wishlist, toggleWishlist, isInWishlist } = useWishlist();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [books, setBooks] = useState([]);
@@ -93,7 +96,7 @@ export default function BrowseBooksPage() {
 <Navbar cartCount={0} />
 <div className="browse-hero">
   <div className="browse-hero-inner">
-    <h1>Browse <em>Books</em></h1>
+    <h1>Explore <em>Books</em></h1>
     <p className="browse-hero-sub">Explore 12+ books available to buy, rent, or claim free across Islamabad.</p>
     <div className="search-wrap">
       <div className="search-bar">
@@ -185,7 +188,7 @@ export default function BrowseBooksPage() {
         <div style={{gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: 'var(--muted)'}}>Loading books...</div>
       ) : books.map((book, idx) => (
         <div className="book-card" key={book._id} style={{ animationDelay: `${idx * 0.04}s` }} onClick={() => navigate(`/book/${book._id}`)}>
-          <div className="bc-img-wrap">
+          <div className="bc-img-wrap" style={{ position: 'relative' }}>
             <img src={getImageUrl(book)} alt={book.title} className="bc-img"/>
             {book.exchangeType === 'Sell' && <span className="tb tb-buy">Buy</span>}
             {book.exchangeType === 'Rent' && <span className="tb tb-rent">Rent</span>}
@@ -204,11 +207,21 @@ export default function BrowseBooksPage() {
                     </button>
                 ) : (
                   <>
-                    <div>
-                      <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>{book.exchangeType === 'Share' ? 'Free' : `Rs. ${book.price}`}</span>
-                      {book.exchangeType === 'Rent' && <span className="price-unit">/wk</span>}
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <button 
+                          onClick={(e) => { e.stopPropagation(); toggleWishlist(book); }}
+                          style={{ 
+                              background: 'none', border: '1.5px solid var(--border)', 
+                              borderRadius: '50%', width: '30px', height: '30px', 
+                              display: 'grid', placeItems: 'center', cursor: 'pointer', 
+                              color: isInWishlist(book._id) ? 'var(--cta)' : 'var(--text-muted)',
+                              transition: 'all .2s'
+                          }}
+                        >
+                            <FiHeart size={14} fill={isInWishlist(book._id) ? "var(--cta)" : "none"} />
+                      </button>
+                      <Link to={`/book/${book._id}`} className="btn-mini-cart" style={{ color: '#fff' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link>
                     </div>
-                    <Link to={`/book/${book._id}`} className="btn-mini-cart" style={{ color: '#fff' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link>
                   </>
                 )}
             </div>
@@ -247,24 +260,17 @@ export default function BrowseBooksPage() {
                         <div style={{ fontSize: '.78rem', fontWeight: '700', color: bk.exchangeType === 'Share' ? 'var(--secondary)' : 'var(--cta)' }}>
                             {bk.exchangeType === 'Share' ? 'Free' : `Rs. ${bk.price}${bk.exchangeType === 'Rent' ? '/wk' : ''}`}
                         </div>
-                        <button style={{ 
-                            background: 'var(--primary)', 
-                            color: '#fff', 
-                            border: 'none', 
-                            borderRadius: '50%', 
-                            width: '28px', 
-                            height: '28px', 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center', 
-                            cursor: 'pointer', 
-                            transition: 'transform 0.15s ease',
-                            boxShadow: '0 2px 8px rgba(19,73,60,0.2)'
-                        }} 
-                        onMouseOver={(e)=>e.currentTarget.style.transform='scale(1.1)'} 
-                        onMouseOut={(e)=>e.currentTarget.style.transform='scale(1)'}>
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                        </button>
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); toggleWishlist(bk); }}
+                                style={{ background: 'none', border: '1.2px solid var(--border)', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: isInWishlist(bk._id) ? 'var(--cta)' : 'var(--text-muted)', transition: 'all .2s' }}
+                            >
+                                <FiHeart size={12} fill={isInWishlist(bk._id) ? 'var(--cta)' : 'none'} />
+                            </button>
+                            <button style={{ background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'transform 0.15s ease', boxShadow: '0 2px 8px rgba(19,73,60,0.2)' }} onMouseOver={(e)=>e.currentTarget.style.transform='scale(1.1)'} onMouseOut={(e)=>e.currentTarget.style.transform='scale(1)'}>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

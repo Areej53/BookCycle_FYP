@@ -3,14 +3,19 @@ import { useParams, Link } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { api, getApiErrorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
 import { toast } from 'react-toastify';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
+import { FiHeart } from 'react-icons/fi';
 import RecommendationWidget from '../components/RecommendationWidget';
 
 export default function BookDetailsPage() {
     const { id } = useParams();
     const { user } = useAuth();
     const { addToCart } = useCart();
+    const { toggleWishlist, isInWishlist } = useWishlist();
     const [book, setBook] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -61,49 +66,20 @@ export default function BookDetailsPage() {
         return (
             <div style={{ textAlign: 'center', padding: '100px 5%' }}>
                 <h2>Book not found</h2>
-                <Link to="/browse" className="btn-primary" style={{ marginTop: '20px', display: 'inline-block' }}>Back to Browse</Link>
+                <Link to="/browse" className="btn-primary" style={{ marginTop: '20px', display: 'inline-block' }}>Back to Explore</Link>
             </div>
         );
     }
 
     return (
         <div className="BookDetailsPage">
-            {/* SAME HEADER AS HOME PAGE */}
-            <nav style={{ 
-                position: 'sticky', top: 0, zIndex: 10000, 
-                background: 'var(--primary)', 
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-                padding: '0 5%', height: '76px', 
-                boxShadow: '0 2px 20px rgba(19,73,60,.35)',
-                borderBottom: '1.5px solid rgba(221,161,94,.45)' 
-            }}>
-                <Link to="/home" className="logo">
-                    <div className="logo-icon"><img src={IMAGES.img_0} alt="BookCycle logo"/></div>
-                    BookCycle
-                </Link>
-
-                {user && (
-                    <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', color: 'rgba(255,250,224,.9)', fontWeight: 600, fontSize: '1rem', letterSpacing: '0.03em' }}>
-                        Hi, {user.name}
-                    </div>
-                )}
-
-                <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '30px', margin: 0, padding: 0 }}>
-                    <li><Link to="/browse">Browse</Link></li>
-                    <li><Link to="/seller">Sell</Link></li>
-                    {user ? (
-                        <li><Link to="/logout" className="nav-cta">Logout</Link></li>
-                    ) : (
-                        <li><Link to="/login" className="nav-cta">Login</Link></li>
-                    )}
-                </ul>
-            </nav>
+            <Navbar />
 
             <div className="detail-hero">
                 <div className="detail-hero-inner">
                     <div className="detail-breadcrumb" style={{ color: 'rgba(255,250,224, 0.6)', gap: '8px', display: 'flex', alignItems: 'center' }}>
                         <Link to="/home">Home</Link> <span style={{ opacity: 0.5 }}>/</span>
-                        <Link to="/browse">Browse</Link> <span style={{ opacity: 0.5 }}>/</span>
+                        <Link to="/browse">Explore</Link> <span style={{ opacity: 0.5 }}>/</span>
                         <span style={{ color: 'white' }}>{book.title}</span>
                     </div>
                 </div>
@@ -132,7 +108,7 @@ export default function BookDetailsPage() {
                         <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '3rem', color: 'var(--primary)', marginBottom: '10px', lineHeight: 1.1 }}>{book.title}</h1>
                         <div style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginBottom: '25px' }}>by <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{book.author}</span></div>
                         
-                        <div className="price-card" style={{ background: '#f5f0d0', padding: '30px', borderRadius: '24px', marginBottom: '35px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div className="price-card" style={{ background: '#EBF1EE', padding: '30px', borderRadius: '24px', marginBottom: '35px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
                                 <div style={{ fontSize: '0.9rem', color: 'var(--primary)', opacity: 0.7, marginBottom: '5px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>Listing Price</div>
                                 <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.5rem', fontWeight: 900, color: 'var(--primary)' }}>
@@ -141,7 +117,20 @@ export default function BookDetailsPage() {
                                 </div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                <button onClick={handleAddToCart} className="btn-mini-cart" style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--cta)', color: '#fff', boxShadow: '0 12px 30px rgba(188,108,37,0.35)', transition: 'all 0.2s', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <button 
+                                    onClick={() => toggleWishlist(book)} 
+                                    style={{ 
+                                        width: '64px', height: '64px', borderRadius: '50%', 
+                                        background: '#fff', color: isInWishlist(book?._id) ? 'var(--cta)' : 'var(--text-muted)', 
+                                        boxShadow: '0 8px 24px rgba(0,0,0,0.1)', 
+                                        transition: 'all 0.2s', border: '1.5px solid var(--border)', 
+                                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                                    }}
+                                    title="Add to Wishlist"
+                                >
+                                    <FiHeart size={26} fill={isInWishlist(book?._id) ? "var(--cta)" : "none"} />
+                                </button>
+                                <button onClick={handleAddToCart} className="btn-mini-cart" style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--primary)', color: '#fff', boxShadow: '0 12px 30px rgba(19,73,60,0.35)', transition: 'all 0.2s', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                                 </button>
                             </div>
@@ -168,42 +157,7 @@ export default function BookDetailsPage() {
                 </main>
             </div>
 
-            {/* SAME FOOTER AS HOME PAGE */}
-            <footer style={{ background: '#0d2e26', color: 'rgba(255,250,224,.75)', padding: '60px 5% 30px', marginTop: '80px' }}>
-                <div className="footer-grid">
-                    <div className="footer-brand" style={{ display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'flex-start' }}>
-                        <Link to="#" className="logo" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontFamily: "'Playfair Display', serif", fontSize: '1.8rem', fontWeight: 700, color: 'var(--bg)', textDecoration: 'none', lineHeight: 1 }}>
-                            <div className="logo-icon" style={{ width: '64px', height: '64px' }}><img src={IMAGES.img_0} alt="BookCycle logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }}/></div>
-                            BookCycle
-                        </Link>
-                        <p style={{ fontSize: '.88rem', lineHeight: 1.7, maxWidth: '260px', marginTop: '14px' }}>Islamabad's community book platform. Share, rent, and discover books across the city. Making knowledge accessible to all.</p>
-                    </div>
-                    <div className="footer-col">
-                        <h4 style={{ color: 'var(--bg)', fontWeight: 700, fontSize: '.95rem', marginBottom: '18px' }}>Platform</h4>
-                        <ul style={{ listStyle: 'none' }}>
-                            <li style={{ marginBottom: '10px' }}><Link to="/browse" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Browse Books</Link></li>
-                            <li style={{ marginBottom: '10px' }}><Link to="/browse" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Rent a Book</Link></li>
-                        </ul>
-                    </div>
-                    <div className="footer-col">
-                        <h4 style={{ color: 'var(--bg)', fontWeight: 700, fontSize: '.95rem', marginBottom: '18px' }}>Company</h4>
-                        <ul style={{ listStyle: 'none' }}>
-                            <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>About Us</Link></li>
-                        </ul>
-                    </div>
-                    <div className="footer-col">
-                        <h4 style={{ color: 'var(--bg)', fontWeight: 700, fontSize: '.95rem', marginBottom: '18px' }}>Contact</h4>
-                        <ul style={{ listStyle: 'none' }}>
-                            <li style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '10px' }}>
-                                <Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>contact@bookcycle.com</Link>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div className="footer-bottom" style={{ borderTop: '1px solid rgba(255,250,224,.1)', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <p style={{ fontSize: '.82rem' }}>© 2025 BookCycle. All rights reserved.</p>
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 }
