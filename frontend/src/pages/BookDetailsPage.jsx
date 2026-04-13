@@ -3,12 +3,14 @@ import { useParams, Link } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { api, getApiErrorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { toast } from 'react-toastify';
 import RecommendationWidget from '../components/RecommendationWidget';
 
 export default function BookDetailsPage() {
     const { id } = useParams();
     const { user } = useAuth();
+    const { addToCart } = useCart();
     const [book, setBook] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -38,8 +40,12 @@ export default function BookDetailsPage() {
     }, [id]);
 
     const handleAddToCart = () => {
-        toast.success(`"${book.title}" added to your cart!`);
-        // Future: update cart context/localStorage
+        const added = addToCart(book);
+        if (added) {
+            toast.success("Added to cart");
+        } else {
+            toast.info("Item is already in your cart!");
+        }
     };
 
     if (isLoading) {

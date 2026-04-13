@@ -4,6 +4,8 @@ import { IMAGES } from '../data/assets';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api/client';
 
+import Navbar from '../components/Navbar';
+
 const getImageUrl = (book) => {
     const imagePath = book.image || (book.images && book.images[0]);
     if (!imagePath) {
@@ -141,37 +143,7 @@ export default function HomePage() {
             
 
 
-<nav style={{ 
-  position: 'sticky', top: 0, zIndex: 10000, 
-  background: 'var(--primary)', 
-  display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-  padding: '0 5%', height: '76px', 
-  boxShadow: '0 2px 20px rgba(19,73,60,.35)',
-  borderBottom: '1.5px solid rgba(221,161,94,.45)' 
-}}>
-  <Link to="/home" className="logo">
-    <div className="logo-icon">
-      <img src={IMAGES.img_0} alt="BookCycle logo"/>
-    </div>
-    BookCycle
-  </Link>
-
-  {user && (
-      <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', color: 'rgba(255,250,224,.9)', fontWeight: 600, fontSize: '1rem', letterSpacing: '0.03em' }}>
-        Hi, {user.name}
-      </div>
-  )}
-
-  <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '30px', margin: 0, padding: 0 }}>
-    <li><Link to="/browse">Browse</Link></li>
-    <li><Link to="/seller">Sell</Link></li>
-    {user ? (
-        <li><Link to="/logout" className="nav-cta">Logout</Link></li>
-    ) : (
-        <li><Link to="/login" className="nav-cta">Login</Link></li>
-    )}
-  </ul>
-</nav>
+<Navbar />
 
 
 <section className="hero">
