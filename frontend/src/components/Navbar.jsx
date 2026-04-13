@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { IMAGES } from '../data/assets';
@@ -7,7 +7,21 @@ import { IMAGES } from '../data/assets';
 export default function Navbar() {
   const { user } = useAuth();
   const { cart } = useCart();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const cartCount = cart ? cart.length : 0;
+
+  const currentTab = searchParams.get('tab');
+  const isHome = location.pathname === '/' || location.pathname === '/home';
+  const isBrowse = location.pathname === '/browse' && !currentTab;
+  const isFreeShelf = location.pathname === '/browse' && currentTab === 'free';
+  const isSell = location.pathname.startsWith('/seller');
+
+  const getLinkStyle = (isActive) => ({
+    color: isActive ? 'var(--accent)' : 'rgba(255,250,224,.82)',
+    fontWeight: isActive ? '700' : '500',
+    transition: 'color .2s'
+  });
 
   return (
     <nav style={{
@@ -23,22 +37,16 @@ export default function Navbar() {
         BookCycle
       </Link>
 
-      {user && (
-        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', color: 'rgba(255,250,224,.9)', fontWeight: 600, fontSize: '1rem', letterSpacing: '0.03em' }} className="nav-user-greeting">
-          Hi, {user.name}
-        </div>
-      )}
+      <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '25px', margin: 0, padding: 0 }}>
+        {!isHome && <li><Link to="/home" style={getLinkStyle(false)}>Home</Link></li>}
+        <li><Link to="/browse" style={getLinkStyle(isBrowse)}>Browse</Link></li>
+        <li><Link to="/browse?tab=free" style={getLinkStyle(isFreeShelf)}>Free Shelf</Link></li>
+        <li><Link to="/seller" style={getLinkStyle(isSell)}>Sell</Link></li>
 
-      <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '30px', margin: 0, padding: 0 }}>
-        <li><Link to="/home">Home</Link></li>
-        <li><Link to="/browse">Browse</Link></li>
-        <li><Link to="/seller">Sell</Link></li>
-
-        {/* Cart Icon */}
         {/* Cart Icon */}
         {user && (
           <li>
-            <Link to="/cart" style={{ display: 'flex', alignItems: 'center', position: 'relative', color: 'rgba(255,250,224,.82)', transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,250,224,.82)'}>
+            <Link to="/cart" style={{ display: 'flex', alignItems: 'center', position: 'relative', color: isHome ? 'rgba(255,250,224,.82)' : (location.pathname === '/cart' ? 'var(--accent)' : 'rgba(255,250,224,.82)'), transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'} onMouseLeave={e => e.currentTarget.style.color = location.pathname === '/cart' ? 'var(--accent)' : 'rgba(255,250,224,.82)'}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="9" cy="21" r="1"></circle>
                 <circle cx="20" cy="21" r="1"></circle>
@@ -55,6 +63,21 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
+          </li>
+        )}
+
+        {/* User Greeting moved to right */}
+        {user && (
+          <li style={{ 
+            color: 'rgba(255,250,224,.7)', 
+            fontWeight: 500, 
+            fontSize: '.85rem', 
+            letterSpacing: '0.02em',
+            paddingLeft: '15px',
+            borderLeft: '1.5px solid rgba(255,250,224,.15)',
+            marginLeft: '5px'
+          }}>
+            Hi, <span style={{ color: '#fff', fontWeight: 600 }}>{user.name.split(' ')[0]}</span>
           </li>
         )}
 

@@ -26,10 +26,18 @@ export default function SellerAddNotesPage() {
     const fileInputRef = useRef(null);
 
     useEffect(() => {
+        // Strict enforcement: if no category is in context, they skipped the selection page.
+        // However, we only redirect if it's completely empty, allowing them to proceed if they 
+        // somehow landed here but intended for Notes.
+        if (!sellerData.category) {
+            navigate('/seller');
+            return;
+        }
+        
         if (sellerData.category !== 'Notes') {
             updateSellerData({ category: 'Notes' });
         }
-    }, [sellerData.category, updateSellerData]);
+    }, [sellerData.category, updateSellerData, navigate]);
 
     const handleChange = (e) => {
         updateSellerData({ [e.target.name]: e.target.value });
@@ -50,13 +58,11 @@ export default function SellerAddNotesPage() {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Ensure PDF validation
         if (file.type !== 'application/pdf') {
             toast.error("Only PDF files are supported.");
             return;
         }
         
-        // Reject files >2MB
         if (file.size > 2 * 1024 * 1024) {
             toast.error("File size exceeds 2MB limit.");
             return;
@@ -96,11 +102,10 @@ export default function SellerAddNotesPage() {
                 subject: sellerData.subject || '',
                 author: sellerData.author || 'Unknown',
                 description: sellerData.description || 'No description provided.',
-                condition: sellerData.condition || 'Good', // Kept for backend constraints, or if removed from UI, default good
+                condition: sellerData.condition || 'Good',
                 category: 'Notes',
                 exchangeType: sellerData.exchangeType || 'Sell',
                 price: sellerData.exchangeType === 'Sell' ? Number(sellerData.price) : (sellerData.exchangeType === 'Rent' ? Number(sellerData.rentWeek) : 0),
-                duration: sellerData.duration || '1 Month',
                 rentWeek: sellerData.rentWeek ? Number(sellerData.rentWeek) : 0,
                 rentMonth: sellerData.rentMonth ? Number(sellerData.rentMonth) : 0,
                 pdf: sellerData.pdf
@@ -199,14 +204,6 @@ export default function SellerAddNotesPage() {
           <div className={`cond-pill ${sellerData.condition === 'Fair' || sellerData.condition === 'Poor' ? 'active-worn' : ''}`} onClick={() => handleCondition('Fair')}>Worn / Fair</div>
         </div>
       </div>
-      <div className="field">
-        <label>Available Duration</label>
-        <select name="duration" value={sellerData.duration} onChange={handleChange}>
-          <option value="1w">1 Week</option><option value="2w">2 Weeks</option>
-          <option value="1m">1 Month</option><option value="3m">3 Months</option>
-          <option value="open">Open / Until Taken</option>
-        </select>
-      </div>
     </div>
 
     <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiDollarSign /></div>Pricing</div>
@@ -220,10 +217,6 @@ export default function SellerAddNotesPage() {
                 <input type="number" name="price" value={sellerData.price} onChange={handleChange} placeholder="0" min="0"/>
             </div>
             {errors.price && <span className="err-msg" style={{ display: 'block' }}>{errors.price}</span>}
-            </div>
-            <div className="field">
-            <label>Negotiable?</label>
-            <select name="negotiable" value={sellerData.negotiable} onChange={handleChange}><option value="yes">Yes</option><option value="no">No</option></select>
             </div>
         </div>
         </div>
@@ -303,7 +296,7 @@ export default function SellerAddNotesPage() {
 
     <div className="form-actions" style={{ marginTop: '30px' }}>
       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-        <button className="btn-back" onClick={() => navigate('/seller/categories')}>← Back</button>
+        <button className="btn-back" onClick={() => navigate('/seller')}>← Back</button>
       </div>
       <button className="btn-next-form" onClick={handlePublish} disabled={loading}>{loading ? 'Publishing...' : 'Publish Notes ✓'}</button>
     </div>
