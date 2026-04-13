@@ -6,6 +6,16 @@ import { useAuth } from '../context/AuthContext';
 import { api, getApiErrorMessage } from '../api/client';
 import { toast } from 'react-toastify';
 import Navbar from '../components/Navbar';
+import { 
+  FiFileText,
+  FiList,
+  FiDollarSign,
+  FiRepeat,
+  FiGift,
+  FiCheckCircle,
+  FiAlignLeft,
+  FiUploadCloud
+} from 'react-icons/fi';
 
 export default function SellerAddNotesPage() {
     const { sellerData, updateSellerData, resetSellerData } = useContext(SellerContext);
