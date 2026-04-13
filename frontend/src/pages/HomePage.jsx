@@ -2,7 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext';
 import { api } from '../api/client';
+import { FiHeart } from 'react-icons/fi';
 
 import Navbar from '../components/Navbar';
 
@@ -34,6 +36,7 @@ const getTimeAgo = (date) => {
 
 export default function HomePage() {
     const { user } = useAuth();
+    const { wishlist, toggleWishlist, isInWishlist } = useWishlist();
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -340,8 +343,25 @@ export default function HomePage() {
     </div>
     <div className="books-grid">
       {featuredBooks.map(b => (
-        <div className="book-card" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer' }}>
-          <div className="book-cover"><img src={b.img} alt={b.title}/><span className={`book-badge badge-${b.badge}`}>{b.badge === 'sell' ? 'Buy' : b.badge.charAt(0).toUpperCase() + b.badge.slice(1)}</span></div>
+        <div className="book-card" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer', position: 'relative' }}>
+          <div className="book-cover">
+            <img src={b.img} alt={b.title}/>
+            <span className={`book-badge badge-${b.badge}`}>{b.badge === 'sell' ? 'Buy' : b.badge.charAt(0).toUpperCase() + b.badge.slice(1)}</span>
+            <button 
+                className="wishlist-btn-float" 
+                onClick={(e) => { e.stopPropagation(); toggleWishlist(b); }}
+                style={{ 
+                    position: 'absolute', top: '10px', left: '10px', 
+                    background: 'rgba(255,255,255,0.9)', border: 'none', 
+                    borderRadius: '50%', width: '32px', height: '32px', 
+                    display: 'grid', placeItems: 'center', cursor: 'pointer', 
+                    transition: 'all 0.2s', color: isInWishlist(b.id) ? 'var(--cta)' : 'var(--text-muted)',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}
+            >
+                <FiHeart fill={isInWishlist(b.id) ? "var(--cta)" : "none"} />
+            </button>
+          </div>
           <div className="book-info">
             <div className="book-title">{b.title}</div>
             <div className="book-author">{b.author}</div>
@@ -475,7 +495,25 @@ export default function HomePage() {
     </div>
     <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
       <div className="book-card" onClick={() => navigate('/book/6618d3f666b6c666f666f666')} style={{ cursor: 'pointer' }}>
-        <div className="book-cover"><img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80" alt="The Alchemist"/><span className="book-badge badge-rent">Rent</span></div>
+        <div className="book-cover" style={{ position: 'relative' }}>
+          <img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80" alt="The Alchemist"/>
+          <span className="book-badge badge-rent">Rent</span>
+          <button 
+                className="wishlist-btn-float" 
+                onClick={(e) => { e.stopPropagation(); toggleWishlist({ id: '6618d3f666b6c666f666f666', title: 'The Alchemist', author: 'Paulo Coelho', badge: 'rent', price: 30, exchangeType: 'Rent', category: 'Novels', img: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80' }); }}
+                style={{ 
+                    position: 'absolute', top: '10px', left: '10px', 
+                    background: 'rgba(255,255,255,0.9)', border: 'none', 
+                    borderRadius: '50%', width: '32px', height: '32px', 
+                    display: 'grid', placeItems: 'center', cursor: 'pointer', 
+                    transition: 'all 0.2s', color: isInWishlist('6618d3f666b6c666f666f666') ? 'var(--cta)' : 'var(--text-muted)',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    zIndex: 10
+                }}
+            >
+                <FiHeart fill={isInWishlist('6618d3f666b6c666f666f666') ? "var(--cta)" : "none"} />
+            </button>
+        </div>
         <div className="book-info"><div className="book-title">The Alchemist</div><div className="book-author">Paulo Coelho</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 30/wk</span><Link to="/book/6618d3f666b6c666f666f666" className="btn-mini-cart" title="Rent" style={{ color: '#fff' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div>
       </div>
       <div className="book-card" onClick={() => navigate('/book/6618d3f666b6c666f666f667')} style={{ cursor: 'pointer' }}>
@@ -499,9 +537,24 @@ export default function HomePage() {
       <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
         {freeBooks.map(b => (
           <div className="book-card" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer' }}>
-            <div className="book-cover">
+            <div className="book-cover" style={{ position: 'relative' }}>
               <img src={b.img} alt={b.title}/>
               <span className="book-badge badge-free">Free</span>
+              <button 
+                className="wishlist-btn-float" 
+                onClick={(e) => { e.stopPropagation(); toggleWishlist(b); }}
+                style={{ 
+                    position: 'absolute', top: '10px', left: '10px', 
+                    background: 'rgba(255,255,255,0.9)', border: 'none', 
+                    borderRadius: '50%', width: '32px', height: '32px', 
+                    display: 'grid', placeItems: 'center', cursor: 'pointer', 
+                    transition: 'all 0.2s', color: isInWishlist(b.id) ? 'var(--cta)' : 'var(--text-muted)',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    zIndex: 10
+                }}
+            >
+                <FiHeart fill={isInWishlist(b.id) ? "var(--cta)" : "none"} />
+            </button>
             </div>
             <div className="book-info">
               <div className="book-title">{b.title}</div>
@@ -527,10 +580,25 @@ export default function HomePage() {
     </div>
     <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
       {recentBooks.map(b => (
-        <div className="book-card book-card-h" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer' }}>
-          <div className="book-cover" style={{ width: '82px', flexShrink: '0', borderRadius: '0', minHeight: '110px', height: 'auto' }}>
+        <div className="book-card book-card-h" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer', position: 'relative' }}>
+          <div className="book-cover" style={{ width: '82px', flexShrink: '0', borderRadius: '0', minHeight: '110px', height: 'auto', position: 'relative' }}>
             <img src={b.img} alt={b.title}/>
             <span className={`book-badge badge-${b.badge}`} style={{ top: '6px', right: '4px', fontSize: '.6rem', padding: '2px 6px' }}>{b.badge === 'sell' ? 'Buy' : b.badge.charAt(0).toUpperCase() + b.badge.slice(1)}</span>
+            <button 
+                className="wishlist-btn-float" 
+                onClick={(e) => { e.stopPropagation(); toggleWishlist(b); }}
+                style={{ 
+                    position: 'absolute', top: '4px', left: '4px', 
+                    background: 'rgba(255,255,255,0.9)', border: 'none', 
+                    borderRadius: '50%', width: '24px', height: '24px', 
+                    display: 'grid', placeItems: 'center', cursor: 'pointer', 
+                    transition: 'all 0.2s', color: isInWishlist(b.id) ? 'var(--cta)' : 'var(--text-muted)',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    zIndex: 10
+                }}
+            >
+                <FiHeart size={12} fill={isInWishlist(b.id) ? "var(--cta)" : "none"} />
+            </button>
           </div>
           <div className="book-info" style={{ padding: '14px' }}>
             <div className="book-title" style={{ fontSize: '.9rem' }}>{b.title}</div>

@@ -1,0 +1,121 @@
+import React from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import { FiHeart, FiTrash2, FiShoppingBag, FiArrowRight, FiBookOpen } from 'react-icons/fi';
+import { IMAGES } from '../data/assets';
+
+export default function WishlistPage() {
+    const { wishlist, toggleWishlist, clearWishlist } = useWishlist();
+    const { addToCart } = useCart();
+    const navigate = useNavigate();
+
+    const handleMoveToCart = (book) => {
+        addToCart(book);
+        toggleWishlist(book); // Remove from wishlist when moving to cart
+    };
+
+    return (
+        <div className="WishlistPage" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
+            <Navbar />
+            
+            <main style={{ flex: 1, padding: '40px 5%' }}>
+                <div className="wishlist-header" style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                    <div>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(188,108,37,.1)', color: 'var(--cta)', fontSize: '.75rem', fontWeights: '700', letterSpacing: '.1em', textTransform: 'uppercase', padding: '5px 14px', borderRadius: '50px', marginBottom: '12px' }}>
+                            <FiHeart fill="var(--cta)" /> Saved for Later
+                        </div>
+                        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.5rem', fontWeight: 900, color: 'var(--primary)' }}>Your <em>Wishlist</em></h1>
+                        <p style={{ color: 'var(--text-muted)', marginTop: '8px' }}>Manage the books you've saved. Ready to make them yours?</p>
+                    </div>
+                    {wishlist.length > 0 && (
+                        <button onClick={clearWishlist} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', paddingBottom: '10px' }}>
+                            <FiTrash2 /> Clear All
+                        </button>
+                    )}
+                </div>
+
+                {wishlist.length === 0 ? (
+                    <div className="empty-wishlist" style={{ background: '#fff', border: '1.5px dashed var(--border)', borderRadius: '24px', padding: '80px 40px', textAlign: 'center', animation: 'fadeUp .5s ease' }}>
+                        <div style={{ width: '80px', height: '80px', background: 'var(--bg)', borderRadius: '50%', display: 'grid', placeItems: 'center', margin: '0 auto 24px', color: 'var(--accent)' }}>
+                            <FiHeart size={36} />
+                        </div>
+                        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.8rem', color: 'var(--primary)', marginBottom: '12px' }}>Your wishlist is empty</h2>
+                        <p style={{ color: 'var(--text-muted)', maxWidth: '400px', margin: '0 auto 32px', lineHeight: 1.6 }}>Explore Islamabad's largest community library and save the books you love for later.</p>
+                        <Link to="/browse" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+                            Start Browsing <FiArrowRight />
+                        </Link>
+                    </div>
+                ) : (
+                    <div className="wishlist-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
+                        {wishlist.map((book, idx) => (
+                            <div key={book.id || idx} className="wish-card" style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: '20px', overflow: 'hidden', transition: 'all .3s ease', position: 'relative', animation: `fadeUp .5s ease ${idx * 0.1}s both` }}>
+                                <div style={{ height: '220px', overflow: 'hidden', position: 'relative' }}>
+                                    <img src={book.img} alt={book.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <button 
+                                        onClick={() => toggleWishlist(book)}
+                                        style={{ position: 'absolute', top: '15px', right: '15px', background: '#fff', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'grid', placeItems: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', color: 'var(--cta)' }}
+                                    >
+                                        <FiHeart fill="var(--cta)" />
+                                    </button>
+                                    <div style={{ position: 'absolute', bottom: '12px', left: '12px' }}>
+                                        <span className={`book-badge badge-${book.badge}`} style={{ position: 'static', padding: '4px 12px' }}>
+                                            {book.badge === 'sell' ? 'Buy' : book.badge.charAt(0).toUpperCase() + book.badge.slice(1)}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div style={{ padding: '20px' }}>
+                                    <div style={{ fontSize: '.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--accent)', letterSpacing: '.05em', marginBottom: '6px' }}>{book.category}</div>
+                                    <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.2rem', fontWeight: 700, color: 'var(--primary)', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{book.title}</h3>
+                                    <div style={{ fontSize: '.85rem', color: 'var(--text-muted)', marginBottom: '16px' }}>by {book.author}</div>
+                                    
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', borderTop: '1px solid var(--bg)', paddingTop: '16px' }}>
+                                        <div style={{ fontWeight: 900, color: 'var(--cta)', fontSize: '1.2rem' }}>
+                                            {book.badge === 'free' ? 'Free' : `Rs. ${book.price}`}
+                                            {book.badge === 'rent' && <span style={{ fontSize: '.75rem', fontWeight: 500, color: 'var(--text-muted)' }}>/wk</span>}
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <button 
+                                                onClick={() => navigate(`/book/${book.id}`)}
+                                                style={{ background: 'var(--bg)', border: 'none', borderRadius: '50%', width: '38px', height: '38px', display: 'grid', placeItems: 'center', cursor: 'pointer', transition: 'background .2s', color: 'var(--primary)' }}
+                                                title="View Details"
+                                            >
+                                                <FiBookOpen />
+                                            </button>
+                                            <button 
+                                                onClick={() => handleMoveToCart(book)}
+                                                style={{ background: 'var(--primary)', border: 'none', borderRadius: '50%', width: '38px', height: '38px', display: 'grid', placeItems: 'center', cursor: 'pointer', transition: 'transform .2s', color: '#fff' }}
+                                                className="hover-pop"
+                                                title="Add to Cart"
+                                            >
+                                                <FiShoppingBag />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </main>
+
+            <Footer />
+            
+            <style>{`
+                @keyframes fadeUp {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .wish-card:hover {
+                    transform: translateY(-8px);
+                    box-shadow: 0 15px 35px rgba(19,73,60,.12);
+                }
+                .hover-pop:hover {
+                    transform: scale(1.1);
+                }
+            `}</style>
+        </div>
+    );
+}

@@ -4,10 +4,13 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import RecommendationWidget from '../components/RecommendationWidget';
 import useRecommendations from '../hooks/useRecommendations';
+import { useWishlist } from '../context/WishlistContext';
 import { api } from '../api/client';
+import { FiHeart } from 'react-icons/fi';
 
 export default function CategoryResultsPage() {
     const { user } = useAuth();
+    const { wishlist, toggleWishlist, isInWishlist } = useWishlist();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const [books, setBooks] = useState([]);
@@ -197,11 +200,26 @@ export default function CategoryResultsPage() {
         <div style={{gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: 'var(--muted)'}}>Loading books...</div>
       ) : books.map((book, idx) => (
         <div className="book-card" key={book._id} style={{ animationDelay: `${idx * 0.04}s`, cursor: 'pointer' }} onClick={() => navigate(`/book/${book._id}`)}>
-          <div className="bc-img-wrap">
+          <div className="bc-img-wrap" style={{ position: 'relative' }}>
             <img src={getImageUrl(book)} alt={book.title} className="bc-img"/>
             {book.exchangeType === 'Sell' && <span className="tb tb-buy">Buy</span>}
             {book.exchangeType === 'Rent' && <span className="tb tb-rent">Rent</span>}
             {book.exchangeType === 'Share' && <span className="tb tb-free">Free</span>}
+            <button 
+                className="wishlist-btn-float" 
+                onClick={(e) => { e.stopPropagation(); toggleWishlist(book); }}
+                style={{ 
+                    position: 'absolute', top: '10px', left: '10px', 
+                    background: 'rgba(255,255,255,0.9)', border: 'none', 
+                    borderRadius: '50%', width: '30px', height: '30px', 
+                    display: 'grid', placeItems: 'center', cursor: 'pointer', 
+                    transition: 'all 0.2s', color: isInWishlist(book._id) ? 'var(--cta)' : 'var(--text-muted)',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    zIndex: 10
+                }}
+            >
+                <FiHeart size={16} fill={isInWishlist(book._id) ? "var(--cta)" : "none"} />
+            </button>
           </div>
           <div className="bc-body">
             <div className="bc-cat">{book.category}</div>

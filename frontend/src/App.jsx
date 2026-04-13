@@ -19,6 +19,7 @@ import {
   SellerAddNotesPage,
   CartPage,
   CheckoutPage,
+  WishlistPage,
 } from "./pages";
 import { ToastContainer } from "react-toastify";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -108,6 +109,10 @@ const router = createBrowserRouter([
           {
             path: "checkout",
             element: <CheckoutPage />,
+          },
+          {
+            path: "wishlist",
+            element: <WishlistPage />,
           },
         ],
       },

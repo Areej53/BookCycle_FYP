@@ -2,20 +2,25 @@ import React from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import { IMAGES } from '../data/assets';
+import { FiHeart } from 'react-icons/fi';
 
 export default function Navbar() {
   const { user } = useAuth();
   const { cart } = useCart();
+  const { wishlist } = useWishlist();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const cartCount = cart ? cart.length : 0;
+  const wishlistCount = wishlist ? wishlist.length : 0;
 
   const currentTab = searchParams.get('tab');
   const isHome = location.pathname === '/' || location.pathname === '/home';
   const isBrowse = location.pathname === '/browse' && !currentTab;
   const isFreeShelf = location.pathname === '/browse' && currentTab === 'free';
   const isSell = location.pathname.startsWith('/seller');
+  const isWishlist = location.pathname === '/wishlist';
 
   const getLinkStyle = (isActive) => ({
     color: isActive ? 'var(--accent)' : 'rgba(255,250,224,.82)',
@@ -43,10 +48,29 @@ export default function Navbar() {
         <li><Link to="/browse?tab=free" style={getLinkStyle(isFreeShelf)}>Free Shelf</Link></li>
         <li><Link to="/seller" style={getLinkStyle(isSell)}>Sell</Link></li>
 
+        {/* Wishlist Icon */}
+        {user && (
+          <li>
+            <Link to="/wishlist" style={{ display: 'flex', alignItems: 'center', position: 'relative', color: isWishlist ? 'var(--accent)' : 'rgba(255,250,224,.82)', transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'} onMouseLeave={e => e.currentTarget.style.color = isWishlist ? 'var(--accent)' : 'rgba(255,250,224,.82)'}>
+              <FiHeart size={21} />
+              {wishlistCount > 0 && (
+                <span style={{
+                  position: 'absolute', top: '-6px', right: '-12px',
+                  background: 'var(--accent)', color: 'var(--primary)', fontSize: '0.65rem',
+                  fontWeight: 'bold', padding: '1px 6px', borderRadius: '10px',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                }}>
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+          </li>
+        )}
+
         {/* Cart Icon */}
         {user && (
           <li>
-            <Link to="/cart" style={{ display: 'flex', alignItems: 'center', position: 'relative', color: isHome ? 'rgba(255,250,224,.82)' : (location.pathname === '/cart' ? 'var(--accent)' : 'rgba(255,250,224,.82)'), transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'} onMouseLeave={e => e.currentTarget.style.color = location.pathname === '/cart' ? 'var(--accent)' : 'rgba(255,250,224,.82)'}>
+            <Link to="/cart" style={{ display: 'flex', alignItems: 'center', position: 'relative', color: location.pathname === '/cart' ? 'var(--accent)' : 'rgba(255,250,224,.82)', transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'} onMouseLeave={e => e.currentTarget.style.color = location.pathname === '/cart' ? 'var(--accent)' : 'rgba(255,250,224,.82)'}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="9" cy="21" r="1"></circle>
                 <circle cx="20" cy="21" r="1"></circle>
