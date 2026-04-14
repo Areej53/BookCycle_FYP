@@ -12,11 +12,13 @@ const DELIVERY_CHARGE = 120
 const DURATION_OPTIONS = ['1', '2', '3', '4', '6', '8', '12']
 
 const TypeBadge = ({ type }) => {
+  const safeType = (type || 'buy').toLowerCase();
   const config = {
     buy:  { label: 'Buy',        bg: 'rgba(188,108,37,.12)', c: '#BC6C25' },
     rent: { label: 'Rent',       bg: 'rgba(19,73,60,.1)',    c: '#13493C' },
     free: { label: 'Free Shelf', bg: 'rgba(96,108,56,.12)',  c: '#606C38' },
-  }[type]
+  }[safeType] || { label: 'Book', bg: '#eee', c: '#444' };
+
   return (
     <span style={{ fontSize: '.7rem', fontWeight: 700, padding: '3px 10px',
       borderRadius: 50, background: config.bg, color: config.c }}>

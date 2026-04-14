@@ -49,9 +49,17 @@ export default function HomePage() {
     const [activeConds, setActiveConds] = useState([]);
     const [priceRange, setPriceRange] = useState(5000);
     const wrapperRef = useRef(null);
-    const [featuredBooks, setFeaturedBooks] = useState([]);
-    const [recentBooks, setRecentBooks] = useState([]);
-    const [freeBooks, setFreeBooks] = useState([]);
+    const [featuredBooks, setFeaturedBooks] = useState([
+        { id: 'f1', title: 'Atomic Habits', author: 'James Clear', type: 'rent', price: '30', unit: '/wk', img: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80', timeAgo: 'Just now' },
+        { id: 'f2', title: 'Deep Work', author: 'Cal Newport', type: 'buy', price: '350', img: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80', timeAgo: 'Just now' }
+    ]);
+    const [recentBooks, setRecentBooks] = useState([
+        { id: 'r1', title: 'Zero to One', author: 'Peter Thiel', type: 'buy', price: '400', img: 'https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=200&q=80', timeAgo: '2 hrs ago' },
+        { id: 'r2', title: 'Ikigai', author: 'Héctor García', type: 'rent', price: '35', unit: '/wk', img: 'https://images.unsplash.com/photo-1476275466078-4007374efbbe?w=200&q=80', timeAgo: '5 hrs ago' }
+    ]);
+    const [freeBooks, setFreeBooks] = useState([
+        { id: 'fr1', title: 'Sapiens', author: 'Y.N. Harari', type: 'free', price: 'Free', img: 'https://images.unsplash.com/photo-1589998059171-988d887df646?w=300&q=80', timeAgo: '1 day ago' }
+    ]);
 
     const handleAddToCart = (book) => {
         const added = addToCart(book);
@@ -76,7 +84,7 @@ export default function HomePage() {
                         id: b._id,
                         _id: b._id,
                         img: getImageUrl(b),
-                        badge: b.exchangeType === 'Sell' ? 'sell' : b.exchangeType === 'Rent' ? 'rent' : 'free',
+                        type: b.exchangeType === 'Sell' ? 'buy' : b.exchangeType === 'Rent' ? 'rent' : 'free',
                         title: b.title,
                         author: b.author,
                         price: b.exchangeType === 'Share' ? 'Free' : `Rs. ${b.price}`,
@@ -590,6 +598,16 @@ export default function HomePage() {
             <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
               <span className={`book-price ${b.badge === 'free' ? 'free' : ''}`} style={{ flexShrink: 0 }}>{b.badge === 'free' ? 'Free' : `${b.price}${b.unit}`}</span>
               <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginLeft: 'auto' }}>
+                {b.badge === 'free' ? (
+                  <Link to={`/book/${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)', color: '#fff', padding: '4px 12px', borderRadius: '6px', fontSize: '.75rem', fontWeight: '700' }}>Claim</Link>
+                ) : (
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); handleAddToCart(b); }}
+                    className="btn-mini-cart"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                  </button>
+                )}
                 <button
                     onClick={(e) => { e.stopPropagation(); toggleWishlist(b); }}
                     style={{
@@ -600,11 +618,8 @@ export default function HomePage() {
                         transition: 'all .2s'
                     }}
                 >
-                    <FiHeart size={11} fill={isInWishlist(b.id) ? "var(--cta)" : "none"} />
+                    <FiHeart size={12} fill={isInWishlist(b.id) ? "var(--cta)" : "none"} />
                 </button>
-                <Link to={`/book/${b.id}`} className="btn-mini-cart" style={{ color: '#fff' }} onClick={e => e.stopPropagation()}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                </Link>
               </div>
             </div>
           </div>

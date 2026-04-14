@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { api } from "../api/client";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 import { IMAGES } from "../data/assets";
 
 const styles = `
@@ -197,11 +198,11 @@ const styles = `
 `;
 
 const FEATURED_BOOKS = [
-  { id: "b1", img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80", badge: "rent", cat: "Self-Development", title: "Atomic Habits", author: "James Clear", price: "Rs. 50", unit: "/wk", stars: "★★★★★" },
-  { id: "b2", img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80", badge: "buy", cat: "Programming", title: "Deep Work", author: "Cal Newport", price: "Rs. 350", stars: "★★★★★" },
-  { id: "b3", img: "https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&q=80", badge: "free", cat: "Science", title: "Sapiens", author: "Yuval Noah Harari", price: "free", stars: "★★★★☆" },
-  { id: "b4", img: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80", badge: "rent", cat: "Self-Development", title: "Rich Dad Poor Dad", author: "Robert Kiyosaki", price: "Rs. 40", unit: "/wk", stars: "★★★★☆" },
-  { id: "b5", img: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80", badge: "rent", cat: "Novels", title: "The Alchemist", author: "Paulo Coelho", price: "Rs. 30", unit: "/wk", stars: "★★★★★" },
+  { id: "b1", img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80", type: "rent", cat: "Self-Development", title: "Atomic Habits", author: "James Clear", price: "Rs. 50", unit: "/wk", stars: "★★★★★" },
+  { id: "b2", img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80", type: "buy", cat: "Programming", title: "Deep Work", author: "Cal Newport", price: "Rs. 350", stars: "★★★★★" },
+  { id: "b3", img: "https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&q=80", type: "free", cat: "Science", title: "Sapiens", author: "Yuval Noah Harari", price: "free", stars: "★★★★☆" },
+  { id: "b4", img: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80", type: "rent", cat: "Self-Development", title: "Rich Dad Poor Dad", author: "Robert Kiyosaki", price: "Rs. 40", unit: "/wk", stars: "★★★★☆" },
+  { id: "b5", img: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80", type: "rent", cat: "Novels", title: "The Alchemist", author: "Paulo Coelho", price: "Rs. 30", unit: "/wk", stars: "★★★★★" },
 ];
 
 const HOW_STEPS = [
@@ -242,6 +243,8 @@ export default function Home({ onNavigate }) {
   const [featuredBooks, setFeaturedBooks] = useState([]);
   const [recentBooks, setRecentBooks] = useState([]);
   const navigate = useNavigate();
+  const { cart, addToCart } = useCart();
+  const cartCount = cart ? cart.length : 0;
 
   const getImageUrl = (imagePath) => {
     if (!imagePath) return 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80';
@@ -261,7 +264,7 @@ export default function Home({ onNavigate }) {
           return booksArr.slice(0, max).map(b => ({
             id: b._id,
             img: getImageUrl(b.image || (b.images && b.images[0])),
-            badge: b.exchangeType === 'Sell' ? 'buy' : b.exchangeType === 'Rent' ? 'rent' : 'free',
+            type: b.exchangeType === 'Sell' ? 'buy' : b.exchangeType === 'Rent' ? 'rent' : 'free',
             cat: b.category,
             title: b.title,
             author: b.author,
@@ -314,6 +317,19 @@ export default function Home({ onNavigate }) {
           <ul className="h-nav-links">
             <li><button className="h-nav-link" onClick={() => navigate('/browse')}>Browse</button></li>
             <li><button className="h-nav-link" onClick={() => navigate('/seller')}>Sell</button></li>
+            <li>
+                <button className="h-nav-link" onClick={() => navigate('/cart')} style={{ position: 'relative', display: 'flex', alignItems: 'center', padding: '7px 10px' }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    {cartCount > 0 && (
+                        <span style={{ 
+                            position: 'absolute', top: '0', right: '0', 
+                            background: 'var(--accent)', color: 'var(--primary)', 
+                            fontSize: '0.65rem', fontWeight: 'bold', 
+                            padding: '1px 5px', borderRadius: '10px' 
+                        }}>{cartCount}</span>
+                    )}
+                </button>
+            </li>
             <li><button className="h-nav-cta" onClick={() => onNavigate?.("login")}>Login</button></li>
           </ul>
         </nav>
@@ -376,7 +392,12 @@ export default function Home({ onNavigate }) {
                     <div className="h-bauthor">by {b.author}</div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
                       <div className="h-bprice">Rs. 30/wk</div>
-                      <button className="btn-mini-cart" onClick={(e) => { e.stopPropagation(); setShowPopup(true); }} title="Add to Cart" style={{ color: '#fff' }}>
+                      <button className="btn-mini-cart" onClick={(e) => { 
+                        e.stopPropagation(); 
+                        const added = addToCart(b);
+                        if (added) showToast(`"${b.title}" added to cart!`);
+                        else showToast("Item already in cart");
+                      }} title="Add to Cart" style={{ color: '#fff' }}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                       </button>
                     </div>
@@ -411,8 +432,13 @@ export default function Home({ onNavigate }) {
                     <div className="h-btitle">{b.title}</div>
                     <div className="h-bauthor">by {b.author}</div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
-                      <div className="h-bprice">{b.badge === "free" ? <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg> Free</span> : `Rs. ${b.price}`}</div>
-                       <button className="btn-mini-cart" onClick={(e) => { e.stopPropagation(); setShowPopup(true); }} title="Add to Cart" style={{ color: '#fff' }}>
+                      <div className="h-bprice">{b.type === "free" ? <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg> Free</span> : `Rs. ${b.price}`}</div>
+                       <button className="btn-mini-cart" onClick={(e) => { 
+                        e.stopPropagation(); 
+                        const added = addToCart(b);
+                        if (added) showToast(`"${b.title}" added to cart!`);
+                        else showToast("Item already in cart");
+                      }} title="Add to Cart" style={{ color: '#fff' }}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                       </button>
                     </div>

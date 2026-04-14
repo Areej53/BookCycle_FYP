@@ -49,46 +49,42 @@ export default function Navbar() {
         <li><Link to="/seller" style={getLinkStyle(isSell)}>Sell</Link></li>
 
         {/* Wishlist Icon */}
-        {user && (
-          <li>
-            <Link to="/wishlist" style={{ display: 'flex', alignItems: 'center', position: 'relative', color: isWishlist ? 'var(--accent)' : 'rgba(255,250,224,.82)', transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'} onMouseLeave={e => e.currentTarget.style.color = isWishlist ? 'var(--accent)' : 'rgba(255,250,224,.82)'}>
-              <FiHeart size={22} />
-              {wishlistCount > 0 && (
-                <span style={{
-                  position: 'absolute', top: '-6px', right: '-12px',
-                  background: 'var(--accent)', color: 'var(--primary)', fontSize: '0.65rem',
-                  fontWeight: 'bold', padding: '1px 6px', borderRadius: '10px',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                }}>
-                  {wishlistCount}
-                </span>
-              )}
-            </Link>
-          </li>
-        )}
+        <li>
+          <Link to="/wishlist" style={{ display: 'flex', alignItems: 'center', position: 'relative', color: isWishlist ? 'var(--accent)' : 'rgba(255,250,224,.82)', transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'} onMouseLeave={e => e.currentTarget.style.color = isWishlist ? 'var(--accent)' : 'rgba(255,250,224,.82)'}>
+            <FiHeart size={22} />
+            {wishlistCount > 0 && (
+              <span style={{
+                position: 'absolute', top: '-6px', right: '-12px',
+                background: 'var(--accent)', color: 'var(--primary)', fontSize: '0.65rem',
+                fontWeight: 'bold', padding: '1px 6px', borderRadius: '10px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+              }}>
+                {wishlistCount}
+              </span>
+            )}
+          </Link>
+        </li>
 
         {/* Cart Icon */}
-        {user && (
-          <li>
-            <Link to="/cart" style={{ display: 'flex', alignItems: 'center', position: 'relative', color: location.pathname === '/cart' ? 'var(--accent)' : 'rgba(255,250,224,.82)', transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'} onMouseLeave={e => e.currentTarget.style.color = location.pathname === '/cart' ? 'var(--accent)' : 'rgba(255,250,224,.82)'}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="9" cy="21" r="1"></circle>
-                <circle cx="20" cy="21" r="1"></circle>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-              </svg>
-              {cartCount > 0 && (
-                <span style={{
-                  position: 'absolute', top: '-6px', right: '-12px',
-                  background: '#7ec8a4', color: '#fff', fontSize: '0.65rem',
-                  fontWeight: 'bold', padding: '1px 6px', borderRadius: '10px',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                }}>
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-          </li>
-        )}
+        <li>
+          <Link to="/cart" style={{ display: 'flex', alignItems: 'center', position: 'relative', color: location.pathname === '/cart' ? 'var(--accent)' : 'rgba(255,250,224,.82)', transition: 'color .2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'} onMouseLeave={e => e.currentTarget.style.color = location.pathname === '/cart' ? 'var(--accent)' : 'rgba(255,250,224,.82)'}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            {cartCount > 0 && (
+              <span style={{
+                position: 'absolute', top: '-6px', right: '-12px',
+                background: '#7ec8a4', color: '#fff', fontSize: '0.65rem',
+                fontWeight: 'bold', padding: '1px 6px', borderRadius: '10px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+              }}>
+                {cartCount}
+              </span>
+            )}
+          </Link>
+        </li>
 
         {/* User Greeting moved to right */}
         {user && (
