@@ -17,10 +17,24 @@ export const CartProvider = ({ children }) => {
         }
     });
 
+    const [savedItems, setSavedItems] = useState(() => {
+        try {
+            const localData = localStorage.getItem('bookcycle_saved');
+            return localData ? JSON.parse(localData) : [];
+        } catch (error) {
+            console.error('Failed to parse saved items from localStorage:', error);
+            return [];
+        }
+    });
+
     // 2. Persist cart to localStorage on changes
     useEffect(() => {
         localStorage.setItem('bookcycle_cart', JSON.stringify(cart));
     }, [cart]);
+
+    useEffect(() => {
+        localStorage.setItem('bookcycle_saved', JSON.stringify(savedItems));
+    }, [savedItems]);
 
     const getImageUrl = (b) => {
         const imagePath = b.image || (b.images && b.images[0]);
@@ -76,13 +90,37 @@ export const CartProvider = ({ children }) => {
         toast.info('Cart cleared');
     };
 
+    const saveForLater = (id) => {
+        const item = cart.find(i => i.id === id);
+        if (item) {
+            setCart(prev => prev.filter(i => i.id !== id));
+            setSavedItems(prev => [...prev, item]);
+            toast.info(`"${item.title}" saved for later`);
+        }
+    };
+
+    const moveToCart = (id) => {
+        const item = savedItems.find(i => i.id === id);
+        if (item) {
+            setSavedItems(prev => prev.filter(i => i.id !== id));
+            const exists = cart.some(i => i.id === id);
+            if (!exists) {
+                setCart(prev => [...prev, item]);
+                toast.success(`"${item.title}" moved to cart`);
+            }
+        }
+    };
+
     return (
         <CartContext.Provider value={{
             cart,
+            savedItems,
             addToCart,
             removeFromCart,
             updateDuration,
-            clearCart
+            clearCart,
+            saveForLater,
+            moveToCart
         }}>
             {children}
         </CartContext.Provider>

@@ -30,28 +30,10 @@ const TypeBadge = ({ type }) => {
 const CartPage = () => {
   const navigate = useNavigate()
   const [toast, showToast] = useToast()
-  const { cart, removeFromCart, updateDuration, addToCart } = useCart()
-  const [savedLater, setSavedLater] = useState([])
+  const { cart, removeFromCart, updateDuration, savedItems, saveForLater, moveToCart } = useCart()
 
   const removeItem = (id) => {
     removeFromCart(id)
-  }
-
-  const saveForLater = (id) => {
-    const item = cart.find(i => i.id === id)
-    if (item) {
-      removeFromCart(id)
-      setSavedLater(s => [...s, item])
-      showToast(`"${item.title}" saved for later`)
-    }
-  }
-
-  const moveToCart = (id) => {
-    const item = savedLater.find(i => i.id === id)
-    if (item) {
-      setSavedLater(s => s.filter(i => i.id !== id))
-      addToCart(item)
-    }
   }
 
   const subtotal = cart.reduce((acc, item) => {
@@ -228,15 +210,15 @@ const CartPage = () => {
               ))}
 
               {/* ── Saved for Later ── */}
-              {savedLater.length > 0 && (
+              {savedItems.length > 0 && (
                 <div style={{ marginTop: 16 }}>
                   <div style={{ fontSize: '.8rem', fontWeight: 700, letterSpacing: '.08em',
                     textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 16,
                     display: 'flex', alignItems: 'center', gap: 12 }}>
-                    🔖 Saved for Later ({savedLater.length})
+                    🔖 Saved for Later ({savedItems.length})
                     <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
                   </div>
-                  {savedLater.map(item => (
+                  {savedItems.map(item => (
                     <div key={item.id} className="saved-item-card">
                       <div className="saved-item-img">
                         <img src={item.img} alt={item.title} />
