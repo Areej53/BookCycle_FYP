@@ -6,8 +6,6 @@ import { useAuth } from '../context/AuthContext';
 import { api, getApiErrorMessage } from '../api/client';
 import { toast } from 'react-toastify';
 import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import RecommendationWidget from '../components/RecommendationWidget';
 import { 
   FiFileText,
   FiList,
@@ -133,6 +131,16 @@ export default function SellerAddNotesPage() {
 <header className="seller-header">
 <Navbar />
 </header>
+
+<div className="progress-wrap" style={{ marginTop: '20px' }}>
+  <div className="progress-steps">
+    <div className="p-step done"><div className="p-num">✓</div>Categories</div>
+    <div className="p-line done"></div>
+    <div className="p-step active"><div className="p-num">2</div>Upload Notes</div>
+    <div className="p-line "></div>
+    <div className="p-step "><div className="p-num">3</div>Published!</div>
+  </div>
+</div>
 
 <div className="page-layout">
 <main>
@@ -268,7 +276,7 @@ export default function SellerAddNotesPage() {
     </div>
 
     <div className="section-title"><div className="st-icon">📁</div>Upload PDF <span className="req">*</span></div>
-    <div className="dropzone" onClick={() => fileInputRef.current.click()} style={{ background: sellerData.pdf ? 'rgba(19,73,60,0.06)' : '' }}>
+    <div className="dropzone" onClick={() => fileInputRef.current.click()} style={{ background: sellerData.pdf ? '#eaf5f0' : '' }}>
       <input type="file" ref={fileInputRef} accept=".pdf,application/pdf" style={{ display: 'none' }} onChange={handleFileChange}/>
       {sellerData.pdf ? (
           <div>
@@ -297,10 +305,15 @@ export default function SellerAddNotesPage() {
 </main>
 <aside className="sidebar">
   <div className="steps-widget"><div className="sw-head">Your Progress</div><div className="sw-body"><div className="sw-item"><div className="sw-num done">✓</div><div><div className="sw-label ">Select Categories</div><div className="sw-sub">Choose what you want to sell</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num active">2</div><div><div className="sw-label ">Upload Notes</div><div className="sw-sub">Add details & PDF file</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num ">3</div><div><div className="sw-label upcoming">Published!</div><div className="sw-sub">Your notes are live</div></div></div></div></div>
-  <RecommendationWidget />
 </aside>
 </div>
-<Footer />
+<footer className="footer" style={{ marginTop: '80px' }}>
+  <div className="footer-grid">
+    <div><Link to="/home" className="footer-brand"><div className="f-logo"><img src={IMAGES.img_0} alt="BookCycle"/></div><span className="footer-brand-name">BookCycle</span></Link><p className="footer-desc">Islamabad's community book platform. Share, rent, and discover books across the city.</p></div>
+    <div className="footer-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/browse?tab=rent">Rent a Book</Link></li><li><Link to="/browse?tab=free">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div>
+  </div>
+  <div className="footer-bottom"><p>© 2025 BookCycle. All rights reserved.</p></div>
+</footer>
         </div>
     );
 }

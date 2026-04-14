@@ -269,7 +269,7 @@ export default function HomePage() {
     </div>
 
     <div className="hero-btns">
-      <Link to="/browse" className="btn-primary">Explore Books</Link>
+      <Link to="/browse" className="btn-primary">Browse Books</Link>
       <Link to="/seller" className="btn-outline">List Your Book</Link>
     </div>
     <div className="hero-stats">
@@ -386,7 +386,7 @@ export default function HomePage() {
   
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
-      <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Explore</div><h2 className="section-title">Explore by <span>Category</span></h2></div>
+      <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Explore</div><h2 className="section-title">Browse by <span>Category</span></h2></div>
       <Link to="/browse" className="see-all">View All Genres</Link>
     </div>
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '14px' }}>
@@ -513,7 +513,7 @@ export default function HomePage() {
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
       <div><div className="section-label" style={{ background: 'rgba(96,108,56,.1)', color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Donate & Receive</div><h2 className="section-title">Free Knowledge <span>Shelf</span></h2></div>
-      <Link to="/browse" className="see-all">Explore shelf</Link>
+      <Link to="/browse" className="see-all">Browse shelf</Link>
     </div>
     <div style={{ background: 'linear-gradient(135deg,rgba(96,108,56,.07),rgba(19,73,60,.05))', border: '1.5px solid rgba(96,108,56,.2)', borderRadius: '20px', padding: '26px' }}>
       <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
@@ -557,7 +557,7 @@ export default function HomePage() {
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
       <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Just Listed</div><h2 className="section-title">Recently <span>Added</span></h2></div>
-      <Link to="/browse" className="see-all">Explore all new</Link>
+      <Link to="/browse" className="see-all">See all new</Link>
     </div>
     <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
       {recentBooks.map(b => (
@@ -603,13 +603,13 @@ export default function HomePage() {
 
   
   <div className="sidebar-widget" style={{ background: 'var(--primary)', borderColor: 'var(--primary)' }}>
-    <div className="widget-title" style={{ color: 'var(--accent)', borderBottomColor: 'rgba(255,255,255,.1)' }}>
+    <div className="widget-title" style={{ color: 'var(--accent)', borderBottomColor: 'rgba(255,250,224,.15)' }}>
       Platform Stats
     </div>
-    <div className="stat-row"><span className="label" style={{ color: 'rgba(255,255,255,.6)' }}>Total Sales</span><span className="value accent">Rs. 186,400</span></div>
-    <div className="stat-row"><span className="label" style={{ color: 'rgba(255,255,255,.6)' }}>Total Rentals</span><span className="value" style={{ color: '#7ec8a4' }}>Rs. 94,750</span></div>
-    <div className="stat-row"><span className="label" style={{ color: 'rgba(255,255,255,.6)' }}>Books Donated</span><span className="value" style={{ color: '#fff' }}>324</span></div>
-    <div className="stat-row"><span className="label" style={{ color: 'rgba(255,255,255,.6)' }}>Active Listings</span><span className="value" style={{ color: '#fff' }}>1,248</span></div>
+    <div className="stat-row"><span className="label" style={{ color: 'rgba(255,250,224,.6)' }}>Total Sales</span><span className="value accent">Rs. 186,400</span></div>
+    <div className="stat-row"><span className="label" style={{ color: 'rgba(255,250,224,.6)' }}>Total Rentals</span><span className="value" style={{ color: '#7ec8a4' }}>Rs. 94,750</span></div>
+    <div className="stat-row"><span className="label" style={{ color: 'rgba(255,250,224,.6)' }}>Books Donated</span><span className="value" style={{ color: '#fff' }}>324</span></div>
+    <div className="stat-row"><span className="label" style={{ color: 'rgba(255,250,224,.6)' }}>Active Listings</span><span className="value" style={{ color: '#fff' }}>1,248</span></div>
   </div>
 
   
@@ -713,7 +713,7 @@ export default function HomePage() {
         <Link to="#" className="f-soc"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></Link>
       </div>
     </div>
-    <div className="footer-col"><h4>Platform</h4><ul><li><Link to="/browse">Explore Books</Link></li><li><Link to="/browse?tab=rent">Rent a Book</Link></li><li><Link to="/browse?tab=free">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div>
+    <div className="footer-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/browse?tab=rent">Rent a Book</Link></li><li><Link to="/browse?tab=free">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div>
     <div className="footer-col"><h4>Company</h4><ul><li><Link to="#">About Us</Link></li><li><Link to="#">How It Works</Link></li><li><Link to="#">Blog</Link></li><li><Link to="#">Careers</Link></li></ul></div>
     <div className="footer-col"><h4>Contact</h4><ul><li><Link to="#">contact@bookcycle.com</Link></li><li><Link to="#">+92 300 1234567</Link></li><li><Link to="#">F-7, Islamabad</Link></li><li><Link to="#">Help Center</Link></li></ul></div>
   </div>

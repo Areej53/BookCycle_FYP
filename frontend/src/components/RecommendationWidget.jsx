@@ -45,7 +45,7 @@ export default function RecommendationWidget() {
             <div style={{ flex: '1', minWidth: '0' }}>
               <div className="rec-book-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{book.title}</div>
               <div className="rec-author" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{book.author}</div>
-
+              <div className="rec-stars">★★★★★</div>
               <div className="rec-bottom">
                 <span className={`rec-price ${book.exchangeType === 'Share' ? 'free-price' : ''}`}>
                   {book.exchangeType === 'Share' ? 'Free' : `Rs. ${book.price}${book.exchangeType === 'Rent' ? '/wk' : ''}`}

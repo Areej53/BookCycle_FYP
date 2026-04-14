@@ -7,7 +7,6 @@ import { toast } from 'react-toastify';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useWishlist } from '../context/WishlistContext';
-import { useCart } from '../context/CartContext';
 import { FiHeart } from 'react-icons/fi';
 import RecommendationWidget from '../components/RecommendationWidget';
 
@@ -66,7 +65,7 @@ export default function BookDetailsPage() {
         return (
             <div style={{ textAlign: 'center', padding: '100px 5%' }}>
                 <h2>Book not found</h2>
-                <Link to="/browse" className="btn-primary" style={{ marginTop: '20px', display: 'inline-block' }}>Back to Explore</Link>
+                <Link to="/browse" className="btn-primary" style={{ marginTop: '20px', display: 'inline-block' }}>Back to Browse</Link>
             </div>
         );
     }
@@ -79,7 +78,7 @@ export default function BookDetailsPage() {
                 <div className="detail-hero-inner">
                     <div className="detail-breadcrumb" style={{ color: 'rgba(255,250,224, 0.6)', gap: '8px', display: 'flex', alignItems: 'center' }}>
                         <Link to="/home">Home</Link> <span style={{ opacity: 0.5 }}>/</span>
-                        <Link to="/browse">Explore</Link> <span style={{ opacity: 0.5 }}>/</span>
+                        <Link to="/browse">Browse</Link> <span style={{ opacity: 0.5 }}>/</span>
                         <span style={{ color: 'white' }}>{book.title}</span>
                     </div>
                 </div>
@@ -108,7 +107,7 @@ export default function BookDetailsPage() {
                         <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '3rem', color: 'var(--primary)', marginBottom: '10px', lineHeight: 1.1 }}>{book.title}</h1>
                         <div style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginBottom: '25px' }}>by <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{book.author}</span></div>
                         
-                        <div className="price-card" style={{ background: '#EBF1EE', padding: '30px', borderRadius: '24px', marginBottom: '35px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div className="price-card" style={{ background: '#f5f0d0', padding: '30px', borderRadius: '24px', marginBottom: '35px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
                                 <div style={{ fontSize: '0.9rem', color: 'var(--primary)', opacity: 0.7, marginBottom: '5px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>Listing Price</div>
                                 <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.5rem', fontWeight: 900, color: 'var(--primary)' }}>

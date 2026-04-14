@@ -175,7 +175,7 @@ const CheckoutPage = () => {
               style={{ background: PALETTE.cta, color: '#fff', padding: '12px 26px',
                 borderRadius: 50, fontWeight: 700, fontSize: '.9rem', border: 'none', cursor: 'pointer',
                 boxShadow: '0 5px 18px rgba(188,108,37,.28)' }}>
-              Explore More Books
+              Browse More Books
             </button>
           </div>
           {/* TrackOrderModal is needed here since we are doing an early return */}

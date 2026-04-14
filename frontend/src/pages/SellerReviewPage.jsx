@@ -7,8 +7,6 @@ import { api, getApiErrorMessage } from '../api/client';
 import { toast } from 'react-toastify';
 import { FiCheckCircle, FiAlertCircle, FiEdit3 } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import RecommendationWidget from '../components/RecommendationWidget';
 
 export default function SellerReviewPage() {
     const { sellerData, resetSellerData } = useContext(SellerContext);
@@ -70,6 +68,8 @@ export default function SellerReviewPage() {
             
 <header className="seller-header">
 <Navbar />
+
+<div className="progress-wrap"><div className="progress-steps"><div className="p-step done"><div className="p-num">✓</div>Categories</div><div className="p-line done"></div><div className="p-step done"><div className="p-num">✓</div>Book Details</div><div className="p-line done"></div><div className="p-step active"><div className="p-num">3</div>Review</div><div className="p-line "></div><div className="p-step "><div className="p-num">4</div>Published!</div></div></div>
 </header>
 
 <div className="page-layout"><main>
@@ -80,7 +80,7 @@ export default function SellerReviewPage() {
 </div>
 
 {error && (
-  <div className="err-banner show">
+  <div className="err-banner" style={{ display: 'block', background: 'rgba(255,100,100,0.1)', color: '#ff6b6b', border: '1px solid #ff6b6b' }}>
     ⚠ {error}
   </div>
 )}
@@ -98,9 +98,9 @@ export default function SellerReviewPage() {
       <div className="preview-book-title">{sellerData.title || 'Untitled Book'}</div>
       <div className="preview-author">{sellerData.author || 'Author not provided'}</div>
       <div className="preview-badges">
-        <span className="prev-badge" style={{ background: 'rgba(19,73,60,.1)', color: 'var(--primary)' }}>✓ Ready to List</span>
-        <span className="prev-badge" style={{ background: 'rgba(221,161,94,.1)', color: 'var(--accent)' }}>{sellerData.category || 'N/A'}</span>
-        <span className="prev-badge" style={{ background: 'rgba(96,108,56,.1)', color: 'var(--secondary)' }}>{sellerData.condition || 'New'}</span>
+        <span className="prev-badge" style={{ background: 'rgba(126,200,164,.2)', color: '#7ec8a4' }}>✓ Listed</span>
+        <span className="prev-badge" style={{ background: 'rgba(221,161,94,.2)', color: 'var(--accent)' }}>{sellerData.category || 'N/A'}</span>
+        <span className="prev-badge" style={{ background: 'rgba(96,108,56,.2)', color: 'rgba(255,250,224,.7)' }}>{sellerData.condition || 'New'}</span>
       </div>
     </div>
     <button className="edit-btn" style={{ display: 'flex', alignItems: 'center', gap: '5px' }} onClick={handleEdit}><FiEdit3 /> Edit</button>
@@ -148,9 +148,8 @@ export default function SellerReviewPage() {
 </main>
 <aside className="sidebar">
   <div className="steps-widget"><div className="sw-head">Your Progress</div><div className="sw-body"><div className="sw-item"><div className="sw-num done">✓</div><div><div className="sw-label ">Select Categories</div><div className="sw-sub">Choose what you want to sell</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num done">✓</div><div><div className="sw-label ">Add Book Details</div><div className="sw-sub">Fill in book info & images</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num active">3</div><div><div className="sw-label ">Review Listing</div><div className="sw-sub">Preview before going live</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num ">4</div><div><div className="sw-label upcoming">Published!</div><div className="sw-sub">Your book is now live</div></div></div></div></div>
-  <RecommendationWidget />
 </aside></div>
-<Footer />
+<footer className="footer"><div className="footer-grid"><div><Link to="/" className="footer-brand"><div className="f-logo"><img src={IMAGES.img_0} alt="BookCycle"/></div><span className="f-brand-name">BookCycle</span></Link><p className="f-desc">Islamabad's community book platform. Share, rent, and discover books across the city.</p></div><div className="f-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div></div></footer>
         </div>
     );
 }

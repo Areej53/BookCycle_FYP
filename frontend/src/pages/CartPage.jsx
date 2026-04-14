@@ -112,10 +112,10 @@ const CartPage = () => {
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginBottom: 32, lineHeight: 1.6, maxWidth: 400, marginInline: 'auto' }}>
               Looks like you haven't added any books yet.<br />
-              Explore the collection and start building your reading list!
+              Browse the collection and start building your reading list!
             </p>
             <button onClick={() => navigate('/browse')} className="btn-primary">
-              Explore Books →
+              Browse Books →
             </button>
           </div>
         )}
