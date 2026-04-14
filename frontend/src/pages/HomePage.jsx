@@ -368,14 +368,14 @@ export default function HomePage() {
         <div className="book-card" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer', position: 'relative' }}>
           <div className="book-cover">
             <img src={b.img} alt={b.title}/>
-            <span className={`book-badge badge-${b.badge}`}>{b.badge === 'sell' ? 'Buy' : b.badge.charAt(0).toUpperCase() + b.badge.slice(1)}</span>
+            <span className={`book-badge badge-${b.type}`}>{b.type === 'buy' ? 'Buy' : b.type.charAt(0).toUpperCase() + b.type.slice(1)}</span>
           </div>
           <div className="book-info">
             <div className="book-title">{b.title}</div>
             <div className="book-author">{b.author}</div>
             <div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span className={`book-price ${b.badge === 'free' ? 'free' : ''}`}>
-                {b.badge === 'free' ? 'Free' : `${b.price}${b.unit}`}
+              <span className={`book-price ${b.type === 'free' ? 'free' : ''}`}>
+                {b.type === 'free' ? 'Free' : `${b.price}${b.unit}`}
               </span>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <button 
@@ -589,14 +589,14 @@ export default function HomePage() {
         <div className="book-card book-card-h" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer', position: 'relative', display: 'flex', width: '100%' }}>
           <div className="book-cover" style={{ width: '82px', flexShrink: '0', borderRadius: '0', minHeight: '110px', height: 'auto', position: 'relative' }}>
             <img src={b.img} alt={b.title}/>
-            <span className={`book-badge badge-${b.badge}`} style={{ top: '6px', right: '4px', fontSize: '.6rem', padding: '2px 6px' }}>{b.badge === 'sell' ? 'Buy' : b.badge.charAt(0).toUpperCase() + b.badge.slice(1)}</span>
+            <span className={`book-badge badge-${b.type}`} style={{ top: '6px', right: '4px', fontSize: '.6rem', padding: '2px 6px' }}>{b.type === 'buy' ? 'Buy' : b.type.charAt(0).toUpperCase() + b.type.slice(1)}</span>
           </div>
           <div className="book-info" style={{ padding: '14px', flex: 1, minWidth: 0 }}>
             <div className="book-title" style={{ fontSize: '.9rem' }}>{b.title}</div>
             <div className="book-author">{b.author}</div>
             <div style={{ marginTop: '5px', fontSize: '.77rem', color: 'var(--text-muted)' }}>Added {b.timeAgo}</div>
             <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-              <span className={`book-price ${b.badge === 'free' ? 'free' : ''}`} style={{ flexShrink: 0 }}>{b.badge === 'free' ? 'Free' : `${b.price}${b.unit}`}</span>
+              <span className={`book-price ${b.type === 'free' ? 'free' : ''}`} style={{ flexShrink: 0 }}>{b.type === 'free' ? 'Free' : `${b.price}${b.unit}`}</span>
               <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginLeft: 'auto' }}>
                 {b.badge === 'free' ? (
                   <Link to={`/book/${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)', color: '#fff', padding: '4px 12px', borderRadius: '6px', fontSize: '.75rem', fontWeight: '700' }}>Claim</Link>
