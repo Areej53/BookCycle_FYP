@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
 import { FiHeart } from 'react-icons/fi';
 import RecommendationWidget from '../components/RecommendationWidget';
 
@@ -32,7 +33,7 @@ export default function BookDetailsPage() {
         const fetchBook = async () => {
             setIsLoading(true);
             try {
-                const response = await api.get(`/books/${id}`);
+                const response = await api.get(`books/${id}`);
                 setBook(response.data.book);
             } catch (err) {
                 toast.error(getApiErrorMessage(err));

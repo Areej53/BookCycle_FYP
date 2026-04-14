@@ -9,7 +9,7 @@ const styles = `
   :root {
     --primary: #13493C;
     --secondary: #606C38;
-    --bg: #FFFAE0;
+    --bg: #ffffff;
     --accent: #DDA15E;
     --cta: #BC6C25;
     --text: #13493C;
@@ -253,8 +253,8 @@ export default function Home({ onNavigate }) {
     const fetchBooks = async () => {
       try {
         const [featRes, recentRes] = await Promise.all([
-          api.get('/books?limit=8'), // All or featured
-          api.get('/books?limit=8&sort=recent') // Newest 8
+          api.get('books?limit=8'),
+          api.get('books?limit=8&sort=recent')
         ]);
         
         const formatBooks = (booksArr, max) => {

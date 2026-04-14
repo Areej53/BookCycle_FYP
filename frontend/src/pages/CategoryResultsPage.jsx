@@ -52,7 +52,7 @@ export default function CategoryResultsPage() {
                 if (price) params.price = price;
                 if (sort) params.sort = sort;
 
-                const res = await api.get('/books', { params });
+                const res = await api.get('books', { params });
                 setBooks(res.data.books);
             } catch (err) {
                 console.error('Failed to fetch books', err);

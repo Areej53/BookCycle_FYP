@@ -63,7 +63,7 @@ export default function BrowseBooksPage() {
                  if (maxPrice) params.price = maxPrice;
                  if (sort) params.sort = sort;
 
-                 const res = await api.get('/books', { params });
+                 const res = await api.get('books', { params });
                  setBooks(res.data.books);
              } catch (err) {
                  console.error('Failed to fetch books', err);

@@ -5,7 +5,7 @@ function getBaseURL() {
   if (fromEnv) {
     return fromEnv.replace(/\/$/, "");
   }
-  return "/api/v1";
+  return "/api/v1/";
 }
 
 const DEFAULT_ERROR = "Something went wrong. Please try again.";
@@ -56,7 +56,7 @@ export const api = axios.create({
 // A lightweight HTTP GET cache to eliminate DB load during rapid page navigations
 const getCache = new Map();
 const ongoingGets = new Map();
-const CACHE_TTL_MS = 15000; // 15 seconds
+const CACHE_TTL_MS = 0; // Disabled for troubleshooting
 
 const originalGet = api.get;
 

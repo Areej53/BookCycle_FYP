@@ -3,8 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
 import { api } from '../api/client';
 import { FiHeart } from 'react-icons/fi';
+import { toast } from 'react-toastify';
 
 import Navbar from '../components/Navbar';
 
@@ -37,6 +39,7 @@ const getTimeAgo = (date) => {
 export default function HomePage() {
     const { user } = useAuth();
     const { wishlist, toggleWishlist, isInWishlist } = useWishlist();
+    const { addToCart } = useCart();
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -50,25 +53,36 @@ export default function HomePage() {
     const [recentBooks, setRecentBooks] = useState([]);
     const [freeBooks, setFreeBooks] = useState([]);
 
+    const handleAddToCart = (book) => {
+        const added = addToCart(book);
+        if (added) {
+            toast.success(`"${book.title}" added to cart!`);
+        } else {
+            toast.info("Item is already in your cart!");
+        }
+    };
+
     useEffect(() => {
         const fetchBooks = async () => {
             try {
                 const [featRes, recentRes, freeRes] = await Promise.all([
-                    api.get('/books?limit=4'),
-                    api.get('/books?limit=3&sort=recent'),
-                    api.get('/books?type=share&limit=3&sort=recent')
+                    api.get('books?limit=4'),
+                    api.get('books?limit=3&sort=recent'),
+                    api.get('books?type=share&limit=3&sort=recent')
                 ]);
                 
                 const formatBooks = (booksArr, max) => {
                     return booksArr.slice(0, max).map(b => ({
                         id: b._id,
+                        _id: b._id,
                         img: getImageUrl(b),
                         badge: b.exchangeType === 'Sell' ? 'sell' : b.exchangeType === 'Rent' ? 'rent' : 'free',
                         title: b.title,
                         author: b.author,
                         price: b.exchangeType === 'Share' ? 'Free' : `Rs. ${b.price}`,
                         unit: b.exchangeType === 'Rent' ? '/wk' : '',
-                        timeAgo: getTimeAgo(b.createdAt)
+                        timeAgo: getTimeAgo(b.createdAt),
+                        exchangeType: b.exchangeType
                     }));
                 };
 
@@ -368,13 +382,12 @@ export default function HomePage() {
                 >
                     <FiHeart size={14} fill={isInWishlist(b.id) ? "var(--cta)" : "none"} />
                 </button>
-                {b.badge === 'free' ? (
-                    <Link to={`/book/${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)' }}>Claim</Link>
-                ) : (
-                    <Link to={`/book/${b.id}`} className="btn-mini-cart" title={b.badge === 'sell' ? 'Buy' : 'Rent'}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                    </Link>
-                )}
+                <button 
+                    onClick={(e) => { e.stopPropagation(); handleAddToCart(b); }}
+                    className="btn-mini-cart"
+                >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                </button>
               </div>
             </div>
           </div>
@@ -496,15 +509,15 @@ export default function HomePage() {
     <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
       <div className="book-card" onClick={() => navigate('/book/6618d3f666b6c666f666f666')} style={{ cursor: 'pointer' }}>
         <div className="book-cover"><img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80" alt="The Alchemist"/><span className="book-badge badge-rent">Rent</span></div>
-        <div className="book-info"><div className="book-title">The Alchemist</div><div className="book-author">Paulo Coelho</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 30/wk</span><div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}><button onClick={(e) => { e.stopPropagation(); toggleWishlist({ id: '6618d3f666b6c666f666f666', title: 'The Alchemist', author: 'Paulo Coelho', badge: 'rent', price: 30, exchangeType: 'Rent', category: 'Novels', img: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80' }); }} style={{ background: 'none', border: '1.5px solid var(--border)', borderRadius: '50%', width: '30px', height: '30px', display: 'grid', placeItems: 'center', cursor: 'pointer', color: isInWishlist('6618d3f666b6c666f666f666') ? 'var(--cta)' : 'var(--text-muted)', transition: 'all .2s' }}><FiHeart size={14} fill={isInWishlist('6618d3f666b6c666f666f666') ? "var(--cta)" : "none"} /></button><Link to="/book/6618d3f666b6c666f666f666" className="btn-mini-cart" title="Rent" style={{ color: '#fff' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div></div>
+        <div className="book-info"><div className="book-title">The Alchemist</div><div className="book-author">Paulo Coelho</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 30/wk</span><div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}><button onClick={(e) => { e.stopPropagation(); toggleWishlist({ id: '6618d3f666b6c666f666f666', title: 'The Alchemist', author: 'Paulo Coelho', badge: 'rent', price: 30, exchangeType: 'Rent', category: 'Novels', img: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80' }); }} style={{ background: 'none', border: '1.5px solid var(--border)', borderRadius: '50%', width: '30px', height: '30px', display: 'grid', placeItems: 'center', cursor: 'pointer', color: isInWishlist('6618d3f666b6c666f666f666') ? 'var(--cta)' : 'var(--text-muted)', transition: 'all .2s' }}><FiHeart size={14} fill={isInWishlist('6618d3f666b6c666f666f666') ? "var(--cta)" : "none"} /></button><button onClick={(e) => { e.stopPropagation(); handleAddToCart({ id: '6618d3f666b6c666f666f666', title: 'The Alchemist', author: 'Paulo Coelho', badge: 'rent', price: 30, exchangeType: 'Rent', category: 'Novels', img: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80' }); }} className="btn-mini-cart" title="Rent" style={{ color: '#fff' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></button></div></div></div>
       </div>
       <div className="book-card" onClick={() => navigate('/book/6618d3f666b6c666f666f667')} style={{ cursor: 'pointer' }}>
         <div className="book-cover"><img src="https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=400&q=80" alt="1984"/><span className="book-badge badge-rent">Rent</span></div>
-        <div className="book-info"><div className="book-title">1984</div><div className="book-author">George Orwell</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 35/wk</span><div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}><button onClick={(e) => { e.stopPropagation(); toggleWishlist({ id: '6618d3f666b6c666f666f667', title: '1984', author: 'George Orwell', badge: 'rent', price: 35, exchangeType: 'Rent', category: 'Novels', img: 'https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=400&q=80' }); }} style={{ background: 'none', border: '1.5px solid var(--border)', borderRadius: '50%', width: '30px', height: '30px', display: 'grid', placeItems: 'center', cursor: 'pointer', color: isInWishlist('6618d3f666b6c666f666f667') ? 'var(--cta)' : 'var(--text-muted)', transition: 'all .2s' }}><FiHeart size={14} fill={isInWishlist('6618d3f666b6c666f666f667') ? "var(--cta)" : "none"} /></button><Link to="/book/6618d3f666b6c666f666f667" className="btn-mini-cart" title="Rent" style={{ color: '#fff' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div></div>
+        <div className="book-info"><div className="book-title">1984</div><div className="book-author">George Orwell</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 35/wk</span><div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}><button onClick={(e) => { e.stopPropagation(); toggleWishlist({ id: '6618d3f666b6c666f666f667', title: '1984', author: 'George Orwell', badge: 'rent', price: 35, exchangeType: 'Rent', category: 'Novels', img: 'https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=400&q=80' }); }} style={{ background: 'none', border: '1.5px solid var(--border)', borderRadius: '50%', width: '30px', height: '30px', display: 'grid', placeItems: 'center', cursor: 'pointer', color: isInWishlist('6618d3f666b6c666f666f667') ? 'var(--cta)' : 'var(--text-muted)', transition: 'all .2s' }}><FiHeart size={14} fill={isInWishlist('6618d3f666b6c666f666f667') ? "var(--cta)" : "none"} /></button><button onClick={(e) => { e.stopPropagation(); handleAddToCart({ id: '6618d3f666b6c666f666f667', title: '1984', author: 'George Orwell', badge: 'rent', price: 35, exchangeType: 'Rent', category: 'Novels', img: 'https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=400&q=80' }); }} className="btn-mini-cart" title="Rent" style={{ color: '#fff' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></button></div></div></div>
       </div>
       <div className="book-card" onClick={() => navigate('/book/6618d3f666b6c666f666f668')} style={{ cursor: 'pointer' }}>
         <div className="book-cover"><img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=80" alt="Think and Grow Rich"/><span className="book-badge badge-rent">Rent</span></div>
-        <div className="book-info"><div className="book-title">Think & Grow Rich</div><div className="book-author">Napoleon Hill</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 45/wk</span><div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}><button onClick={(e) => { e.stopPropagation(); toggleWishlist({ id: '6618d3f666b6c666f666f668', title: 'Think & Grow Rich', author: 'Napoleon Hill', badge: 'rent', price: 45, exchangeType: 'Rent', category: 'Self-Development', img: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=80' }); }} style={{ background: 'none', border: '1.5px solid var(--border)', borderRadius: '50%', width: '30px', height: '30px', display: 'grid', placeItems: 'center', cursor: 'pointer', color: isInWishlist('6618d3f666b6c666f666f668') ? 'var(--cta)' : 'var(--text-muted)', transition: 'all .2s' }}><FiHeart size={14} fill={isInWishlist('6618d3f666b6c666f666f668') ? "var(--cta)" : "none"} /></button><Link to="/book/6618d3f666b6c666f666f668" className="btn-mini-cart" title="Rent" style={{ color: '#fff' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link></div></div></div>
+        <div className="book-info"><div className="book-title">Think & Grow Rich</div><div className="book-author">Napoleon Hill</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 45/wk</span><div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}><button onClick={(e) => { e.stopPropagation(); toggleWishlist({ id: '6618d3f666b6c666f666f668', title: 'Think & Grow Rich', author: 'Napoleon Hill', badge: 'rent', price: 45, exchangeType: 'Rent', category: 'Self-Development', img: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=80' }); }} style={{ background: 'none', border: '1.5px solid var(--border)', borderRadius: '50%', width: '30px', height: '30px', display: 'grid', placeItems: 'center', cursor: 'pointer', color: isInWishlist('6618d3f666b6c666f666f668') ? 'var(--cta)' : 'var(--text-muted)', transition: 'all .2s' }}><FiHeart size={14} fill={isInWishlist('6618d3f666b6c666f666f668') ? "var(--cta)" : "none"} /></button><button onClick={(e) => { e.stopPropagation(); handleAddToCart({ id: '6618d3f666b6c666f666f668', title: 'Think & Grow Rich', author: 'Napoleon Hill', badge: 'rent', price: 45, exchangeType: 'Rent', category: 'Self-Development', img: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=80' }); }} className="btn-mini-cart" title="Rent" style={{ color: '#fff' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></button></div></div></div>
       </div>
     </div>
   </div>
@@ -541,9 +554,13 @@ export default function HomePage() {
                   >
                       <FiHeart size={14} fill={isInWishlist(b.id) ? "var(--cta)" : "none"} />
                   </button>
-                  <Link to={`/book/${b.id}`} className="btn-mini-cart" style={{ color: '#fff' }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                  </Link>
+                  <button 
+                      onClick={(e) => { e.stopPropagation(); handleAddToCart(b); }}
+                      className="btn-mini-cart" 
+                      style={{ borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    </button>
                 </div>
               </div>
             </div>
