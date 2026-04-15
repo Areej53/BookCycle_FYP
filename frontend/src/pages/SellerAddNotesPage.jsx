@@ -107,7 +107,7 @@ export default function SellerAddNotesPage() {
                 subject: sellerData.subject || '',
                 author: sellerData.author || 'Unknown',
                 description: sellerData.description || 'No description provided.',
-                condition: sellerData.condition || 'Good',
+                condition: sellerData.condition || 'New',
                 category: 'Notes',
                 exchangeType: sellerData.exchangeType || 'Sell',
                 price: sellerData.exchangeType === 'Sell' ? Number(sellerData.price) : (sellerData.exchangeType === 'Rent' ? Number(sellerData.rentWeek) : 0),
@@ -206,10 +206,9 @@ export default function SellerAddNotesPage() {
     <div className="form-grid" style={{ marginBottom: '24px' }}>
       <div className="field">
         <label>Condition <span className="req">*</span></label>
-        <div className="condition-pills">
-          <div className={`cond-pill ${sellerData.condition === 'New' || sellerData.condition === 'Like New' ? 'active-new' : ''}`} onClick={() => handleCondition('Like New')}>New / Like New</div>
-          <div className={`cond-pill ${sellerData.condition === 'Good' ? 'active-used' : ''}`} onClick={() => handleCondition('Good')}>Used / Good</div>
-          <div className={`cond-pill ${sellerData.condition === 'Fair' || sellerData.condition === 'Poor' ? 'active-worn' : ''}`} onClick={() => handleCondition('Fair')}>Worn / Fair</div>
+        <div className="cond-selector" style={{ display: 'flex', gap: '15px', marginTop: '15px' }}>
+          <div className={`cond-pill ${sellerData.condition === 'New' ? 'active-new' : ''}`} onClick={() => handleCondition('New')}>New</div>
+          <div className={`cond-pill ${sellerData.condition === 'Used/Good' ? 'active-used' : ''}`} onClick={() => handleCondition('Used/Good')}>Used / Good</div>
         </div>
       </div>
     </div>

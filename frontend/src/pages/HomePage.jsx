@@ -9,6 +9,7 @@ import { FiHeart } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 
 import Navbar from '../components/Navbar';
+import RecommendationWidget from '../components/RecommendationWidget';
 
 const getImageUrl = (book) => {
     const imagePath = book.image || (book.images && book.images[0]);
@@ -74,8 +75,8 @@ export default function HomePage() {
         const fetchBooks = async () => {
             try {
                 const [featRes, recentRes, freeRes] = await Promise.all([
-                    api.get('books?limit=4'),
-                    api.get('books?limit=3&sort=recent'),
+                    api.get('books?limit=8&sort=random'),
+                    api.get('books?limit=10&sort=recent'),
                     api.get('books?type=share&limit=3&sort=recent')
                 ]);
                 
@@ -95,10 +96,10 @@ export default function HomePage() {
                 };
 
                 if (featRes.data.books) {
-                    setFeaturedBooks(formatBooks(featRes.data.books, 4));
+                    setFeaturedBooks(formatBooks(featRes.data.books, 8));
                 }
                 if (recentRes.data.books) {
-                    setRecentBooks(formatBooks(recentRes.data.books, 3));
+                    setRecentBooks(formatBooks(recentRes.data.books, 10));
                 }
                 if (freeRes.data.books) {
                     setFreeBooks(formatBooks(freeRes.data.books, 3));
@@ -238,10 +239,7 @@ export default function HomePage() {
         <div className="filter-row">
           <span className="filter-row-label">Condition</span>
           <span className={`f-chip ${activeConds.includes('new') ? 'active' : ''}`} onClick={() => toggleCond('new')}>New</span>
-          <span className={`f-chip ${activeConds.includes('like new') ? 'active' : ''}`} onClick={() => toggleCond('like new')}>Like New</span>
-          <span className={`f-chip ${activeConds.includes('good') ? 'active' : ''}`} onClick={() => toggleCond('good')}>Good</span>
-          <span className={`f-chip ${activeConds.includes('fair') ? 'active' : ''}`} onClick={() => toggleCond('fair')}>Fair</span>
-          <span className={`f-chip ${activeConds.includes('poor') ? 'active' : ''}`} onClick={() => toggleCond('poor')}>Poor</span>
+          <span className={`f-chip ${activeConds.includes('used/good') ? 'active' : ''}`} onClick={() => toggleCond('used/good')}>Used/Good</span>
         </div>
 
         <div className="filter-divider"></div>
@@ -514,7 +512,7 @@ export default function HomePage() {
       <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Borrow</div><h2 className="section-title">Books for <span>Rent</span></h2></div>
       <Link to="/browse" className="see-all">View all</Link>
     </div>
-    <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
+    <div className="books-grid" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))' }}>
       <div className="book-card" onClick={() => navigate('/book/6618d3f666b6c666f666f666')} style={{ cursor: 'pointer' }}>
         <div className="book-cover"><img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80" alt="The Alchemist"/><span className="book-badge badge-rent">Rent</span></div>
         <div className="book-info"><div className="book-title">The Alchemist</div><div className="book-author">Paulo Coelho</div><div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span className="book-price">Rs. 30/wk</span><div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}><button onClick={(e) => { e.stopPropagation(); toggleWishlist({ id: '6618d3f666b6c666f666f666', title: 'The Alchemist', author: 'Paulo Coelho', badge: 'rent', price: 30, exchangeType: 'Rent', category: 'Novels', img: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80' }); }} style={{ background: 'none', border: '1.5px solid var(--border)', borderRadius: '50%', width: '30px', height: '30px', display: 'grid', placeItems: 'center', cursor: 'pointer', color: isInWishlist('6618d3f666b6c666f666f666') ? 'var(--cta)' : 'var(--text-muted)', transition: 'all .2s' }}><FiHeart size={14} fill={isInWishlist('6618d3f666b6c666f666f666') ? "var(--cta)" : "none"} /></button><button onClick={(e) => { e.stopPropagation(); handleAddToCart({ id: '6618d3f666b6c666f666f666', title: 'The Alchemist', author: 'Paulo Coelho', badge: 'rent', price: 30, exchangeType: 'Rent', category: 'Novels', img: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80' }); }} className="btn-mini-cart" title="Rent" style={{ color: '#fff' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></button></div></div></div>
@@ -584,7 +582,7 @@ export default function HomePage() {
       <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Just Listed</div><h2 className="section-title">Recently <span>Added</span></h2></div>
       <Link to="/browse" className="see-all">See all new</Link>
     </div>
-    <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
+    <div className="books-grid" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))' }}>
       {recentBooks.map(b => (
         <div className="book-card book-card-h" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer', position: 'relative', display: 'flex', width: '100%' }}>
           <div className="book-cover" style={{ width: '82px', flexShrink: '0', borderRadius: '0', minHeight: '110px', height: 'auto', position: 'relative' }}>
@@ -633,7 +631,8 @@ export default function HomePage() {
 
 <aside className="sidebar">
 
-  
+  <RecommendationWidget />
+
   <div className="sidebar-widget" style={{ background: 'var(--primary)', borderColor: 'var(--primary)' }}>
     <div className="widget-title" style={{ color: 'var(--accent)', borderBottomColor: 'rgba(255,250,224,.15)' }}>
       Platform Stats

@@ -43,7 +43,9 @@ const UserSchema = new mongoose.Schema({
   },
   viewedBooks: [{
     book: { type: mongoose.Schema.Types.ObjectId, ref: 'Book' },
-    views: { type: Number, default: 1 }
+    category: { type: String },
+    views: { type: Number, default: 1 },
+    updatedAt: { type: Date, default: Date.now }
   }]
 });
 

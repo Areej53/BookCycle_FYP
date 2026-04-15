@@ -155,10 +155,9 @@ export default function SellerAddBookPage() {
     <div className="form-grid" style={{ marginBottom: '24px' }}>
       <div className="field">
         <label>Condition <span className="req">*</span></label>
-        <div className="condition-pills">
-          <div className={`cond-pill ${sellerData.condition === 'New' || sellerData.condition === 'Like New' ? 'active-new' : ''}`} onClick={() => handleCondition('Like New')}>New / Like New</div>
-          <div className={`cond-pill ${sellerData.condition === 'Good' ? 'active-used' : ''}`} onClick={() => handleCondition('Good')}>Used / Good</div>
-          <div className={`cond-pill ${sellerData.condition === 'Fair' || sellerData.condition === 'Poor' ? 'active-worn' : ''}`} onClick={() => handleCondition('Fair')}>Worn / Fair</div>
+        <div className="cond-selector" style={{ display: 'flex', gap: '15px', marginTop: '15px' }}>
+          <div className={`cond-pill ${sellerData.condition === 'New' ? 'active-new' : ''}`} onClick={() => handleCondition('New')}>New</div>
+          <div className={`cond-pill ${sellerData.condition === 'Used/Good' ? 'active-used' : ''}`} onClick={() => handleCondition('Used/Good')}>Used / Good</div>
         </div>
       </div>
     </div>

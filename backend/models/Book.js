@@ -6,7 +6,7 @@ const BookSchema = new mongoose.Schema({
   description: { type: String, required: [true, 'Please provide description'] },
   condition: { 
     type: String, 
-    enum: ['New', 'Like New', 'Good', 'Fair', 'Poor'], 
+    enum: ['New', 'Used/Good'], 
     required: [true, 'Please provide condition'] 
   },
   category: { 
