@@ -8,28 +8,30 @@ import { api, getApiErrorMessage, getApiSuccessMessage } from "../api/client";
 
 const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
+  const [inlineError, setInlineError] = useState("");
+  const [inlineSuccess, setInlineSuccess] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setInlineError("");
+    setInlineSuccess("");
     const email = e.target.email.value.trim();
     if (!email) {
-      toast.error("Please enter your email");
+      setInlineError("Please enter your email");
+      // toast.error("Please enter your email"); /* unused */
       return;
     }
     setLoading(true);
     try {
       const { data } = await api.post("/forgot-password", { email });
-      toast.success(
-        getApiSuccessMessage(
-          data,
-          "If an account exists for this email, follow the reset link."
-        )
-      );
+      setInlineSuccess(getApiSuccessMessage(data, "If an account exists for this email, follow the reset link."));
+      // toast.success(getApiSuccessMessage(data, "If an account exists for this email, follow the reset link.")); /* unused */
       if (data.resetLink) {
         window.location.assign(data.resetLink);
       }
     } catch (err) {
-      toast.error(getApiErrorMessage(err));
+      setInlineError(getApiErrorMessage(err));
+      // toast.error(getApiErrorMessage(err)); /* unused */
     } finally {
       setLoading(false);
     }
@@ -49,7 +51,9 @@ const ForgotPassword = () => {
             <h2>Reset password</h2>
             <p>Enter your email and we&apos;ll send reset instructions</p>
             <form onSubmit={handleSubmit}>
-              <input type="email" placeholder="Email" name="email" required />
+              {inlineError && <div style={{ color: '#d32f2f', background: '#ffebee', padding: '10px', borderRadius: '4px', marginBottom: '15px', fontSize: '14px', textAlign: 'center', border: '1px solid #ffcdd2' }}>{inlineError}</div>}
+              {inlineSuccess && <div style={{ color: '#2e7d32', background: '#e8f5e9', padding: '10px', borderRadius: '4px', marginBottom: '15px', fontSize: '14px', textAlign: 'center', border: '1px solid #c8e6c9' }}>{inlineSuccess}</div>}
+              <input type="email" placeholder="Email" name="email" />
               <div className="login-center-buttons">
                 <button type="submit" disabled={loading}>
                   {loading ? "Sending…" : "Send reset link"}

@@ -12,27 +12,35 @@ const ResetPassword = () => {
   const token = useMemo(() => searchParams.get("token") || "", [searchParams]);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [inlineError, setInlineError] = useState("");
+  const [inlineSuccess, setInlineSuccess] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setInlineError("");
+    setInlineSuccess("");
     if (!token) {
-      toast.error("Missing reset token. Use the link from your email or dev response.");
+      setInlineError("Missing reset token. Use the link from your email or dev response.");
+      // toast.error("Missing reset token. Use the link from your email or dev response."); /* unused */
       return;
     }
     const password = e.target.password.value;
     const confirm = e.target.confirmPassword.value;
     if (password !== confirm) {
-      toast.error("Passwords do not match");
+      setInlineError("Passwords do not match");
+      // toast.error("Passwords do not match"); /* unused */
       return;
     }
     setLoading(true);
     try {
       await api.post("/reset-password", { token, password });
-      toast.success("Password updated. You can log in.");
-      navigate("/login");
+      setInlineSuccess("Password updated. You can log in.");
+      // toast.success("Password updated. You can log in."); /* unused */
+      setTimeout(() => navigate("/login"), 1500); // Give user time to see success message before routing
     } catch (err) {
-      toast.error(getApiErrorMessage(err));
+      setInlineError(getApiErrorMessage(err));
+      // toast.error(getApiErrorMessage(err)); /* unused */
     } finally {
       setLoading(false);
     }
@@ -58,12 +66,13 @@ const ResetPassword = () => {
               </p>
             )}
             <form onSubmit={handleSubmit}>
+              {inlineError && <div style={{ color: '#d32f2f', background: '#ffebee', padding: '10px', borderRadius: '4px', marginBottom: '15px', fontSize: '14px', textAlign: 'center', border: '1px solid #ffcdd2' }}>{inlineError}</div>}
+              {inlineSuccess && <div style={{ color: '#2e7d32', background: '#e8f5e9', padding: '10px', borderRadius: '4px', marginBottom: '15px', fontSize: '14px', textAlign: 'center', border: '1px solid #c8e6c9' }}>{inlineSuccess}</div>}
               <div className="pass-input-div">
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="New password"
                   name="password"
-                  required
                   minLength={3}
                 />
                 {showPassword ? (
@@ -77,7 +86,6 @@ const ResetPassword = () => {
                   type={showPassword ? "text" : "password"}
                   placeholder="Confirm password"
                   name="confirmPassword"
-                  required
                   minLength={3}
                 />
                 {showPassword ? (

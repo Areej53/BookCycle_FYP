@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { FiCheckCircle, FiLayout, FiPlusCircle, FiArrowUpRight } from 'react-icons/fi';
 import { IMAGES } from '../data/assets';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';

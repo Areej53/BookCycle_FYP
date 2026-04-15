@@ -14,6 +14,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const [token, setToken] = useState(getStoredAuthToken);
+  const [inlineError, setInlineError] = useState("");
   const [role, setRole] = useState("");
   const [interests, setInterests] = useState([]);
 
@@ -30,46 +31,58 @@ const Register = () => {
 
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
-    let name = e.target.name.value;
-    let lastname = e.target.lastname.value;
-    let email = e.target.email.value;
+    setInlineError("");
+    let name = e.target.name.value.trim();
+    let lastname = e.target.lastname.value.trim();
+    let email = e.target.email.value.trim();
     let password = e.target.password.value;
     let confirmPassword = e.target.confirmPassword.value;
 
-    if(name.length > 0 && lastname.length > 0 && email.length > 0 && password.length > 0 && confirmPassword.length > 0){
-      if(!role){
-        toast.error("Please select a role");
-        return;
-      }
-      if(interests.length === 0){
-        toast.error("Please select at least one interest");
-        return;
-      }
-
-      if(password === confirmPassword){
-        const formData = {
-          name: `${name} ${lastname}`.trim(),
-          email,
-          password,
-          role,
-          interests
-        };
-        try {
-          await api.post("/register", formData);
-          navigate("/login");
-        } catch (err) {
-          toast.error(getApiErrorMessage(err));
-        }
-      }else{
-        toast.error("Passwords don't match");
-      }
-    
-
-    }else{
-      toast.error("Please fill all inputs");
+    if (name.length === 0 || lastname.length === 0 || email.length === 0 || password.length === 0 || confirmPassword.length === 0) {
+      setInlineError("Please fill all required fields");
+      // toast.error("Please fill all inputs"); /* unused */
+      return;
     }
 
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|pk|org|net|edu|gov)$/i;
+    const isBadGmail = /@gmai\.com|@gmial\.com|@gamil\.com/i.test(email);
 
+    if (!emailRegex.test(email) || isBadGmail) {
+      setInlineError("Please enter a valid email address");
+      return;
+    }
+
+    if (!role) {
+      setInlineError("Please select a role");
+      // toast.error("Please select a role"); /* unused */
+      return;
+    }
+    if (interests.length === 0) {
+      setInlineError("Please select at least one interest");
+      // toast.error("Please select at least one interest"); /* unused */
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setInlineError("Passwords don't match");
+      // toast.error("Passwords don't match"); /* unused */
+      return;
+    }
+
+    const formData = {
+      name: `${name} ${lastname}`.trim(),
+      email,
+      password,
+      role,
+      interests
+    };
+    try {
+      await api.post("/register", formData);
+      navigate("/login");
+    } catch (err) {
+      setInlineError(getApiErrorMessage(err));
+      // toast.error(getApiErrorMessage(err)); /* unused */
+    }
   }
 
   useEffect(() => {
@@ -92,16 +105,17 @@ const Register = () => {
             <h2>Welcome to our website!</h2>
             <p>Please enter your details</p>
             <form onSubmit={handleRegisterSubmit}>
-            <input type="text" placeholder="Name" name="name" required={true} />
-            <input type="text" placeholder="Lastname" name="lastname" required={true} />
-              <input type="email" placeholder="Email" name="email" required={true} />
+              {inlineError && <div style={{ color: '#d32f2f', background: '#ffebee', padding: '10px', borderRadius: '4px', marginBottom: '15px', fontSize: '14px', textAlign: 'center', border: '1px solid #ffcdd2' }}>{inlineError}</div>}
+              <input type="text" placeholder="Name" name="name" />
+              <input type="text" placeholder="Lastname" name="lastname" />
+              <input type="email" placeholder="Email" name="email" />
               <div className="pass-input-div">
-                <input type={showPassword ? "text" : "password"} placeholder="Password" name="password" required={true} />
+                <input type={showPassword ? "text" : "password"} placeholder="Password" name="password" />
                 {showPassword ? <FaEyeSlash onClick={() => {setShowPassword(!showPassword)}} /> : <FaEye onClick={() => {setShowPassword(!showPassword)}} />}
                 
               </div>
               <div className="pass-input-div">
-                <input type={showPassword ? "text" : "password"} placeholder="Confirm Password" name="confirmPassword" required={true} />
+                <input type={showPassword ? "text" : "password"} placeholder="Confirm Password" name="confirmPassword" />
                 {showPassword ? <FaEyeSlash onClick={() => {setShowPassword(!showPassword)}} /> : <FaEye onClick={() => {setShowPassword(!showPassword)}} />}
               </div>
               

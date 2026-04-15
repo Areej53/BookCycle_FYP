@@ -33,7 +33,7 @@ const matchEnum = (arr, val) => {
 };
 
 const getAllBooks = async (req, res) => {
-  const { category, cats, search, q, type, conds, condition, price, sort } = req.query;
+  const { category, cats, search, q, type, conds, condition, price, minPrice, maxPrice, sort } = req.query;
   const queryObject = { status: 'Available' };
 
   const finalCategory = category || cats;
@@ -60,25 +60,39 @@ const getAllBooks = async (req, res) => {
     const condArray = finalCondition.split(',').map(c => matchEnum(exactCondEnums, c));
     queryObject.condition = { $in: condArray };
   }
-  if (price) {
-    queryObject.price = { $lte: Number(price) };
-    
-    // Crucial explicitly: Ensure that if a user sets max price, "free/share" books might show up (since price=0).
-    // Let's filter out "Share" books ONLY if price filter is used AND Type filter doesn't explicitly INCLUDE 'share'.
-    if (!type || !type.toLowerCase().includes('share')) {
-        queryObject.exchangeType = { $ne: 'Share' };
+  if (minPrice !== undefined || maxPrice !== undefined || price !== undefined) {
+    const finalMin = minPrice !== undefined && minPrice !== '' && !isNaN(Number(minPrice)) ? Number(minPrice) : null;
+    const finalMax = maxPrice !== undefined && maxPrice !== '' && !isNaN(Number(maxPrice)) ? Number(maxPrice) : (price !== undefined && price !== '' && !isNaN(Number(price)) ? Number(price) : null);
+
+    if (finalMin !== null || finalMax !== null) {
+      queryObject.price = {};
+      if (finalMin !== null) queryObject.price.$gte = finalMin;
+      if (finalMax !== null) queryObject.price.$lte = finalMax;
+
+      // Crucial explicitly: Ensure that if a user sets max price, "free/share" books might show up (since price=0).
+      // Let's filter out "Share" books ONLY if price filter is used AND Type filter doesn't explicitly INCLUDE 'share'.
+      if (!type || !type.toLowerCase().includes('share')) {
+          queryObject.exchangeType = { $ne: 'Share' };
+      }
     }
   }
 
-  let result = Book.find(queryObject).populate('owner', 'name');
+  let result = Book.find(queryObject).select('-pdf').populate('owner', 'name');
 
   // Sorting
   if (sort === 'price-asc') {
     result = result.sort('price');
   } else if (sort === 'price-desc') {
     result = result.sort('-price');
-  } else if (sort === 'recent' || sort === 'popular' || !sort) {
+  } else if (sort === 'popular') {
+    result = result.sort('-views -createdAt');
+  } else if (sort === 'recent' || !sort) {
     result = result.sort('-createdAt');
+  }
+
+  if (req.query.limit) {
+    const limitNum = Number(req.query.limit);
+    if (!isNaN(limitNum) && limitNum > 0) result = result.limit(limitNum);
   }
 
   const books = await result;
@@ -89,6 +103,34 @@ const getBook = async (req, res) => {
   const { id } = req.params;
   const book = await Book.findById(id).populate('owner', 'name email');
   if (!book) return res.status(404).json({ msg: `No book with id ${id}` });
+
+  // Increment global views
+  book.views = (book.views || 0) + 1;
+  await book.save({ validateBeforeSave: false });
+
+  // Track views securely if token is present
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    try {
+      const token = authHeader.split(" ")[1];
+      const decoded = require("jsonwebtoken").verify(token, process.env.JWT_SECRET);
+      if (decoded && decoded.id) {
+        const user = await User.findById(decoded.id);
+        if (user) {
+          const viewIndex = user.viewedBooks.findIndex(vb => vb.book && vb.book.toString() === id);
+          if (viewIndex > -1) {
+            user.viewedBooks[viewIndex].views += 1;
+          } else {
+            user.viewedBooks.push({ book: id, views: 1 });
+          }
+          await user.save();
+        }
+      }
+    } catch (e) {
+      // ignore invalid tokens for tracking route
+    }
+  }
+
   res.status(200).json({ book });
 };
 
@@ -127,23 +169,41 @@ const deleteBook = async (req, res) => {
 const getRecommendedBooks = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
-    if (!user || !user.interests || user.interests.length === 0) {
-      return res.status(200).json({ books: [] });
+    if (!user) return res.status(200).json({ books: [] });
+
+    let books = [];
+
+    // Fetch from Interests
+    if (user.interests && user.interests.length > 0) {
+      const promises = user.interests.map(interest => 
+        Book.find({ category: new RegExp(`^${interest}$`, 'i'), status: 'Available' })
+          .select('-pdf')
+          .sort('-createdAt')
+          .limit(5)
+          .populate('owner', 'name')
+      );
+      const results = await Promise.all(promises);
+      books = results.flat();
     }
 
-    const promises = user.interests.map(interest => 
-      Book.find({ category: new RegExp(`^${interest}$`, 'i'), status: 'Available' })
-        .sort('-createdAt')
-        .limit(5)
-        .populate('owner', 'name')
-    );
-
-    const results = await Promise.all(promises);
-    let books = results.flat();
+    // Fetch from Mostly Viewed Books
+    if (user.viewedBooks && user.viewedBooks.length > 0) {
+      // Sort to get top viewed books
+      const sortedViewed = user.viewedBooks.sort((a,b) => b.views - a.views).slice(0, 5);
+      const viewedBookIds = sortedViewed.map(vb => vb.book);
+      
+      const highlyViewedBooks = await Book.find({
+          _id: { $in: viewedBookIds },
+          status: 'Available'
+      }).select('-pdf').populate('owner', 'name');
+      
+      books = [...highlyViewedBooks, ...books];
+    }
     
     // Remove duplicates
     const uniqueIds = new Set();
     books = books.filter(b => {
+      if (!b || !b._id) return false;
       const isDuplicate = uniqueIds.has(b._id.toString());
       uniqueIds.add(b._id.toString());
       return !isDuplicate;

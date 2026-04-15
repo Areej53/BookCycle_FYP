@@ -9,7 +9,8 @@ import useRecommendations from '../hooks/useRecommendations';
 import { useWishlist } from '../context/WishlistContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { FiHeart } from 'react-icons/fi';
+import ActionModal from '../components/ActionModal';
+
 export default function BrowseBooksPage() {
     const { user } = useAuth();
     const { wishlist, toggleWishlist, isInWishlist } = useWishlist();
@@ -18,6 +19,7 @@ export default function BrowseBooksPage() {
     const [books, setBooks] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedPdf, setSelectedPdf] = useState(null);
+    const [modalMessage, setModalMessage] = useState("");
     const { recommended } = useRecommendations();
 
     const initialTab = searchParams.get('tab') || 'all';
@@ -28,7 +30,9 @@ export default function BrowseBooksPage() {
     const [localCats, setLocalCats] = useState(initCats);
     const [localConds, setLocalConds] = useState([]);
     const [localType, setLocalType] = useState(initialTab === 'all' ? [] : [initialTab === 'free' ? 'share' : initialTab]);
+    const [minPrice, setMinPrice] = useState('');
     const [maxPrice, setMaxPrice] = useState('');
+    const [priceError, setPriceError] = useState('');
     const [sort, setSort] = useState('recent');
 
     const getImageUrl = (book) => {
@@ -54,13 +58,21 @@ export default function BrowseBooksPage() {
 
     useEffect(() => {
         const fetchBooks = async () => {
+             if (minPrice && maxPrice && Number(minPrice) > Number(maxPrice)) {
+                 setPriceError("Minimum price cannot be greater than maximum price");
+                 setBooks([]);
+                 setIsLoading(false);
+                 return;
+             }
+             setPriceError('');
              setIsLoading(true);
              try {
                  const params = {};
                  if (localCats.length) params.cats = localCats.join(',');
                  if (localConds.length) params.conds = localConds.join(',');
                  if (localType.length && !localType.includes('all')) params.type = localType.join(',');
-                 if (maxPrice) params.price = maxPrice;
+                 if (minPrice) params.minPrice = minPrice;
+                 if (maxPrice) params.maxPrice = maxPrice;
                  if (sort) params.sort = sort;
 
                  const res = await api.get('books', { params });
@@ -72,7 +84,7 @@ export default function BrowseBooksPage() {
              }
         };
         fetchBooks();
-    }, [localCats, localConds, localType, maxPrice, sort]); // refetch on filter change
+    }, [localCats, localConds, localType, minPrice, maxPrice, sort]); // refetch on filter change
 
     const handleSearch = () => {
         const params = new URLSearchParams();
@@ -80,7 +92,8 @@ export default function BrowseBooksPage() {
         if (localCats.length) params.set('cats', localCats.join(','));
         if (localConds.length) params.set('conds', localConds.join(','));
         if (localType.length && !localType.includes('all')) params.set('type', localType.join(','));
-        if (maxPrice) params.set('price', maxPrice);
+        if (minPrice) params.set('minPrice', minPrice);
+        if (maxPrice) params.set('maxPrice', maxPrice);
         if (sort) params.set('sort', sort);
         
         // Only navigate if there's actually a search query, or keep the original behavior 
@@ -145,11 +158,11 @@ export default function BrowseBooksPage() {
   <div className="filter-section">
     <div className="filter-label">Price Range</div>
     <div className="price-inputs">
-      <input type="number" className="price-inp" id="price-min" placeholder="Min" min="0"/>
+      <input type="number" className="price-inp" id="price-min" placeholder="Min" min="0" value={minPrice} onChange={e => setMinPrice(e.target.value)}/>
       <span className="price-sep">—</span>
       <input type="number" className="price-inp" id="price-max" placeholder="Max" min="0" value={maxPrice} onChange={e => setMaxPrice(e.target.value)}/>
     </div>
-    
+    {priceError && <div style={{color: 'red', fontSize: '0.85rem', marginTop: '8px'}}>{priceError}</div>}
   </div>
   <div className="filter-section">
     <div className="filter-label">Type</div>
@@ -175,7 +188,7 @@ export default function BrowseBooksPage() {
   
   <main className="main-col">
     <div className="sort-bar">
-      <div className="result-count"><strong id="result-count">12</strong> books found</div>
+      <div className="result-count"><strong id="result-count">{books.length}</strong> books found</div>
       <select className="sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
         <option value="default">Default</option>
         <option value="price-asc">Price: Low → High</option>
@@ -200,8 +213,21 @@ export default function BrowseBooksPage() {
             <div className="bc-author">by {book.author}</div>
             <div className="bc-cond">Condition: <strong>{book.condition}</strong></div>
             <div className="price-line" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
-                {book.category === 'Notes' && book.pdf ? (
-                    <button className="btn-mini" style={{ background: 'var(--primary)', width: '100%', display: 'flex', justifyContent: 'center', gap: '8px' }} onClick={(e) => { e.stopPropagation(); setSelectedPdf(book.pdf); }}>
+                {book.category === 'Notes' ? (
+                    <button className="btn-mini" style={{ background: 'var(--primary)', width: '100%', display: 'flex', justifyContent: 'center', gap: '8px' }} onClick={async (e) => { 
+                        e.stopPropagation(); 
+                        try {
+                            const res = await api.get(`/books/${book._id}`);
+                            if (res.data.book.pdf) {
+                                setSelectedPdf(res.data.book.pdf);
+                            } else {
+                                setModalMessage("No PDF attached to these notes.");
+                                // alert("No PDF attached to these notes."); /* unused */
+                            }
+                        } catch(err) {
+                            console.error('Failed to fetch pdf', err);
+                        }
+                    }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                         View PDF
                     </button>
@@ -233,7 +259,7 @@ export default function BrowseBooksPage() {
       <div className="no-results-icon" style={{ opacity: 0.7, marginBottom: '10px' }}>
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
       </div>
-      <div className="no-results-title">No books found matching your search and filters</div>
+      <div className="no-results-title">{minPrice || maxPrice ? "No books found for selected price range" : "No books found matching your search and filters"}</div>
       <div className="no-results-text">Try removing some filters or check your spelling.<br/>Here are some popular categories:</div>
       <div className="no-results-cats">
         <span className="no-results-cat" onClick={() => { setLocalCats(['programming']); setLocalQuery(''); }}>Programming</span>
@@ -286,7 +312,9 @@ export default function BrowseBooksPage() {
 </div>
 
 <Footer />
-<div className="toast" id="toast"><span className="toast-dot"></span><span id="toast-msg"></span></div>
+{/* <div className="toast" id="toast"><span className="toast-dot"></span><span id="toast-msg"></span></div> */}
+
+<ActionModal isOpen={!!modalMessage} message={modalMessage} onClose={() => setModalMessage("")} />
 
 {selectedPdf && (
     <div className="pdf-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', flexDirection: 'column' }} onClick={() => setSelectedPdf(null)} onContextMenu={(e) => e.preventDefault()}>

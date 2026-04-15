@@ -7,6 +7,7 @@ import { api, getApiErrorMessage } from '../api/client';
 import { toast } from 'react-toastify';
 import { FiCheckCircle, FiAlertCircle, FiEdit3 } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
+import ActionModal from '../components/ActionModal';
 
 export default function SellerReviewPage() {
     const { sellerData, resetSellerData } = useContext(SellerContext);
@@ -14,6 +15,8 @@ export default function SellerReviewPage() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [modalMessage, setModalMessage] = useState('');
+    const [isSuccessModal, setIsSuccessModal] = useState(false);
 
     React.useEffect(() => {
         if (!sellerData.category) {
@@ -50,13 +53,16 @@ export default function SellerReviewPage() {
             const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
             const response = await api.post('/books', payload, axiosConfig);
 
-            toast.success("Successfully listed your book!");
-            resetSellerData();
-            navigate('/seller/published');
+            setModalMessage("Successfully listed your book!");
+            setIsSuccessModal(true);
+            // toast.success("Successfully listed your book!"); /* unused */
+            // resetSellerData(); navigate('/seller/published'); /* Moved to modal close */
         } catch (err) {
             const msg = getApiErrorMessage(err);
             setError(msg);
-            toast.error(msg);
+            setModalMessage(msg);
+            setIsSuccessModal(false);
+            // toast.error(msg); /* unused */
             setTimeout(() => setError(''), 5000);
         } finally {
             setLoading(false);
@@ -150,6 +156,14 @@ export default function SellerReviewPage() {
   <div className="steps-widget"><div className="sw-head">Your Progress</div><div className="sw-body"><div className="sw-item"><div className="sw-num done">✓</div><div><div className="sw-label ">Select Categories</div><div className="sw-sub">Choose what you want to sell</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num done">✓</div><div><div className="sw-label ">Add Book Details</div><div className="sw-sub">Fill in book info & images</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num active">3</div><div><div className="sw-label ">Review Listing</div><div className="sw-sub">Preview before going live</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num ">4</div><div><div className="sw-label upcoming">Published!</div><div className="sw-sub">Your book is now live</div></div></div></div></div>
 </aside></div>
 <footer className="footer"><div className="footer-grid"><div><Link to="/" className="footer-brand"><div className="f-logo"><img src={IMAGES.img_0} alt="BookCycle"/></div><span className="f-brand-name">BookCycle</span></Link><p className="f-desc">Islamabad's community book platform. Share, rent, and discover books across the city.</p></div><div className="f-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div></div></footer>
+
+            <ActionModal isOpen={!!modalMessage} message={modalMessage} onClose={() => {
+                setModalMessage('');
+                if (isSuccessModal) {
+                    resetSellerData();
+                    navigate('/seller/published');
+                }
+            }} />
         </div>
     );
 }
