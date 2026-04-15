@@ -384,7 +384,7 @@ export default function Home({ onNavigate }) {
                 <div key={b.id} className="h-bcard" onClick={() => navigate(`/book/${b.id}`)}>
                   <div className="h-bcard-img">
                     <img src={b.img} alt={b.title} />
-                    <span className={`h-badge h-badge-${b.badge}`}>{b.badge.charAt(0).toUpperCase() + b.badge.slice(1)}</span>
+                    {b.type && <span className={`h-badge h-badge-${b.type}`}>{b.type.charAt(0).toUpperCase() + b.type.slice(1)}</span>}
                   </div>
                   <div className="h-bcard-body">
                     <div className="h-bcat">{b.cat}</div>
@@ -425,7 +425,7 @@ export default function Home({ onNavigate }) {
                 <div key={b.id} className="h-bcard" onClick={() => navigate(`/book/${b.id}`)}>
                   <div className="h-bcard-img">
                     <img src={b.img} alt={b.title} />
-                    <span className={`h-badge h-badge-${b.badge}`}>{b.badge.charAt(0).toUpperCase() + b.badge.slice(1)}</span>
+                    {b.type && <span className={`h-badge h-badge-${b.type}`}>{b.type.charAt(0).toUpperCase() + b.type.slice(1)}</span>}
                   </div>
                   <div className="h-bcard-body">
                     <div className="h-bcat">{b.cat}</div>

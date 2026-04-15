@@ -7,6 +7,7 @@ import { IMAGES } from '../data/assets';
 import RecommendationWidget from '../components/RecommendationWidget';
 import useRecommendations from '../hooks/useRecommendations';
 import { useWishlist } from '../context/WishlistContext';
+import { FiHeart } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ActionModal from '../components/ActionModal';
@@ -213,8 +214,21 @@ export default function BrowseBooksPage() {
             <div className="bc-author">by {book.author}</div>
             <div className="bc-cond">Condition: <strong>{book.condition}</strong></div>
             <div className="price-line" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+                <div className="price-label">
+                  {book.exchangeType === 'Share' ? (
+                    <span className="free-tag" style={{ display: 'flex', alignItems: 'center', fontSize: '.85rem', fontWeight: '700', color: 'var(--secondary)' }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
+                      Free Shelf
+                    </span>
+                  ) : (
+                    <>
+                    <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. {book.price}</span>
+                    {book.exchangeType === 'Rent' && <span className="price-unit" style={{ fontSize: '.8rem', color: 'var(--muted)', fontWeight: '600', marginLeft: '2px' }}>/wk</span>}
+                    </>
+                  )}
+                </div>
                 {book.category === 'Notes' ? (
-                    <button className="btn-mini" style={{ background: 'var(--primary)', width: '100%', display: 'flex', justifyContent: 'center', gap: '8px' }} onClick={async (e) => { 
+                    <button className="btn-mini" style={{ background: 'var(--primary)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '6px 14px', border: 'none', color: '#fff', borderRadius: '8px', cursor: 'pointer', transition: 'all .2s' }} onClick={async (e) => { 
                         e.stopPropagation(); 
                         try {
                             const res = await api.get(`/books/${book._id}`);
@@ -222,7 +236,6 @@ export default function BrowseBooksPage() {
                                 setSelectedPdf(res.data.book.pdf);
                             } else {
                                 setModalMessage("No PDF attached to these notes.");
-                                // alert("No PDF attached to these notes."); /* unused */
                             }
                         } catch(err) {
                             console.error('Failed to fetch pdf', err);
@@ -232,7 +245,6 @@ export default function BrowseBooksPage() {
                         View PDF
                     </button>
                 ) : (
-                  <>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                       <button 
                           onClick={(e) => { e.stopPropagation(); toggleWishlist(book); }}
@@ -246,9 +258,8 @@ export default function BrowseBooksPage() {
                         >
                             <FiHeart size={14} fill={isInWishlist(book._id) ? "var(--cta)" : "none"} />
                       </button>
-                      <Link to={`/book/${book._id}`} className="btn-mini-cart" style={{ color: '#fff' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link>
+                      <Link to={`/book/${book._id}`} className="btn-mini-cart" style={{ color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--primary)', width: '30px', height: '30px', borderRadius: '50%' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link>
                     </div>
-                  </>
                 )}
             </div>
           </div>
