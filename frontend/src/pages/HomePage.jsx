@@ -368,7 +368,7 @@ export default function HomePage() {
         <div className="book-card" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer', position: 'relative' }}>
           <div className="book-cover">
             <img src={b.img} alt={b.title}/>
-            <span className={`book-badge badge-${b.type}`}>{b.type === 'buy' ? 'Buy' : b.type.charAt(0).toUpperCase() + b.type.slice(1)}</span>
+            {b.type && <span className={`book-badge badge-${b.type}`}>{b.type === 'buy' ? 'Buy' : b.type.charAt(0).toUpperCase() + b.type.slice(1)}</span>}
           </div>
           <div className="book-info">
             <div className="book-title">{b.title}</div>
@@ -589,7 +589,7 @@ export default function HomePage() {
         <div className="book-card book-card-h" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer', position: 'relative', display: 'flex', width: '100%' }}>
           <div className="book-cover" style={{ width: '82px', flexShrink: '0', borderRadius: '0', minHeight: '110px', height: 'auto', position: 'relative' }}>
             <img src={b.img} alt={b.title}/>
-            <span className={`book-badge badge-${b.type}`} style={{ top: '6px', right: '4px', fontSize: '.6rem', padding: '2px 6px' }}>{b.type === 'buy' ? 'Buy' : b.type.charAt(0).toUpperCase() + b.type.slice(1)}</span>
+            {b.type && <span className={`book-badge badge-${b.type}`} style={{ top: '6px', right: '4px', fontSize: '.6rem', padding: '2px 6px' }}>{b.type === 'buy' ? 'Buy' : b.type.charAt(0).toUpperCase() + b.type.slice(1)}</span>}
           </div>
           <div className="book-info" style={{ padding: '14px', flex: 1, minWidth: 0 }}>
             <div className="book-title" style={{ fontSize: '.9rem' }}>{b.title}</div>

@@ -64,9 +64,9 @@ export default function WishlistPage() {
                                         <FiHeart fill="var(--cta)" />
                                     </button>
                                     <div style={{ position: 'absolute', bottom: '12px', left: '12px' }}>
-                                        <span className={`book-badge badge-${book.badge}`} style={{ position: 'static', padding: '4px 12px' }}>
+                                        {book.badge && <span className={`book-badge badge-${book.badge}`} style={{ position: 'static', padding: '4px 12px' }}>
                                             {book.badge === 'sell' ? 'Buy' : book.badge.charAt(0).toUpperCase() + book.badge.slice(1)}
-                                        </span>
+                                        </span>}
                                     </div>
                                 </div>
                                 <div style={{ padding: '20px' }}>
