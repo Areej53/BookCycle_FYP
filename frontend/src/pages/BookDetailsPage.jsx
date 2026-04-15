@@ -3,8 +3,12 @@ import { useParams, Link } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { api, getApiErrorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
 import { toast } from 'react-toastify';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
+import { FiHeart } from 'react-icons/fi';
 import RecommendationWidget from '../components/RecommendationWidget';
 import ActionModal from '../components/ActionModal';
 
@@ -12,6 +16,7 @@ export default function BookDetailsPage() {
     const { id } = useParams();
     const { user, token } = useAuth();
     const { addToCart } = useCart();
+    const { toggleWishlist, isInWishlist } = useWishlist();
     const [book, setBook] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [modalMessage, setModalMessage] = useState('');
@@ -74,36 +79,7 @@ export default function BookDetailsPage() {
 
     return (
         <div className="BookDetailsPage">
-            {/* SAME HEADER AS HOME PAGE */}
-            <nav style={{ 
-                position: 'sticky', top: 0, zIndex: 10000, 
-                background: 'var(--primary)', 
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-                padding: '0 5%', height: '76px', 
-                boxShadow: '0 2px 20px rgba(19,73,60,.35)',
-                borderBottom: '1.5px solid rgba(221,161,94,.45)' 
-            }}>
-                <Link to="/home" className="logo">
-                    <div className="logo-icon"><img src={IMAGES.img_0} alt="BookCycle logo"/></div>
-                    BookCycle
-                </Link>
-
-                {user && (
-                    <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', color: 'rgba(255,250,224,.9)', fontWeight: 600, fontSize: '1rem', letterSpacing: '0.03em' }}>
-                        Hi, {user.name}
-                    </div>
-                )}
-
-                <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '30px', margin: 0, padding: 0 }}>
-                    <li><Link to="/browse">Browse</Link></li>
-                    <li><Link to="/seller">Sell</Link></li>
-                    {user ? (
-                        <li><Link to="/logout" className="nav-cta">Logout</Link></li>
-                    ) : (
-                        <li><Link to="/login" className="nav-cta">Login</Link></li>
-                    )}
-                </ul>
-            </nav>
+            <Navbar />
 
             <div className="detail-hero">
                 <div className="detail-hero-inner">
@@ -147,7 +123,20 @@ export default function BookDetailsPage() {
                                 </div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                <button onClick={handleAddToCart} className="btn-mini-cart" style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--cta)', color: '#fff', boxShadow: '0 12px 30px rgba(188,108,37,0.35)', transition: 'all 0.2s', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <button 
+                                    onClick={() => toggleWishlist(book)} 
+                                    style={{ 
+                                        width: '64px', height: '64px', borderRadius: '50%', 
+                                        background: '#fff', color: isInWishlist(book?._id) ? 'var(--cta)' : 'var(--text-muted)', 
+                                        boxShadow: '0 8px 24px rgba(0,0,0,0.1)', 
+                                        transition: 'all 0.2s', border: '1.5px solid var(--border)', 
+                                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                                    }}
+                                    title="Add to Wishlist"
+                                >
+                                    <FiHeart size={26} fill={isInWishlist(book?._id) ? "var(--cta)" : "none"} />
+                                </button>
+                                <button onClick={handleAddToCart} className="btn-mini-cart" style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--primary)', color: '#fff', boxShadow: '0 12px 30px rgba(19,73,60,0.35)', transition: 'all 0.2s', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                                 </button>
                             </div>

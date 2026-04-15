@@ -19,6 +19,7 @@ import {
   SellerAddNotesPage,
   CartPage,
   CheckoutPage,
+  WishlistPage,
 } from "./pages";
 import { ToastContainer } from "react-toastify";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -73,7 +74,14 @@ const router = createBrowserRouter([
         path: "book/:id",
         element: <BookDetailsPage />,
       },
-
+      {
+        path: "cart",
+        element: <CartPage />,
+      },
+      {
+        path: "wishlist",
+        element: <WishlistPage />,
+      },
       {
         element: <ProtectedRoute />,
         children: [
@@ -101,15 +109,11 @@ const router = createBrowserRouter([
             path: "seller/review",
             element: <SellerReviewPage />,
           },
-          {
-            path: "cart",
-            element: <CartPage />,
-          },
-          {
-            path: "checkout",
-            element: <CheckoutPage />,
-          },
         ],
+      },
+      {
+        path: "checkout",
+        element: <ProtectedRoute><CheckoutPage /></ProtectedRoute>,
       },
     ],
   },

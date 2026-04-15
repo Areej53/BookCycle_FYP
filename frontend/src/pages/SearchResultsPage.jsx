@@ -6,9 +6,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import RecommendationWidget from '../components/RecommendationWidget';
 import useRecommendations from '../hooks/useRecommendations';
+import { useWishlist } from '../context/WishlistContext';
+import { FiHeart } from 'react-icons/fi';
 
 export default function SearchResultsPage() {
     const { user } = useAuth();
+    const { wishlist, toggleWishlist, isInWishlist } = useWishlist();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const [books, setBooks] = useState([]);
@@ -45,7 +48,7 @@ export default function SearchResultsPage() {
                 if (maxPriceFilter) params.maxPrice = maxPriceFilter;
                 if (sort) params.sort = sort;
 
-                const res = await api.get('/books', { params });
+                const res = await api.get('books', { params });
                 setBooks(res.data.books);
             } catch (err) {
                 console.error('Failed to fetch books', err);
@@ -197,7 +200,7 @@ export default function SearchResultsPage() {
         <div style={{gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: 'var(--muted)'}}>Loading books...</div>
       ) : books.map((book, idx) => (
         <div className="book-card" key={book._id} style={{ animationDelay: `${idx * 0.04}s`, cursor: 'pointer' }} onClick={() => navigate(`/book/${book._id}`)}>
-          <div className="bc-img-wrap">
+          <div className="bc-img-wrap" style={{ position: 'relative' }}>
             <img src={book.images?.[0] ? 'http://localhost:5000' + book.images[0] : 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80'} alt={book.title} className="bc-img"/>
             {book.exchangeType === 'Sell' && <span className="tb tb-buy">Buy</span>}
             {book.exchangeType === 'Rent' && <span className="tb tb-rent">Rent</span>}
@@ -222,9 +225,23 @@ export default function SearchResultsPage() {
                     </>
                   )}
               </div>
-              <Link to={`/book/${book._id}`} className="btn-mini-cart">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-              </Link>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button 
+                    onClick={(e) => { e.stopPropagation(); toggleWishlist(book); }}
+                    style={{ 
+                        background: 'none', border: '1.5px solid var(--border)', 
+                        borderRadius: '50%', width: '30px', height: '30px', 
+                        display: 'grid', placeItems: 'center', cursor: 'pointer', 
+                        color: isInWishlist(book._id) ? 'var(--cta)' : 'var(--text-muted)',
+                        transition: 'all .2s'
+                    }}
+                >
+                    <FiHeart size={14} fill={isInWishlist(book._id) ? "var(--cta)" : "none"} />
+                </button>
+                <Link to={`/book/${book._id}`} className="btn-mini-cart">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -266,6 +283,22 @@ export default function SearchResultsPage() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
                         <div style={{ fontSize: '.78rem', fontWeight: '700', color: bk.exchangeType === 'Share' ? 'var(--secondary)' : 'var(--cta)' }}>
                             {bk.exchangeType === 'Share' ? 'Free' : `Rs. ${bk.price}${bk.exchangeType === 'Rent' ? '/wk' : ''}`}
+                        </div>
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); toggleWishlist(bk); }}
+                                style={{ background: 'none', border: '1.2px solid var(--border)', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: isInWishlist(bk._id) ? 'var(--cta)' : 'var(--text-muted)', transition: 'all .2s' }}
+                            >
+                                <FiHeart size={12} fill={isInWishlist(bk._id) ? 'var(--cta)' : 'none'} />
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); navigate(`/book/${bk._id}`); }}
+                                style={{ background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'transform 0.15s ease', boxShadow: '0 2px 8px rgba(19,73,60,0.2)' }}
+                                onMouseOver={(e)=>e.currentTarget.style.transform='scale(1.1)'}
+                                onMouseOut={(e)=>e.currentTarget.style.transform='scale(1)'}
+                            >
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                            </button>
                         </div>
                     </div>
                 </div>
