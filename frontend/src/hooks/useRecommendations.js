@@ -41,12 +41,8 @@ export default function useRecommendations() {
             return res.data.books || [];
           } else {
             const res = await api.get('/books/recommended', { headers: { Authorization: `Bearer ${token}` } });
-            if (res.data.books && res.data.books.length > 0) {
-              return res.data.books;
-            } else {
-              const fallbackRes = await api.get('/books?limit=5&sort=popular');
-              return fallbackRes.data.books || [];
-            }
+            // Strict match: Return only interest-based books, avoiding fallback mapping.
+            return res.data.books || [];
           }
         } catch (err) {
           console.error("Failed to fetch recommendations:", err);

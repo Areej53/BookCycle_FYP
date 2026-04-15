@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { api, getApiErrorMessage } from '../api/client';
 import { toast } from 'react-toastify';
 import Navbar from '../components/Navbar';
+import ActionModal from '../components/ActionModal';
 import { 
   FiFileText,
   FiList,
@@ -23,6 +24,8 @@ export default function SellerAddNotesPage() {
     const navigate = useNavigate();
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
+    const [isSuccessModal, setIsSuccessModal] = useState(false);
     const fileInputRef = useRef(null);
 
     useEffect(() => {
@@ -59,12 +62,14 @@ export default function SellerAddNotesPage() {
         if (!file) return;
 
         if (file.type !== 'application/pdf') {
-            toast.error("Only PDF files are supported.");
+            setModalMessage("Only PDF files are supported.");
+            // toast.error("Only PDF files are supported."); /* unused */
             return;
         }
         
         if (file.size > 2 * 1024 * 1024) {
-            toast.error("File size exceeds 2MB limit.");
+            setModalMessage("File size exceeds 2MB limit.");
+            // toast.error("File size exceeds 2MB limit."); /* unused */
             return;
         }
 
@@ -114,12 +119,15 @@ export default function SellerAddNotesPage() {
             const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
             await api.post('/books', payload, axiosConfig);
 
-            toast.success("Successfully uploaded your Notes!");
-            resetSellerData();
-            navigate('/seller/published');
+            setModalMessage("Successfully uploaded your Notes!");
+            setIsSuccessModal(true);
+            // toast.success("Successfully uploaded your Notes!"); /* unused */
+            // resetSellerData(); navigate('/seller/published'); /* Moved to modal close */
         } catch (err) {
             const msg = getApiErrorMessage(err);
-            toast.error(msg);
+            setModalMessage(msg);
+            setIsSuccessModal(false);
+            // toast.error(msg); /* unused */
         } finally {
             setLoading(false);
         }
@@ -314,6 +322,14 @@ export default function SellerAddNotesPage() {
   </div>
   <div className="footer-bottom"><p>© 2025 BookCycle. All rights reserved.</p></div>
 </footer>
+
+<ActionModal isOpen={!!modalMessage} message={modalMessage} onClose={() => {
+    setModalMessage('');
+    if (isSuccessModal) {
+        resetSellerData();
+        navigate('/seller/published');
+    }
+}} />
         </div>
     );
 }

@@ -18,14 +18,17 @@ export default function CategoryResultsPage() {
     const cats = searchParams.get('cats') || '';
     const conds = searchParams.get('conds') || '';
     const type = searchParams.get('type') || '';
-    const price = searchParams.get('price') || '';
+    const minPriceFilter = searchParams.get('minPrice') || '';
+    const maxPriceFilter = searchParams.get('maxPrice') || searchParams.get('price') || '';
     const sort = searchParams.get('sort') || '';
 
     const [localQuery, setLocalQuery] = useState(q);
     const [localCats, setLocalCats] = useState(cats ? cats.split(',') : []);
     const [localConds, setLocalConds] = useState(conds ? conds.split(',') : []);
     const [localType, setLocalType] = useState(type ? type.split(',') : []);
-    const [maxPrice, setMaxPrice] = useState(price || '');
+    const [minPrice, setMinPrice] = useState(minPriceFilter);
+    const [maxPrice, setMaxPrice] = useState(maxPriceFilter);
+    const [priceError, setPriceError] = useState('');
 
     const getImageUrl = (book) => {
         const imagePath = book.image || (book.images && book.images[0]);
@@ -46,7 +49,8 @@ export default function CategoryResultsPage() {
                 if (cats) params.cats = cats;
                 if (conds) params.conds = conds;
                 if (type && type !== 'all') params.type = type;
-                if (price) params.price = price;
+                if (minPriceFilter) params.minPrice = minPriceFilter;
+                if (maxPriceFilter) params.maxPrice = maxPriceFilter;
                 if (sort) params.sort = sort;
 
                 const res = await api.get('/books', { params });
@@ -61,12 +65,18 @@ export default function CategoryResultsPage() {
     }, [searchParams]);
 
     const handleSearch = () => {
+        if (minPrice && maxPrice && Number(minPrice) > Number(maxPrice)) {
+            setPriceError("Minimum price cannot be greater than maximum price");
+            return;
+        }
+        setPriceError('');
         const params = new URLSearchParams();
         if (localQuery) params.set('q', localQuery);
         if (localCats.length) params.set('cats', localCats.join(','));
         if (localConds.length) params.set('conds', localConds.join(','));
         if (localType.length && !localType.includes('all')) params.set('type', localType.join(','));
-        if (maxPrice) params.set('price', maxPrice);
+        if (minPrice) params.set('minPrice', minPrice);
+        if (maxPrice) params.set('maxPrice', maxPrice);
         if (sort) params.set('sort', sort);
         navigate(`/browse/search?${params.toString()}`);
     };
@@ -135,7 +145,7 @@ export default function CategoryResultsPage() {
     <div className="filter-sidebar">
   <div className="filter-head">
     <span className="filter-title">Filters</span>
-    <button className="filter-reset" onClick={() => { setSearchParams(new URLSearchParams()); setLocalQuery(''); setLocalCats([]); setLocalConds([]); setLocalType([]); setMaxPrice(''); }}>Reset All</button>
+    <button className="filter-reset" onClick={() => { setSearchParams(new URLSearchParams()); setLocalQuery(''); setLocalCats([]); setLocalConds([]); setLocalType([]); setMinPrice(''); setMaxPrice(''); setPriceError(''); }}>Reset All</button>
   </div>
   <div className="filter-section">
     <div className="filter-label">Category</div>
@@ -152,10 +162,11 @@ export default function CategoryResultsPage() {
   <div className="filter-section">
     <div className="filter-label">Price Range</div>
     <div className="price-inputs">
-      <input type="number" className="price-inp" id="price-min" placeholder="Min" min="0"/>
+      <input type="number" className="price-inp" id="price-min" placeholder="Min" min="0" value={minPrice} onChange={e => setMinPrice(e.target.value)}/>
       <span className="price-sep">—</span>
       <input type="number" className="price-inp" id="price-max" placeholder="Max" min="0" value={maxPrice} onChange={e => setMaxPrice(e.target.value)}/>
     </div>
+    {priceError && <div style={{color: 'red', fontSize: '0.85rem', marginTop: '8px', marginBottom: '8px'}}>{priceError}</div>}
     <button className="btn-apply" onClick={handleSearch}>Apply</button>
   </div>
   <div className="filter-section">
@@ -235,7 +246,7 @@ export default function CategoryResultsPage() {
       <div className="no-results-icon" style={{ opacity: 0.7, marginBottom: '10px' }}>
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
       </div>
-      <div className="no-results-title">No books found matching your search and filters</div>
+      <div className="no-results-title">{minPrice || maxPrice ? "No books found for selected price range" : "No books found matching your search and filters"}</div>
       <div className="no-results-text">Try removing some filters or check your spelling.<br/>You can also browse by category below:</div>
       <div className="no-results-cats">
         <span className="no-results-cat" onClick={() => navigate('/browse')}>Browse All</span>
@@ -271,7 +282,7 @@ export default function CategoryResultsPage() {
   </div>
   <div className="footer-bottom"><p>© 2025 BookCycle. All rights reserved.</p><div className="footer-links"><Link to="#">Privacy Policy</Link><Link to="#">Terms of Service</Link><Link to="#">Cookie Policy</Link></div></div>
 </footer>
-<div className="toast" id="toast"><span className="toast-dot"></span><span id="toast-msg"></span></div>
+{/* <div className="toast" id="toast"><span className="toast-dot"></span><span id="toast-msg"></span></div> */}
 
         </div>
     );

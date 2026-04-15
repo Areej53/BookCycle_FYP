@@ -96,7 +96,7 @@ export default function SellerCategoriesPage() {
 </aside>
 </div>
 <footer className="footer"><div className="footer-grid"><div><Link to="/" className="footer-brand"><div className="f-logo"><img src={IMAGES.img_0} alt="BookCycle"/></div><span className="f-brand-name">BookCycle</span></Link><p className="f-desc">Islamabad's community book platform. Share, rent, and discover books across the city.</p></div><div className="f-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div></div></footer>
-<div className="toast" id="toast"><span className="toast-dot"></span><span id="toast-msg"></span></div>
+{/* <div className="toast" id="toast"><span className="toast-dot"></span><span id="toast-msg"></span></div> */}
 
         </div>
     );

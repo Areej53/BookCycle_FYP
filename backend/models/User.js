@@ -41,6 +41,10 @@ const UserSchema = new mongoose.Schema({
       message: "Please select at least one interest",
     },
   },
+  viewedBooks: [{
+    book: { type: mongoose.Schema.Types.ObjectId, ref: 'Book' },
+    views: { type: Number, default: 1 }
+  }]
 });
 
 UserSchema.pre("save", async function () {

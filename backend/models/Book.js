@@ -34,6 +34,7 @@ const BookSchema = new mongoose.Schema({
     enum: ['Available', 'Pending', 'Unavailable'],
     default: 'Available'
   },
+  views: { type: Number, default: 0 },
   owner: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',

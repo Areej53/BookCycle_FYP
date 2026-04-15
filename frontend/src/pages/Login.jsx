@@ -13,6 +13,7 @@ import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [inlineError, setInlineError] = useState("");
   const { login, token } = useAuth();
   const navigate = useNavigate();
 
@@ -20,26 +21,39 @@ const Login = () => {
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    let email = e.target.email.value;
+    setInlineError("");
+    let email = e.target.email.value.trim();
     let password = e.target.password.value;
 
-    if (email.length > 0 && password.length > 0) {
-      const formData = {
-        email,
-        password,
-      };
-      try {
-        const response = await api.post("/login", formData);
-        login(response.data.token);
-        navigate("/home");
-      } catch (err) {
-        console.log(err);
-        toast.error(getApiErrorMessage(err));
-      }
-    } else {
-      toast.error("Please fill all inputs");
+    if (email.length === 0 || password.length === 0) {
+      setInlineError("Please fill all required fields");
+      // toast.error("Please fill all inputs"); // unused
+      return;
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|pk|org|net|edu|gov)$/i;
+    const isBadGmail = /@gmai\.com|@gmial\.com|@gamil\.com/i.test(email);
+
+    if (!emailRegex.test(email) || isBadGmail) {
+      setInlineError("Please enter a valid email address");
+      return;
+    }
+
+    const formData = {
+      email,
+      password,
+    };
+    try {
+      const response = await api.post("/login", formData);
+      login(response.data.token);
+      navigate("/home");
+    } catch (err) {
+      console.log(err);
+      setInlineError(getApiErrorMessage(err));
+      // toast.error(getApiErrorMessage(err)); // unused
     }
   };
+
 
   useEffect(() => {
     if(token !== ""){
@@ -61,6 +75,7 @@ const Login = () => {
             <h2>Welcome back!</h2>
             <p>Please enter your details</p>
             <form onSubmit={handleLoginSubmit}>
+              {inlineError && <div style={{ color: '#d32f2f', background: '#ffebee', padding: '10px', borderRadius: '4px', marginBottom: '15px', fontSize: '14px', textAlign: 'center', border: '1px solid #ffcdd2' }}>{inlineError}</div>}
               <input type="email" placeholder="Email" name="email" />
               <div className="pass-input-div">
                 <input

@@ -6,13 +6,15 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { toast } from 'react-toastify';
 import RecommendationWidget from '../components/RecommendationWidget';
+import ActionModal from '../components/ActionModal';
 
 export default function BookDetailsPage() {
     const { id } = useParams();
-    const { user } = useAuth();
+    const { user, token } = useAuth();
     const { addToCart } = useCart();
     const [book, setBook] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [modalMessage, setModalMessage] = useState('');
 
     const getImageUrl = (book) => {
         const imagePath = book.image || (book.images && book.images[0]);
@@ -28,23 +30,27 @@ export default function BookDetailsPage() {
         const fetchBook = async () => {
             setIsLoading(true);
             try {
-                const response = await api.get(`/books/${id}`);
+                const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+                const response = await api.get(`/books/${id}`, config);
                 setBook(response.data.book);
             } catch (err) {
-                toast.error(getApiErrorMessage(err));
+                setModalMessage(getApiErrorMessage(err));
+                // toast.error(getApiErrorMessage(err)); /* unused */
             } finally {
                 setIsLoading(false);
             }
         };
         if (id) fetchBook();
-    }, [id]);
+    }, [id, token]);
 
     const handleAddToCart = () => {
         const added = addToCart(book);
         if (added) {
-            toast.success("Added to cart");
+            setModalMessage("Added to cart");
+            // toast.success("Added to cart"); /* unused */
         } else {
-            toast.info("Item is already in your cart!");
+            setModalMessage("Item is already in your cart!");
+            // toast.info("Item is already in your cart!"); /* unused */
         }
     };
 
@@ -204,6 +210,7 @@ export default function BookDetailsPage() {
                     <p style={{ fontSize: '.82rem' }}>© 2025 BookCycle. All rights reserved.</p>
                 </div>
             </footer>
+            <ActionModal isOpen={!!modalMessage} message={modalMessage} onClose={() => setModalMessage("")} />
         </div>
     );
 }
