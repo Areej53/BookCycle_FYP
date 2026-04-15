@@ -19,7 +19,7 @@ const saveBase64Image = (base64String) => {
 };
 
 const exactCategoryEnums = ['Programming', 'Science', 'Novels', 'Self Development', 'Algebra', 'Mathematics', 'Physics', 'Notes', 'Other'];
-const exactCondEnums = ['New', 'Like New', 'Good', 'Fair', 'Poor'];
+const exactCondEnums = ['New', 'Used/Good'];
 const exactTypeEnums = ['Sell', 'Rent', 'Share'];
 
 const matchEnum = (arr, val) => {
@@ -86,8 +86,18 @@ const getAllBooks = async (req, res) => {
     result = result.sort('-price');
   } else if (sort === 'popular') {
     result = result.sort('-views -createdAt');
+  } else if (sort === 'random') {
+    // Randomization happens after the query
   } else if (sort === 'recent' || !sort) {
     result = result.sort('-createdAt');
+  }
+
+  if (sort === 'random') {
+    const allBooks = await result;
+    const shuffled = allBooks.sort(() => 0.5 - Math.random());
+    const limitNum = Number(req.query.limit);
+    const books = !isNaN(limitNum) && limitNum > 0 ? shuffled.slice(0, limitNum) : shuffled;
+    return res.status(200).json({ books, count: books.length });
   }
 
   if (req.query.limit) {
@@ -120,8 +130,9 @@ const getBook = async (req, res) => {
           const viewIndex = user.viewedBooks.findIndex(vb => vb.book && vb.book.toString() === id);
           if (viewIndex > -1) {
             user.viewedBooks[viewIndex].views += 1;
+            user.viewedBooks[viewIndex].updatedAt = Date.now();
           } else {
-            user.viewedBooks.push({ book: id, views: 1 });
+            user.viewedBooks.push({ book: id, category: book.category, views: 1, updatedAt: Date.now() });
           }
           await user.save();
         }
@@ -171,47 +182,50 @@ const getRecommendedBooks = async (req, res) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(200).json({ books: [] });
 
-    let books = [];
-
-    // Fetch from Interests
-    if (user.interests && user.interests.length > 0) {
-      const promises = user.interests.map(interest => 
-        Book.find({ category: new RegExp(`^${interest}$`, 'i'), status: 'Available' })
-          .select('-pdf')
-          .sort('-createdAt')
-          .limit(5)
-          .populate('owner', 'name')
-      );
-      const results = await Promise.all(promises);
-      books = results.flat();
-    }
-
-    // Fetch from Mostly Viewed Books
-    if (user.viewedBooks && user.viewedBooks.length > 0) {
-      // Sort to get top viewed books
-      const sortedViewed = user.viewedBooks.sort((a,b) => b.views - a.views).slice(0, 5);
-      const viewedBookIds = sortedViewed.map(vb => vb.book);
-      
-      const highlyViewedBooks = await Book.find({
-          _id: { $in: viewedBookIds },
-          status: 'Available'
-      }).select('-pdf').populate('owner', 'name');
-      
-      books = [...highlyViewedBooks, ...books];
-    }
+    const interests = user.interests || [];
     
-    // Remove duplicates
-    const uniqueIds = new Set();
-    books = books.filter(b => {
-      if (!b || !b._id) return false;
-      const isDuplicate = uniqueIds.has(b._id.toString());
-      uniqueIds.add(b._id.toString());
-      return !isDuplicate;
-    });
+    // Extract top categories from viewing behavior (sort by views descending)
+    const viewingBehavior = user.viewedBooks || [];
+    viewingBehavior.sort((a,b) => b.views - a.views);
+    const viewedCategories = viewingBehavior.map(vb => vb.category).filter(Boolean);
+    
+    const combinedCategories = [...new Set([...interests, ...viewedCategories])];
 
-    books.sort((a,b) => b.createdAt - a.createdAt);
+    let booksRaw = [];
+    if (combinedCategories.length > 0) {
+      const regexCategories = combinedCategories.map(cat => new RegExp(`^${cat}$`, 'i'));
+      
+      // Combine and utilize optimized single MongoDB query using $in
+      booksRaw = await Book.find({
+          category: { $in: regexCategories },
+          status: 'Available',
+          owner: { $ne: req.user.id }
+      }).sort('-createdAt').limit(50).populate('owner', 'name');
+    }
 
-    res.status(200).json({ books });
+    const finalBooks = [];
+    const catCount = {};
+    for (const book of booksRaw) {
+        if (!catCount[book.category]) catCount[book.category] = 0;
+        // Limit to 3 books maximum per category
+        if (catCount[book.category] < 3) {
+            catCount[book.category]++;
+            finalBooks.push(book);
+        }
+        if (finalBooks.length >= 8) break; // Strict UI rule maximum 6-8 books
+    }
+
+    // Fallback logic for users with no interests or if their interests have no matched books yet
+    if (finalBooks.length === 0) {
+      const fallbackBooks = await Book.find({
+        status: 'Available',
+        owner: { $ne: req.user.id }
+      }).sort('-views -createdAt').limit(8).populate('owner', 'name');
+      
+      return res.status(200).json({ books: fallbackBooks });
+    }
+
+    res.status(200).json({ books: finalBooks });
   } catch (error) {
     res.status(500).json({ msg: "Error fetching recommendations", error: error.message });
   }

@@ -256,8 +256,8 @@ export default function Home({ onNavigate }) {
     const fetchBooks = async () => {
       try {
         const [featRes, recentRes] = await Promise.all([
-          api.get('books?limit=8'),
-          api.get('books?limit=8&sort=recent')
+          api.get('books?limit=8&sort=random'),
+          api.get('books?limit=10&sort=recent')
         ]);
         
         const formatBooks = (booksArr, max) => {
@@ -281,7 +281,7 @@ export default function Home({ onNavigate }) {
         }
 
         if (recentRes.data.books && recentRes.data.books.length > 0) {
-            setRecentBooks(formatBooks(recentRes.data.books, 8));
+            setRecentBooks(formatBooks(recentRes.data.books, 10));
         } else {
             setRecentBooks(FEATURED_BOOKS);
         }

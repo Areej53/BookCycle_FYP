@@ -4,7 +4,7 @@ const authenticationMiddleware = require('../middleware/auth');
 const { getAllBooks, getBook, createBook, updateBook, deleteBook, getRecommendedBooks } = require('../controllers/bookController');
 
 router.route('/').get(getAllBooks).post(authenticationMiddleware, createBook);
-router.route('/recommended').get(authenticationMiddleware, getRecommendedBooks);
+router.route('/recommendations').get(authenticationMiddleware, getRecommendedBooks);
 router.route('/:id').get(getBook).patch(authenticationMiddleware, updateBook).delete(authenticationMiddleware, deleteBook);
 
 module.exports = router;

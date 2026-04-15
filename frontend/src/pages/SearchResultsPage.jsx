@@ -175,10 +175,7 @@ export default function SearchResultsPage() {
     <div className="filter-label">Condition</div>
     <div className="filter-opts">
       <label className="filter-opt"><input type="checkbox" value="New" checked={localConds.includes('new')} onChange={() => setLocalConds(toggleArray(localConds, 'new'))}/> New</label>
-      <label className="filter-opt"><input type="checkbox" value="Like New" checked={localConds.includes('like new')} onChange={() => setLocalConds(toggleArray(localConds, 'like new'))}/> Like New</label>
-      <label className="filter-opt"><input type="checkbox" value="Good" checked={localConds.includes('good')} onChange={() => setLocalConds(toggleArray(localConds, 'good'))}/> Good</label>
-      <label className="filter-opt"><input type="checkbox" value="Fair" checked={localConds.includes('fair')} onChange={() => setLocalConds(toggleArray(localConds, 'fair'))}/> Fair</label>
-      <label className="filter-opt"><input type="checkbox" value="Poor" checked={localConds.includes('poor')} onChange={() => setLocalConds(toggleArray(localConds, 'poor'))}/> Poor</label>
+      <label className="filter-opt"><input type="checkbox" value="Used/Good" checked={localConds.includes('used/good')} onChange={() => setLocalConds(toggleArray(localConds, 'used/good'))}/> Used/Good</label>
     </div>
   </div>
 </div>

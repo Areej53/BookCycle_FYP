@@ -42,7 +42,7 @@ export default function SellerReviewPage() {
                 title: sellerData.title || 'Untitled',
                 author: sellerData.author || 'Unknown',
                 description: sellerData.description || 'No description provided.',
-                condition: sellerData.condition || 'Good',
+                condition: sellerData.condition || 'New',
                 category: sellerData.category || 'Programming',
                 exchangeType: sellerData.exchangeType || 'Sell',
                 price: sellerData.exchangeType === 'Sell' ? Number(sellerData.price) : (sellerData.exchangeType === 'Rent' ? Number(sellerData.rentWeek) : 0),
