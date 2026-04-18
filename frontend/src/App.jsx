@@ -20,7 +20,11 @@ import {
   CartPage,
   CheckoutPage,
   WishlistPage,
+  RideDetailsPage,
+  ConfirmPaymentPage,
+  OrderTrackingPage,
 } from "./pages";
+import DashboardPage from "./pages/DashboardPage";
 import { ToastContainer } from "react-toastify";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { SellerProvider } from "./context/SellerContext";
@@ -86,6 +90,10 @@ const router = createBrowserRouter([
         element: <ProtectedRoute />,
         children: [
           {
+            path: "dashboard",
+            element: <DashboardPage />,
+          },
+          {
             path: "seller",
             element: <SellerCategoriesPage />,
           },
@@ -109,11 +117,23 @@ const router = createBrowserRouter([
             path: "seller/review",
             element: <SellerReviewPage />,
           },
+          {
+            path: "checkout",
+            element: <CheckoutPage />,
+          },
+          {
+            path: "seller-ride",
+            element: <RideDetailsPage />,
+          },
+          {
+            path: "confirm-payment",
+            element: <ConfirmPaymentPage />,
+          },
+          {
+            path: "order-tracking",
+            element: <OrderTrackingPage />,
+          },
         ],
-      },
-      {
-        path: "checkout",
-        element: <ProtectedRoute><CheckoutPage /></ProtectedRoute>,
       },
     ],
   },

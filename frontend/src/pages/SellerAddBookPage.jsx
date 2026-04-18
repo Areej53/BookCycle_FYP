@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { SellerContext } from '../context/SellerContext';
 import { useAuth } from '../context/AuthContext';
-import { FiFileText, FiList, FiCheckCircle, FiDollarSign, FiAlignLeft, FiImage, FiRepeat, FiGift, FiUploadCloud } from 'react-icons/fi';
+import { FiFileText, FiList, FiCheckCircle, FiDollarSign, FiAlignLeft, FiImage, FiGift, FiUploadCloud } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 
 export default function SellerAddBookPage() {
@@ -18,6 +18,12 @@ export default function SellerAddBookPage() {
             navigate('/seller');
         }
     }, [sellerData.category, navigate]);
+
+    React.useEffect(() => {
+        if (sellerData.exchangeType === 'Rent') {
+            updateSellerData({ exchangeType: 'Sell' });
+        }
+    }, [sellerData.exchangeType, updateSellerData]);
 
     const handleChange = (e) => {
         updateSellerData({ [e.target.name]: e.target.value });
@@ -66,7 +72,6 @@ export default function SellerAddBookPage() {
         if (!sellerData.description?.trim() || sellerData.description.length < 50) newErrors.description = 'Minimum 50 characters required.';
         
         if (sellerData.exchangeType === 'Sell' && (!sellerData.price || sellerData.price <= 0)) newErrors.price = 'Sale price is required.';
-        if (sellerData.exchangeType === 'Rent' && (!sellerData.rentWeek || sellerData.rentWeek <= 0)) newErrors.rentWeek = 'Rent per week is required.';
         
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -81,7 +86,7 @@ export default function SellerAddBookPage() {
         <div className="SellerAddBookPage">
             
 <header className="seller-header">
-<Navbar />
+
 
 <div className="progress-wrap"><div className="progress-steps"><div className="p-step done"><div className="p-num">✓</div>Categories</div><div className="p-line done"></div><div className="p-step active"><div className="p-num">2</div>Book Details</div><div className="p-line "></div><div className="p-step "><div className="p-num">3</div>Review</div><div className="p-line "></div><div className="p-step "><div className="p-num">4</div>Published!</div></div></div>
 </header>
@@ -143,9 +148,6 @@ export default function SellerAddBookPage() {
       <div className={`listing-opt ${sellerData.exchangeType === 'Sell' ? 'active' : ''}`} onClick={() => handleListingType('Sell')}>
         <div className="lo-icon"><FiDollarSign /></div><div className="lo-name">Sell</div><div className="lo-sub">Fixed price for buyers.</div>
       </div>
-      <div className={`listing-opt ${sellerData.exchangeType === 'Rent' ? 'active' : ''}`} onClick={() => handleListingType('Rent')}>
-        <div className="lo-icon"><FiRepeat /></div><div className="lo-name">Rent</div><div className="lo-sub">Weekly or monthly rental.</div>
-      </div>
       <div className={`listing-opt ${sellerData.exchangeType === 'Share' ? 'active' : ''}`} onClick={() => handleListingType('Share')}>
         <div className="lo-icon"><FiGift /></div><div className="lo-name">Free Shelf</div><div className="lo-sub">Donate your book free.</div>
       </div>
@@ -173,42 +175,6 @@ export default function SellerAddBookPage() {
                 <input type="number" name="price" value={sellerData.price} onChange={handleChange} placeholder="0" min="0"/>
             </div>
             {errors.price && <span className="err-msg" style={{ display: 'block' }}>{errors.price}</span>}
-            </div>
-        </div>
-        </div>
-    )}
-
-    {sellerData.exchangeType === 'Rent' && (
-        <div className="pricing-section show" style={{display:'block'}}>
-        <div className="form-grid" style={{ marginBottom: '24px' }}>
-            <div className="field">
-            <label>Rent/Week <span className="req">*</span></label>
-            <div className="price-with-prefix price-with-suffix">
-                <span className="price-prefix">Rs.</span>
-                <input type="number" name="rentWeek" value={sellerData.rentWeek} onChange={handleChange} placeholder="0" min="0"/>
-                <span className="price-suffix">/wk</span>
-            </div>
-            {errors.rentWeek && <span className="err-msg" style={{ display: 'block' }}>{errors.rentWeek}</span>}
-            </div>
-            <div className="field">
-            <label>Rent/Month</label>
-            <div className="price-with-prefix price-with-suffix">
-                <span className="price-prefix">Rs.</span>
-                <input type="number" name="rentMonth" value={sellerData.rentMonth} onChange={handleChange} placeholder="0" min="0"/>
-                <span className="price-suffix">/mo</span>
-            </div>
-            </div>
-            <div className="field">
-            <label>Security Deposit</label>
-            <div className="price-with-prefix"><span className="price-prefix">Rs.</span><input type="number" name="securityDeposit" value={sellerData.securityDeposit} onChange={handleChange} placeholder="0" min="0"/></div>
-            </div>
-            <div className="field">
-            <label>Overdue/Day</label>
-            <div className="price-with-prefix price-with-suffix">
-                <span className="price-prefix">Rs.</span>
-                <input type="number" name="overdueFee" value={sellerData.overdueFee} onChange={handleChange} placeholder="0" min="0"/>
-                <span className="price-suffix">/day</span>
-            </div>
             </div>
         </div>
         </div>
@@ -264,7 +230,7 @@ export default function SellerAddBookPage() {
   
 </aside>
 </div>
-<footer className="footer"><div className="footer-grid"><div><Link to="/" className="footer-brand"><div className="f-logo"><img src={IMAGES.img_0} alt="BookCycle"/></div><span className="f-brand-name">BookCycle</span></Link><p className="f-desc">Islamabad's community book platform. Share, rent, and discover books across the city.</p></div><div className="f-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div></div></footer>
+<footer className="footer"><div className="footer-grid"><div><Link to="/" className="footer-brand"><div className="f-logo"><img src={IMAGES.img_0} alt="BookCycle"/></div><span className="f-brand-name">BookCycle</span></Link><p className="f-desc">Islamabad's community book platform. Share and discover books across the city.</p></div><div className="f-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div></div></footer>
         </div>
     );
 }

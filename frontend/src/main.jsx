@@ -4,6 +4,8 @@ import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { CartProvider } from './context/CartContext.jsx'
 import { WishlistProvider } from './context/WishlistContext.jsx'
+import { OrdersProvider } from './context/OrdersContext.jsx'
+import { NotificationProvider } from './context/NotificationContext.jsx'
 import 'react-toastify/dist/ReactToastify.css';
 import './index.css'
 import "./responsive.css";
@@ -15,7 +17,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <AuthProvider>
       <WishlistProvider>
         <CartProvider>
-          <App />
+          <OrdersProvider>
+            <NotificationProvider>
+              <App />
+            </NotificationProvider>
+          </OrdersProvider>
         </CartProvider>
       </WishlistProvider>
     </AuthProvider>

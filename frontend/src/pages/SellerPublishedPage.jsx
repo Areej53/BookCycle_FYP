@@ -12,7 +12,7 @@ export default function SellerPublishedPage() {
         <div className="SellerPublishedPage">
             
 <header className="seller-header">
-<Navbar />
+
 
 <div className="progress-wrap"><div className="progress-steps"><div className="p-step done"><div className="p-num">✓</div>Categories</div><div className="p-line done"></div><div className="p-step done"><div className="p-num">✓</div>Book Details</div><div className="p-line done"></div><div className="p-step done"><div className="p-num">✓</div>Review</div><div className="p-line done"></div><div className="p-step active"><div className="p-num">4</div>Published!</div></div></div>
 </header>

@@ -36,7 +36,7 @@ export default function SellerCategoriesPage() {
         <div className="SellerCategoriesPage">
             
 <header className="seller-header">
-<Navbar />
+
 
 <div className="progress-wrap"><div className="progress-steps"><div className="p-step active"><div className="p-num">1</div>Categories</div><div className="p-line "></div><div className="p-step "><div className="p-num">2</div>Book Details</div><div className="p-line "></div><div className="p-step "><div className="p-num">3</div>Review</div><div className="p-line "></div><div className="p-step "><div className="p-num">4</div>Published!</div></div></div>
 </header>

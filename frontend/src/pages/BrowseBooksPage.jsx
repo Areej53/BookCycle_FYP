@@ -107,11 +107,11 @@ export default function BrowseBooksPage() {
     return (
         <div className="BrowseBooksPage">
             
-<Navbar cartCount={0} />
+
 <div className="browse-hero">
   <div className="browse-hero-inner">
     <h1>Browse <em>Books</em></h1>
-    <p className="browse-hero-sub">Explore 12+ books available to buy, rent, or claim free across Islamabad.</p>
+    <p className="browse-hero-sub">Explore 12+ books available to buy or claim free across Islamabad.</p>
     <div className="search-wrap">
       <div className="search-bar">
         <input type="text" id="search-inp" placeholder="Search by title, author, or category…" value={localQuery} onChange={e => setLocalQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()}/>
@@ -128,7 +128,6 @@ export default function BrowseBooksPage() {
       <div className="tab-row" id="tab-row">
         <button className={`tab ${localType.length === 0 ? 'active' : ''}`} onClick={() => setLocalType([])}>All Books</button>
         <button className={`tab ${localType.includes('sell') ? 'active' : ''}`} onClick={() => setLocalType(["sell"])}>For Sale</button>
-        <button className={`tab ${localType.includes('rent') ? 'active' : ''}`} onClick={() => setLocalType(["rent"])}>For Rent</button>
         <button className={`tab ${localType.includes('share') ? 'active' : ''}`} onClick={() => setLocalType(["share"])}>Free Shelf</button>
       </div>
     </div>
@@ -169,7 +168,6 @@ export default function BrowseBooksPage() {
     <div className="filter-label">Type</div>
     <div className="filter-opts">
       <label className="filter-opt"><input type="checkbox" value="sell" checked={localType.includes('sell')} onChange={() => setLocalType(toggleArray(localType, 'sell'))}/> For Sale</label>
-      <label className="filter-opt"><input type="checkbox" value="rent" checked={localType.includes('rent')} onChange={() => setLocalType(toggleArray(localType, 'rent'))}/> For Rent</label>
       <label className="filter-opt"><input type="checkbox" value="share" checked={localType.includes('share')} onChange={() => setLocalType(toggleArray(localType, 'share'))}/> Free Shelf</label>
     </div>
   </div>
@@ -202,7 +200,6 @@ export default function BrowseBooksPage() {
           <div className="bc-img-wrap" style={{ position: 'relative' }}>
             <img src={getImageUrl(book)} alt={book.title} className="bc-img"/>
             {book.exchangeType === 'Sell' && <span className="tb tb-buy">Buy</span>}
-            {book.exchangeType === 'Rent' && <span className="tb tb-rent">Rent</span>}
             {book.exchangeType === 'Share' && <span className="tb tb-free">Free</span>}
           </div>
           <div className="bc-body">
@@ -220,13 +217,13 @@ export default function BrowseBooksPage() {
                   ) : (
                     <>
                     <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. {book.price}</span>
-                    {book.exchangeType === 'Rent' && <span className="price-unit" style={{ fontSize: '.8rem', color: 'var(--muted)', fontWeight: '600', marginLeft: '2px' }}>/wk</span>}
                     </>
                   )}
                 </div>
                 {book.category === 'Notes' ? (
                     <button className="btn-mini" style={{ background: 'var(--primary)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '6px 14px', border: 'none', color: '#fff', borderRadius: '8px', cursor: 'pointer', transition: 'all .2s' }} onClick={async (e) => { 
                         e.stopPropagation(); 
+                        if (!user) { navigate('/login'); return; }
                         try {
                             const res = await api.get(`/books/${book._id}`);
                             if (res.data.book.pdf) {
@@ -242,21 +239,29 @@ export default function BrowseBooksPage() {
                         View PDF
                     </button>
                 ) : (
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <button 
-                          onClick={(e) => { e.stopPropagation(); toggleWishlist(book); }}
-                          style={{ 
-                              background: 'none', border: '1.5px solid var(--border)', 
-                              borderRadius: '50%', width: '30px', height: '30px', 
-                              display: 'grid', placeItems: 'center', cursor: 'pointer', 
-                              color: isInWishlist(book._id) ? 'var(--cta)' : 'var(--text-muted)',
-                              transition: 'all .2s'
-                          }}
-                        >
-                            <FiHeart size={14} fill={isInWishlist(book._id) ? "var(--cta)" : "none"} />
-                      </button>
-                      <Link to={`/book/${book._id}`} className="btn-mini-cart" style={{ color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--primary)', width: '30px', height: '30px', borderRadius: '50%' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link>
-                    </div>
+                    book.exchangeType === 'Rent' ? (
+                      <span style={{ fontSize: '.8rem', color: 'var(--muted)', fontWeight: 600 }}>Currently unavailable</span>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <button 
+                            onClick={(e) => { 
+                                e.stopPropagation(); 
+                                if (!user) { navigate('/login'); return; }
+                                toggleWishlist(book); 
+                            }}
+                            style={{ 
+                                background: 'none', border: '1.5px solid var(--border)', 
+                                borderRadius: '50%', width: '30px', height: '30px', 
+                                display: 'grid', placeItems: 'center', cursor: 'pointer', 
+                                color: isInWishlist(book._id) ? 'var(--cta)' : 'var(--text-muted)',
+                                transition: 'all .2s'
+                            }}
+                          >
+                              <FiHeart size={14} fill={isInWishlist(book._id) ? "var(--cta)" : "none"} />
+                        </button>
+                        <Link to={`/book/${book._id}`} className="btn-mini-cart" style={{ color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--primary)', width: '30px', height: '30px', borderRadius: '50%' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link>
+                      </div>
+                    )
                 )}
             </div>
           </div>
@@ -292,11 +297,15 @@ export default function BrowseBooksPage() {
                     <div style={{ fontSize: '.74rem', color: 'var(--muted)', margin: '2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>by {bk.author}</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
                         <div style={{ fontSize: '.78rem', fontWeight: '700', color: bk.exchangeType === 'Share' ? 'var(--secondary)' : 'var(--cta)' }}>
-                            {bk.exchangeType === 'Share' ? 'Free' : `Rs. ${bk.price}${bk.exchangeType === 'Rent' ? '/wk' : ''}`}
+                            {bk.exchangeType === 'Share' ? 'Free' : `Rs. ${bk.price}`}
                         </div>
                         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                             <button
-                                onClick={(e) => { e.stopPropagation(); toggleWishlist(bk); }}
+                                onClick={(e) => { 
+                                    e.stopPropagation(); 
+                                    if (!user) { navigate('/login'); return; }
+                                    toggleWishlist(bk); 
+                                }}
                                 style={{ background: 'none', border: '1.2px solid var(--border)', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: isInWishlist(bk._id) ? 'var(--cta)' : 'var(--text-muted)', transition: 'all .2s' }}
                             >
                                 <FiHeart size={12} fill={isInWishlist(bk._id) ? 'var(--cta)' : 'none'} />
@@ -319,7 +328,7 @@ export default function BrowseBooksPage() {
   </aside>
 </div>
 
-<Footer />
+
 {/* <div className="toast" id="toast"><span className="toast-dot"></span><span id="toast-msg"></span></div> */}
 
 <ActionModal isOpen={!!modalMessage} message={modalMessage} onClose={() => setModalMessage("")} />

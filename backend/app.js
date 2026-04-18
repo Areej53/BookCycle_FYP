@@ -14,6 +14,8 @@ const mainRouter = require("./routes/user");
 const booksRouter = require("./routes/books");
 const transactionsRouter = require("./routes/transactions");
 const statsRouter = require("./routes/stats");
+const ordersRouter = require("./routes/orders");
+const notificationsRouter = require("./routes/notifications");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
@@ -37,6 +39,8 @@ app.use("/api/v1", mainRouter);
 app.use("/api/v1/books", booksRouter);
 app.use("/api/v1/transactions", transactionsRouter);
 app.use("/api/v1/stats", statsRouter);
+app.use("/api/v1/orders", ordersRouter);
+app.use("/api/v1/notifications", notificationsRouter);
 app.use(errorHandler);
 
 const port = Number(process.env.PORT) || 5000;

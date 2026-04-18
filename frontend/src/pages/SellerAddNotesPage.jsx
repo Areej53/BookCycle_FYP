@@ -137,7 +137,7 @@ export default function SellerAddNotesPage() {
         <div className="SellerAddBookPage">
             
 <header className="seller-header">
-<Navbar />
+
 </header>
 
 <div className="progress-wrap" style={{ marginTop: '20px' }}>
