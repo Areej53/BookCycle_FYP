@@ -41,6 +41,11 @@ const UserSchema = new mongoose.Schema({
       message: "Please select at least one interest",
     },
   },
+  finance: {
+    totalEarnings: { type: Number, default: 0 },
+    monthlyEarnings: { type: Number, default: 0 },
+    completedOrdersRevenue: { type: Number, default: 0 }
+  },
   viewedBooks: [{
     book: { type: mongoose.Schema.Types.ObjectId, ref: 'Book' },
     category: { type: String },

@@ -1,14 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { PALETTE } from "../constants";
 
-const TrackOrderModal = ({ isOpen, onClose, orderId, status = 'Processing' }) => {
+const TrackOrderModal = ({ isOpen, onClose, orderId }) => {
+  const navigate = useNavigate();
+  const [trackingInput, setTrackingInput] = useState(orderId || '');
+  
   if (!isOpen) return null;
 
-  const steps = [
-    { label: 'Order Placed', completed: true },
-    { label: 'Processing', completed: status === 'Processing' || status === 'Shipped' || status === 'Delivered' },
-    { label: 'Shipped', completed: status === 'Shipped' || status === 'Delivered' },
-    { label: 'Delivered', completed: status === 'Delivered' }
-  ];
+  const handleTrack = () => {
+    if (trackingInput.trim()) {
+      onClose();
+      navigate(`/order-tracking?trackingId=${trackingInput}`);
+    }
+  };
 
   return (
     <div style={{
@@ -22,78 +27,42 @@ const TrackOrderModal = ({ isOpen, onClose, orderId, status = 'Processing' }) =>
     }}>
       <div style={{
         background: '#fff',
-        padding: '24px',
-        borderRadius: '12px',
-        maxWidth: '500px',
+        padding: '30px',
+        borderRadius: '16px',
+        maxWidth: '450px',
         width: '90%',
-        boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
-        animation: 'fadeUp 0.3s ease-out'
+        boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+        animation: 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h3 style={{ 
-            fontFamily: "'Playfair Display', serif", 
-            fontSize: '1.4rem', 
-            color: 'var(--primary, #13493C)', 
-            fontWeight: 700,
-            margin: 0
-          }}>
-            Track Order {orderId && <span style={{ fontSize: '0.9rem', color: '#666' }}>#{orderId}</span>}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.6rem', color: PALETTE.primary, fontWeight: 700, margin: 0 }}>
+            Track Your Order
           </h3>
-          <button 
-            onClick={onClose}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              fontSize: '1.2rem',
-              cursor: 'pointer',
-              color: '#888'
-            }}
-          >
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', fontSize: '1.3rem', cursor: 'pointer', color: '#888' }}>
             ✕
           </button>
         </div>
         
-        <div style={{ padding: '10px 0', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          {steps.map((step, idx) => (
-            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <div style={{
-                minWidth: '24px', height: '24px', 
-                borderRadius: '50%', 
-                background: step.completed ? 'var(--cta, #BC6C25)' : '#eee',
-                color: step.completed ? '#fff' : '#aaa',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '0.8rem',
-                fontWeight: 'bold'
-              }}>
-                {step.completed ? '✓' : idx + 1}
-              </div>
-              <div style={{
-                flex: 1,
-                fontSize: '1rem',
-                color: step.completed ? 'var(--text-dark, #333)' : '#aaa',
-                fontWeight: step.completed ? 600 : 400
-              }}>
-                {step.label}
-              </div>
-            </div>
-          ))}
+        <div style={{ borderBottom: `1px solid ${PALETTE.border}`, paddingBottom: 24, marginBottom: 24 }}>
+          <p style={{ color: PALETTE.muted, fontSize: '.95rem', marginBottom: 16 }}>
+            Please enter your Tracking ID to view the latest delivery status and ride details.
+          </p>
+          <label style={{ display: 'block', fontSize: '.85rem', fontWeight: 700, color: PALETTE.text, marginBottom: 8 }}>Tracking ID</label>
+          <input 
+            type="text" 
+            value={trackingInput}
+            onChange={(e) => setTrackingInput(e.target.value)}
+            placeholder="e.g. BC-12345"
+            style={{ width: '100%', padding: '14px', borderRadius: 8, border: `1.5px solid ${PALETTE.border}`, fontSize: '1rem', boxSizing: 'border-box' }}
+          />
         </div>
         
-        <div style={{ marginTop: '24px', textAlign: 'center' }}>
-          <button 
-            onClick={onClose}
-            style={{
-              padding: '10px 24px',
-              border: 'none',
-              background: 'var(--primary, #13493C)',
-              color: '#fff',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: 600,
-              width: '100%'
-            }}
-          >
-            Close
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button onClick={onClose} style={{ flex: 1, padding: '14px', background: 'transparent', border: `1.5px solid ${PALETTE.border}`, color: PALETTE.muted, borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>
+            Cancel
+          </button>
+          <button onClick={handleTrack} style={{ flex: 1, padding: '14px', background: PALETTE.cta, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 15px rgba(188,108,37,.2)' }}>
+            Track Order →
           </button>
         </div>
       </div>

@@ -19,4 +19,7 @@ export { default as SellerReviewPage } from "./SellerReviewPage";
 export { default as CartPage } from "./CartPage";
 export { default as SellerAddNotesPage } from "./SellerAddNotesPage.jsx";
 export { default as CheckoutPage } from "./CheckoutPage";
-export { default as WishlistPage } from "./WishlistPage";
+export { default as WishlistPage } from "./WishlistPage";
+export { default as RideDetailsPage } from "./RideDetailsPage";
+export { default as ConfirmPaymentPage } from "./ConfirmPaymentPage";
+export { default as OrderTrackingPage } from "./OrderTrackingPage";

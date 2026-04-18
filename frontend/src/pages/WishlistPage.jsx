@@ -19,7 +19,7 @@ export default function WishlistPage() {
 
     return (
         <div className="WishlistPage" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
-            <Navbar />
+            
             
             <main style={{ flex: 1, padding: '40px 5%' }}>
                 <div className="wishlist-header" style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
@@ -104,7 +104,7 @@ export default function WishlistPage() {
                 )}
             </main>
 
-            <Footer />
+            
             
             <style>{`
                 @keyframes fadeUp {

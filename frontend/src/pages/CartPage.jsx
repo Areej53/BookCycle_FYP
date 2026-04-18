@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { PALETTE } from '../constants';
@@ -29,6 +29,7 @@ const TypeBadge = ({ type }) => {
 
 const CartPage = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [toast, showToast] = useToast()
   const { cart, removeFromCart, updateDuration, savedItems, saveForLater, moveToCart } = useCart()
 
@@ -37,18 +38,27 @@ const CartPage = () => {
   }
 
   const subtotal = cart.reduce((acc, item) => {
-    if (item.type === 'buy') return acc + item.price
-    if (item.type === 'rent') return acc + (item.rentPerWeek * parseInt(item.duration || 1))
+    if (item.type === 'buy') return acc + Number(item.price || 0)
+    if (item.type === 'rent') return acc + (Number(item.rentPerWeek || 0) * Number(item.duration || 1))
+    if (item.type === 'free') return acc + DELIVERY_CHARGE
     return acc
   }, 0)
 
-  const hasPaid = cart.some(i => i.type === 'buy' || i.type === 'rent')
-  const delivery = hasPaid ? DELIVERY_CHARGE : 0
+  const delivery = 0
   const total = subtotal + delivery
+
+  const handleCheckoutClick = () => {
+    if (!user) {
+      navigate('/login')
+      return
+    }
+    alert("Order will proceed after seller accepts your request")
+    navigate('/checkout')
+  }
 
   return (
     <div className="cart-page-container">
-      <Navbar cartCount={cart.length} />
+      
       
       <main className="cart-page-content">
         {/* ── Page Header ── */}
@@ -74,15 +84,6 @@ const CartPage = () => {
                   : 'Your cart is empty'}
               </p>
             </div>
-            {cart.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7,
-                background: 'rgba(19,73,60,.06)', borderRadius: 50, padding: '7px 16px' }}>
-                <span style={{ fontSize: '1.1rem' }}>🛒</span>
-                <span style={{ fontWeight: 700, color: 'var(--primary)', fontSize: '.88rem' }}>
-                  {cart.length} item{cart.length !== 1 ? 's' : ''}
-                </span>
-              </div>
-            )}
           </div>
         </div>
 
@@ -120,7 +121,7 @@ const CartPage = () => {
                       color: '#fff', fontSize: '.65rem', fontWeight: 800, letterSpacing: '.06em',
                       textTransform: 'uppercase', padding: '4px 12px 4px 10px',
                       borderRadius: '0 50px 50px 0', boxShadow: '2px 2px 8px rgba(0,0,0,.15)' }}>
-                      {item.type === 'free' ? '🎁 Free' : item.type === 'buy' ? '💰 Buy' : '🔄 Rent'}
+                      {item.type === 'free' ? '🎁 Share' : item.type === 'buy' ? '💰 Buy' : '🔄 Rent'}
                     </div>
                   </div>
 
@@ -157,7 +158,7 @@ const CartPage = () => {
                             <div style={{ fontSize: '.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>Rate</div>
                             <div style={{ fontFamily: "'Playfair Display',serif", fontSize: '1.15rem',
                               fontWeight: 900, color: 'var(--primary)' }}>
-                              Rs. {item.rentPerWeek}<span style={{ fontSize: '.75rem', fontWeight: 500, color: 'var(--text-muted)' }}>/wk</span>
+                              Rs. {Number(item.rentPerWeek || 0)}<span style={{ fontSize: '.75rem', fontWeight: 500, color: 'var(--text-muted)' }}>/wk</span>
                             </div>
                           </div>
                           <div>
@@ -174,7 +175,7 @@ const CartPage = () => {
                             <div style={{ fontSize: '.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>Total</div>
                             <div style={{ fontFamily: "'Playfair Display',serif", fontSize: '1.15rem',
                               fontWeight: 900, color: 'var(--cta)' }}>
-                              Rs. {item.rentPerWeek * parseInt(item.duration || 1)}
+                              Rs. {Number(item.rentPerWeek || 0) * Number(item.duration || 1)}
                             </div>
                           </div>
                         </div>
@@ -184,10 +185,17 @@ const CartPage = () => {
                           <span style={{ fontSize: '1.4rem' }}>🎁</span>
                           <div>
                             <div style={{ fontWeight: 700, color: 'var(--secondary)', fontSize: '.95rem' }}>
-                              Free Shelf
+                              Free Shelf Data
                             </div>
                             <div style={{ fontSize: '.75rem', color: 'var(--text-muted)' }}>
-                              Donated by a fellow reader — no charge
+                              Donated by a fellow reader
+                            </div>
+                          </div>
+                          <div style={{ marginLeft: '12px' }}>
+                            <div style={{ fontSize: '.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>Delivery Charge</div>
+                            <div style={{ fontFamily: "'Playfair Display',serif", fontSize: '1.15rem',
+                              fontWeight: 900, color: 'var(--secondary)' }}>
+                              Rs. 120
                             </div>
                           </div>
                         </div>
@@ -258,11 +266,11 @@ const CartPage = () => {
                       <div style={{ minWidth: 0, flex: 1, paddingRight: 10 }}>
                         <div className="summary-item-title">{item.title}</div>
                         <div style={{ fontSize: '.72rem', color: 'var(--text-muted)', marginTop: 2 }}>
-                          {item.type === 'rent' ? `${item.duration}wk × Rs.${item.rentPerWeek}` : item.type === 'free' ? 'Free Shelf' : 'Purchase'}
+                          {item.type === 'rent' ? `${item.duration}wk × Rs.${Number(item.rentPerWeek || 0)}` : item.type === 'free' ? 'Share (Delivery Charge)' : 'Purchase'}
                         </div>
                       </div>
-                      <div className={`summary-item-price ${item.type === 'free' ? 'free' : ''}`}>
-                        {item.type === 'free' ? '₀' : `Rs. ${item.type === 'buy' ? item.price : item.rentPerWeek * parseInt(item.duration || 1)}`}
+                      <div className={`summary-item-price ${item.type === 'free' ? 'free' : ''}`} style={{ color: item.type === 'free' ? 'var(--secondary)' : '', fontWeight: item.type === 'free' ? '900' : '' }}>
+                        {item.type === 'free' ? 'Rs. 120' : `Rs. ${item.type === 'buy' ? Number(item.price || 0) : Number(item.rentPerWeek || 0) * Number(item.duration || 1)}`}
                       </div>
                     </div>
                   ))}
@@ -275,11 +283,11 @@ const CartPage = () => {
                     </div>
                     <div className="summary-total-row">
                       <div>
-                        <span style={{ fontSize: '.88rem', color: 'var(--text-muted)' }}>Delivery</span>
+                        <span style={{ fontSize: '.88rem', color: 'var(--text-muted)' }}>Additional Delivery</span>
                         <div style={{ fontSize: '.7rem', color: 'var(--text-muted)' }}>(Islamabad only)</div>
                       </div>
                       <span style={{ fontWeight: 700, color: delivery > 0 ? 'var(--text-dark)' : 'var(--secondary)', fontSize: '.9rem' }}>
-                        {delivery > 0 ? `Rs. ${delivery}` : 'Free'}
+                        {delivery > 0 ? `Rs. ${delivery}` : 'Free on Cart'}
                       </span>
                     </div>
                     <div className="summary-divider" />
@@ -291,7 +299,7 @@ const CartPage = () => {
                   </div>
 
                   {/* CTA */}
-                  <button onClick={() => navigate('/checkout')} className="checkout-btn">
+                  <button onClick={handleCheckoutClick} className="checkout-btn">
                     Proceed to Checkout
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                   </button>
@@ -303,22 +311,11 @@ const CartPage = () => {
                 </div>
               </div>
 
-              {/* Coupon teaser */}
-              <div className="coupon-teaser" onClick={() => showToast('Coupon feature coming soon!')}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontSize: '1.25rem' }}>🏷️</span>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: '.88rem', color: 'var(--primary)' }}>Have a coupon?</div>
-                    <div style={{ fontSize: '.75rem', color: 'var(--text-muted)' }}>Tap to apply discount code</div>
-                  </div>
-                  <span style={{ marginLeft: 'auto', color: 'var(--accent)', fontWeight: 700, fontSize: '.85rem' }}>Apply →</span>
-                </div>
-              </div>
             </div>
           </div>
         )}
       </main>
-      <Footer />
+      
       <Toast toast={toast} />
     </div>
   )

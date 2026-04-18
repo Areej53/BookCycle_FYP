@@ -17,6 +17,7 @@ export default function BookDetailsPage() {
     const { user, token } = useAuth();
     const { addToCart } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
+    const navigate = require('react-router-dom').useNavigate();
     const [book, setBook] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [modalMessage, setModalMessage] = useState('');
@@ -49,6 +50,14 @@ export default function BookDetailsPage() {
     }, [id, token]);
 
     const handleAddToCart = () => {
+        if (!user) {
+            navigate('/login');
+            return;
+        }
+        if (book?.exchangeType === 'Rent') {
+            setModalMessage('Currently unavailable');
+            return;
+        }
         const added = addToCart(book);
         if (added) {
             setModalMessage("Added to cart");
@@ -79,7 +88,7 @@ export default function BookDetailsPage() {
 
     return (
         <div className="BookDetailsPage">
-            <Navbar />
+            
 
             <div className="detail-hero">
                 <div className="detail-hero-inner">
@@ -119,12 +128,14 @@ export default function BookDetailsPage() {
                                 <div style={{ fontSize: '0.9rem', color: 'var(--primary)', opacity: 0.7, marginBottom: '5px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>Listing Price</div>
                                 <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.5rem', fontWeight: 900, color: 'var(--primary)' }}>
                                     {book.exchangeType === 'Share' ? 'Free Gift' : `Rs. ${book.price}`}
-                                    {book.exchangeType === 'Rent' && <span style={{ fontSize: '1.2rem', opacity: 0.6 }}>/week</span>}
                                 </div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                                 <button 
-                                    onClick={() => toggleWishlist(book)} 
+                                    onClick={() => {
+                                        if (!user) { navigate('/login'); return; }
+                                        toggleWishlist(book);
+                                    }} 
                                     style={{ 
                                         width: '64px', height: '64px', borderRadius: '50%', 
                                         background: '#fff', color: isInWishlist(book?._id) ? 'var(--cta)' : 'var(--text-muted)', 
@@ -136,9 +147,13 @@ export default function BookDetailsPage() {
                                 >
                                     <FiHeart size={26} fill={isInWishlist(book?._id) ? "var(--cta)" : "none"} />
                                 </button>
-                                <button onClick={handleAddToCart} className="btn-mini-cart" style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--primary)', color: '#fff', boxShadow: '0 12px 30px rgba(19,73,60,0.35)', transition: 'all 0.2s', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                                </button>
+                                {book.exchangeType !== 'Rent' ? (
+                                    <button onClick={handleAddToCart} className="btn-mini-cart" style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--primary)', color: '#fff', boxShadow: '0 12px 30px rgba(19,73,60,0.35)', transition: 'all 0.2s', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                                    </button>
+                                ) : (
+                                    <span style={{ fontSize: '.85rem', color: 'var(--muted)', fontWeight: 600 }}>Currently unavailable</span>
+                                )}
                             </div>
                         </div>
 
@@ -171,13 +186,12 @@ export default function BookDetailsPage() {
                             <div className="logo-icon" style={{ width: '64px', height: '64px' }}><img src={IMAGES.img_0} alt="BookCycle logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }}/></div>
                             BookCycle
                         </Link>
-                        <p style={{ fontSize: '.88rem', lineHeight: 1.7, maxWidth: '260px', marginTop: '14px' }}>Islamabad's community book platform. Share, rent, and discover books across the city. Making knowledge accessible to all.</p>
+                        <p style={{ fontSize: '.88rem', lineHeight: 1.7, maxWidth: '260px', marginTop: '14px' }}>Islamabad's community book platform. Share and discover books across the city. Making knowledge accessible to all.</p>
                     </div>
                     <div className="footer-col">
                         <h4 style={{ color: 'var(--bg)', fontWeight: 700, fontSize: '.95rem', marginBottom: '18px' }}>Platform</h4>
                         <ul style={{ listStyle: 'none' }}>
                             <li style={{ marginBottom: '10px' }}><Link to="/browse" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Browse Books</Link></li>
-                            <li style={{ marginBottom: '10px' }}><Link to="/browse" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Rent a Book</Link></li>
                         </ul>
                     </div>
                     <div className="footer-col">

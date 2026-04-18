@@ -167,7 +167,6 @@ export default function SearchResultsPage() {
     <div className="filter-label">Type</div>
     <div className="filter-opts">
       <label className="filter-opt"><input type="checkbox" value="sell" checked={localType.includes('sell')} onChange={() => setLocalType(toggleArray(localType, 'sell'))}/> For Sale</label>
-      <label className="filter-opt"><input type="checkbox" value="rent" checked={localType.includes('rent')} onChange={() => setLocalType(toggleArray(localType, 'rent'))}/> For Rent</label>
       <label className="filter-opt"><input type="checkbox" value="share" checked={localType.includes('share')} onChange={() => setLocalType(toggleArray(localType, 'share'))}/> Free Shelf</label>
     </div>
   </div>
@@ -200,7 +199,6 @@ export default function SearchResultsPage() {
           <div className="bc-img-wrap" style={{ position: 'relative' }}>
             <img src={book.images?.[0] ? 'http://localhost:5000' + book.images[0] : 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80'} alt={book.title} className="bc-img"/>
             {book.exchangeType === 'Sell' && <span className="tb tb-buy">Buy</span>}
-            {book.exchangeType === 'Rent' && <span className="tb tb-rent">Rent</span>}
             {book.exchangeType === 'Share' && <span className="tb tb-free">Free</span>}
           </div>
           <div className="bc-body">
@@ -218,27 +216,30 @@ export default function SearchResultsPage() {
                   ) : (
                     <>
                     <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. {book.price}</span>
-                    {book.exchangeType === 'Rent' && <span className="price-unit">/wk</span>}
                     </>
                   )}
               </div>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <button 
-                    onClick={(e) => { e.stopPropagation(); toggleWishlist(book); }}
-                    style={{ 
-                        background: 'none', border: '1.5px solid var(--border)', 
-                        borderRadius: '50%', width: '30px', height: '30px', 
-                        display: 'grid', placeItems: 'center', cursor: 'pointer', 
-                        color: isInWishlist(book._id) ? 'var(--cta)' : 'var(--text-muted)',
-                        transition: 'all .2s'
-                    }}
-                >
-                    <FiHeart size={14} fill={isInWishlist(book._id) ? "var(--cta)" : "none"} />
-                </button>
-                <Link to={`/book/${book._id}`} className="btn-mini-cart">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                </Link>
-              </div>
+              {book.exchangeType === 'Rent' ? (
+                <span style={{ fontSize: '.8rem', color: 'var(--muted)', fontWeight: 600 }}>Currently unavailable</span>
+              ) : (
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button 
+                      onClick={(e) => { e.stopPropagation(); toggleWishlist(book); }}
+                      style={{ 
+                          background: 'none', border: '1.5px solid var(--border)', 
+                          borderRadius: '50%', width: '30px', height: '30px', 
+                          display: 'grid', placeItems: 'center', cursor: 'pointer', 
+                          color: isInWishlist(book._id) ? 'var(--cta)' : 'var(--text-muted)',
+                          transition: 'all .2s'
+                      }}
+                  >
+                      <FiHeart size={14} fill={isInWishlist(book._id) ? "var(--cta)" : "none"} />
+                  </button>
+                  <Link to={`/book/${book._id}`} className="btn-mini-cart">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -279,7 +280,7 @@ export default function SearchResultsPage() {
                     <div style={{ fontSize: '.74rem', color: 'var(--muted)', margin: '2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>by {bk.author}</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
                         <div style={{ fontSize: '.78rem', fontWeight: '700', color: bk.exchangeType === 'Share' ? 'var(--secondary)' : 'var(--cta)' }}>
-                            {bk.exchangeType === 'Share' ? 'Free' : `Rs. ${bk.price}${bk.exchangeType === 'Rent' ? '/wk' : ''}`}
+                            {bk.exchangeType === 'Share' ? 'Free' : `Rs. ${bk.price}`}
                         </div>
                         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                             <button
@@ -324,7 +325,7 @@ export default function SearchResultsPage() {
         <Link to="#" className="f-soc"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></Link>
       </div>
     </div>
-    <div className="footer-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/browse?tab=rent">Rent a Book</Link></li><li><Link to="/browse?tab=free">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div>
+    <div className="footer-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/browse?tab=free">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div>
     <div className="footer-col"><h4>Company</h4><ul><li><Link to="#">About Us</Link></li><li><Link to="#">How It Works</Link></li><li><Link to="#">Blog</Link></li><li><Link to="#">Careers</Link></li></ul></div>
     <div className="footer-col"><h4>Contact</h4><ul><li><Link to="#"><span className="__cf_email__" data-cfemail="b4dcd1d8d8dbf4d6dbdbdfd7cdd7d8d19ac4df">[email&#160;protected]</span></Link></li><li><Link to="#">+92 300 1234567</Link></li><li><Link to="#">F-7, Islamabad</Link></li><li><Link to="#">Help Center</Link></li></ul></div>
   </div>

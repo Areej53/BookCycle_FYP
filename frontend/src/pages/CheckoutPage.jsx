@@ -7,6 +7,8 @@ import Footer from '../components/Footer'
 import Toast from '../components/Toast'
 import ConsentModal from '../components/ConsentModal'
 import TrackOrderModal from '../components/TrackOrderModal'
+import { useAuth } from '../context/AuthContext'
+import { DashboardApi } from '../services/api'
 
 const PALETTE = {
   primary: '#13493C',
@@ -25,6 +27,7 @@ const DELIVERY_CHARGE = 120
 const getItemCost = (item) => {
   if (item.type === 'buy') return Number(item.price) || 0
   if (item.type === 'rent') return (Number(item.rentPerWeek) || 0) * parseInt(item.duration || 1, 10)
+  if (item.type === 'free') return DELIVERY_CHARGE
   return 0
 }
 
@@ -64,9 +67,10 @@ const CheckoutPage = () => {
   const navigate = useNavigate()
   const [toast, showToast] = useToast()
   const { cart, clearCart } = useCart()
+  const { token, user } = useAuth()
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
-  const [orderPlaced, setOrderPlaced] = useState(false)
+  const [placedOrders, setPlacedOrders] = useState([])
   
   // Consent modal state
   const [showConsent, setShowConsent] = useState(false)
@@ -75,14 +79,13 @@ const CheckoutPage = () => {
   const [showTrackOrder, setShowTrackOrder] = useState(false)
   const [form, setForm] = useState({
     name: '', phone: '', area: '', street: '', landmark: '',
-    paymentMethod: 'cod',
+    paymentMethod: 'easypaisa',
     notes: '',
   })
 
   // Calculate totals from real cart data
   const subtotal = cart.reduce((a, i) => a + getItemCost(i), 0)
-  const hasPaid = cart.some(i => i.type === 'buy' || i.type === 'rent')
-  const delivery = hasPaid ? DELIVERY_CHARGE : 0
+  const delivery = 0 // Free items cover their own, regular delivery is covered in them now? Wait, no delivery charge for buy/sell.
   const total = subtotal + delivery
 
   const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: null })) }
@@ -117,17 +120,57 @@ const CheckoutPage = () => {
   const handleAgreeAndSubmit = async () => {
     setShowConsent(false)
     setSubmitting(true)
-    await new Promise(r => setTimeout(r, 1400))
-    setSubmitting(false)
-    clearCart()
-    setOrderPlaced(true)
+    try {
+      const groupedBySeller = cart.reduce((acc, item) => {
+        const sellerId = item.sellerId;
+        if (!sellerId) return acc;
+        if (!acc[sellerId]) acc[sellerId] = [];
+        acc[sellerId].push(item);
+        return acc;
+      }, {});
+
+      const responses = await Promise.all(
+        Object.entries(groupedBySeller).map(([sellerId, items]) =>
+          DashboardApi.createOrder({
+            token,
+            payload: {
+              buyerId: user?.id,
+              sellerId,
+              status: "pending_seller",
+              items: items.map((item) => ({
+                bookId: item.id,
+                title: item.title,
+                type: item.type,
+                price: getItemCost(item),
+                quantity: 1,
+              })),
+              bookAmount: items.reduce((sum, item) => sum + getItemCost(item), 0),
+              deliveryFee: 0,
+              totalAmount: items.reduce((sum, item) => sum + getItemCost(item), 0),
+              shippingAddress: `${form.street}, ${form.landmark ? form.landmark + ', ' : ''}${form.area}, Islamabad`,
+              shippingPhone: form.phone,
+            },
+          })
+        )
+      );
+
+      clearCart()
+      setPlacedOrders(responses.map(r => r.order))
+      showToast("Order further proceed hoga after seller acceptance")
+    } catch (err) {
+      showToast("Order placement failed. Please try again.", true)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   /* ── ORDER CONFIRMED ── */
-  if (orderPlaced) {
+  if (placedOrders.length > 0) {
+    const mainOrder = placedOrders[0]
+    const trackingNo = mainOrder.trackingData?.trackingNumber || mainOrder._id
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <Navbar cartCount={0} />
+        
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
           justifyContent: 'center', padding: '60px 20px', textAlign: 'center',
           animation: 'fadeUp .5s ease' }}>
@@ -153,9 +196,9 @@ const CheckoutPage = () => {
           </p>
           <div style={{ background: PALETTE.bg, border: `1.5px solid ${PALETTE.border}`,
             borderRadius: 16, padding: '16px 24px', marginBottom: 28, fontSize: '.84rem', color: PALETTE.muted }}>
-            <div style={{ fontWeight: 700, color: PALETTE.primary, marginBottom: 4 }}>Order Reference</div>
+            <div style={{ fontWeight: 700, color: PALETTE.primary, marginBottom: 4 }}>Order Tracking / Reference</div>
             <code style={{ fontFamily: 'monospace', color: PALETTE.cta, fontSize: '1rem' }}>
-              #BC-{Date.now().toString().slice(-6)}
+              #{trackingNo}
             </code>
           </div>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -178,21 +221,20 @@ const CheckoutPage = () => {
               Browse More Books
             </button>
           </div>
-          {/* TrackOrderModal is needed here since we are doing an early return */}
           <TrackOrderModal
             isOpen={showTrackOrder}
             onClose={() => setShowTrackOrder(false)}
-            orderId={`BC-${Date.now().toString().slice(-6)}`}
+            orderId={trackingNo}
           />
         </main>
-        <Footer />
+        <Toast toast={toast} />
       </div>
     )
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: PALETTE.bg }}>
-      <Navbar cartCount={cart.length} />
+      
       <main style={{ flex: 1, padding: '32px 20px', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
         {/* ── Page header ── */}
         <div style={{ marginBottom: 32, animation: 'fadeUp .45s ease .05s both' }}>
@@ -316,9 +358,7 @@ const CheckoutPage = () => {
               <SectionCard icon="💳" title="Payment Method" subtitle="Choose how you'd like to pay" step={2}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {[
-                    { val: 'cod',    icon: '💵', label: 'Cash on Delivery', sub: 'Pay when your books arrive'      },
-                    { val: 'easypaisa', icon: '📱', label: 'Easypaisa',    sub: 'Send to 0300-XXXXXXX'            },
-                    { val: 'jazzcash',  icon: '📲', label: 'JazzCash',     sub: 'Send to 0300-XXXXXXX'            },
+                    { val: 'easypaisa', icon: '📱', label: 'Easypaisa',    sub: 'Send to the seller\'s EasyPaisa number'            },
                   ].map(opt => (
                     <div key={opt.val}
                       onClick={() => set('paymentMethod', opt.val)}
@@ -388,7 +428,7 @@ const CheckoutPage = () => {
                       </div>
                       <div style={{ fontWeight: 700, fontSize: '.85rem', flexShrink: 0,
                         color: item.type === 'free' ? '#2d6a4f' : PALETTE.cta }}>
-                        {item.type === 'free' ? 'FREE' : `Rs. ${getItemCost(item)}`}
+                        {item.type === 'free' ? 'Rs. 120' : `Rs. ${getItemCost(item)}`}
                       </div>
                     </div>
                   ))
@@ -400,9 +440,9 @@ const CheckoutPage = () => {
                     <span style={{ fontWeight: 700, fontSize: '.82rem', color: PALETTE.text }}>Rs. {subtotal}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
-                    <span style={{ fontSize: '.82rem', color: PALETTE.muted }}>Delivery (Islamabad)</span>
+                    <span style={{ fontSize: '.82rem', color: PALETTE.muted }}>Additional Delivery (Islamabad)</span>
                     <span style={{ fontWeight: 700, fontSize: '.82rem', color: PALETTE.text }}>
-                      {delivery > 0 ? `Rs. ${delivery}` : 'Free'}
+                      Free on Cart
                     </span>
                   </div>
                   
@@ -456,7 +496,7 @@ const CheckoutPage = () => {
           </div>
         </div>
       </main>
-      <Footer />
+      
       
       {/* Spinner keyframe & responsive fixes */}
       <style>{`
@@ -474,7 +514,7 @@ const CheckoutPage = () => {
         onClose={() => setShowConsent(false)}
         onConfirm={handleAgreeAndSubmit}
         title="Confirm Your Order"
-        message="Are you sure you want to proceed with this order? You will pay cash on delivery."
+        message="Are you sure you want to proceed with this order? You will pay via EasyPaisa."
         confirmText="Yes, place order"
         cancelText="Review again"
       />

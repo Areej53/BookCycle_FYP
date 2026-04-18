@@ -33,8 +33,12 @@ const matchEnum = (arr, val) => {
 };
 
 const getAllBooks = async (req, res) => {
-  const { category, cats, search, q, type, conds, condition, price, minPrice, maxPrice, sort } = req.query;
-  const queryObject = { status: 'Available' };
+  const { category, cats, search, q, type, conds, condition, price, minPrice, maxPrice, sort, sellerId } = req.query;
+  const queryObject = sellerId ? {} : { status: 'Available' };
+  if (sellerId) {
+    queryObject.owner = sellerId;
+  }
+
 
   const finalCategory = category || cats;
   const finalSearch = search || q;
@@ -146,7 +150,19 @@ const getBook = async (req, res) => {
 };
 
 const createBook = async (req, res) => {
-  req.body.owner = req.user.id;
+  req.body.owner = req.body.sellerId || req.user.id;
+  if (req.body.type) {
+    req.body.exchangeType = matchEnum(exactTypeEnums, req.body.type);
+  }
+  if (req.body.status) {
+    const statusMap = {
+      live: "Available",
+      sold: "Unavailable",
+      rented: "Unavailable",
+      pending: "Pending",
+    };
+    req.body.status = statusMap[String(req.body.status).toLowerCase()] || req.body.status;
+  }
   
   if (req.body.image) {
     req.body.image = saveBase64Image(req.body.image);
