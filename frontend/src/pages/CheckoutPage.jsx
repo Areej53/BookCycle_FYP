@@ -27,7 +27,7 @@ const DELIVERY_CHARGE = 120
 const getItemCost = (item) => {
   if (item.type === 'buy') return Number(item.price) || 0
   if (item.type === 'rent') return (Number(item.rentPerWeek) || 0) * parseInt(item.duration || 1, 10)
-  if (item.type === 'free') return DELIVERY_CHARGE
+  if (item.type === 'free') return 0
   return 0
 }
 
@@ -85,7 +85,7 @@ const CheckoutPage = () => {
 
   // Calculate totals from real cart data
   const subtotal = cart.reduce((a, i) => a + getItemCost(i), 0)
-  const delivery = 0 // Free items cover their own, regular delivery is covered in them now? Wait, no delivery charge for buy/sell.
+  const delivery = cart.length * DELIVERY_CHARGE
   const total = subtotal + delivery
 
   const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: null })) }
@@ -145,8 +145,8 @@ const CheckoutPage = () => {
                 quantity: 1,
               })),
               bookAmount: items.reduce((sum, item) => sum + getItemCost(item), 0),
-              deliveryFee: 0,
-              totalAmount: items.reduce((sum, item) => sum + getItemCost(item), 0),
+              deliveryFee: items.length * DELIVERY_CHARGE,
+              totalAmount: items.reduce((sum, item) => sum + getItemCost(item), 0) + (items.length * DELIVERY_CHARGE),
               shippingAddress: `${form.street}, ${form.landmark ? form.landmark + ', ' : ''}${form.area}, Islamabad`,
               shippingPhone: form.phone,
             },
@@ -202,23 +202,23 @@ const CheckoutPage = () => {
             </code>
           </div>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-            <button onClick={() => navigate('/seller/published')}
+            <button onClick={() => navigate('/dashboard')}
               style={{ background: PALETTE.primary, color: PALETTE.bg, padding: '12px 26px',
                 borderRadius: 50, fontWeight: 700, fontSize: '.9rem', border: 'none', cursor: 'pointer',
                 boxShadow: '0 5px 18px rgba(19,73,60,.28)' }}>
-              📊 View Dashboard
+              View Dashboard
             </button>
             <button onClick={() => setShowTrackOrder(true)}
               style={{ background: PALETTE.secondary, color: PALETTE.bg, padding: '12px 26px',
                 borderRadius: 50, fontWeight: 700, fontSize: '.9rem', border: 'none', cursor: 'pointer',
                 boxShadow: '0 5px 18px rgba(0,0,0,.15)' }}>
-              🚚 Track Order
+              Track Order
             </button>
-            <button onClick={() => navigate('/browse')}
+            <button onClick={() => navigate('/')}
               style={{ background: PALETTE.cta, color: '#fff', padding: '12px 26px',
                 borderRadius: 50, fontWeight: 700, fontSize: '.9rem', border: 'none', cursor: 'pointer',
                 boxShadow: '0 5px 18px rgba(188,108,37,.28)' }}>
-              Browse More Books
+              Explore More
             </button>
           </div>
           <TrackOrderModal
@@ -428,7 +428,7 @@ const CheckoutPage = () => {
                       </div>
                       <div style={{ fontWeight: 700, fontSize: '.85rem', flexShrink: 0,
                         color: item.type === 'free' ? '#2d6a4f' : PALETTE.cta }}>
-                        {item.type === 'free' ? 'Rs. 120' : `Rs. ${getItemCost(item)}`}
+                        {item.type === 'free' ? 'Free Book' : `Rs. ${getItemCost(item)}`}
                       </div>
                     </div>
                   ))
@@ -442,7 +442,7 @@ const CheckoutPage = () => {
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
                     <span style={{ fontSize: '.82rem', color: PALETTE.muted }}>Additional Delivery (Islamabad)</span>
                     <span style={{ fontWeight: 700, fontSize: '.82rem', color: PALETTE.text }}>
-                      Free on Cart
+                      {delivery > 0 ? `Rs. ${delivery}` : 'Free'}
                     </span>
                   </div>
                   

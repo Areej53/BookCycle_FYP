@@ -8,7 +8,7 @@ import {
   Register,
   ResetPassword,
   HomePage,
-  BrowseBooksPage,
+  ExploreBooksPage,
   CategoryResultsPage,
   SearchResultsPage,
   BookDetailsPage,
@@ -63,15 +63,15 @@ const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
-        path: "browse",
-        element: <BrowseBooksPage />,
+        path: "explore",
+        element: <ExploreBooksPage />,
       },
       {
-        path: "browse/category/:category",
+        path: "explore/category/:category",
         element: <CategoryResultsPage />,
       },
       {
-        path: "browse/search",
+        path: "explore/search",
         element: <SearchResultsPage />,
       },
       {
@@ -145,7 +145,6 @@ function App() {
   return (
     <SellerProvider>
       <RouterProvider router={router} />
-      <ToastContainer position='top-center' />
     </SellerProvider>
   )
 }

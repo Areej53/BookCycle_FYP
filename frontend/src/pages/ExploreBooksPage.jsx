@@ -12,7 +12,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ActionModal from '../components/ActionModal';
 
-export default function BrowseBooksPage() {
+export default function ExploreBooksPage() {
     const { user } = useAuth();
     const { wishlist, toggleWishlist, isInWishlist } = useWishlist();
     const navigate = useNavigate();
@@ -100,18 +100,18 @@ export default function BrowseBooksPage() {
         // Only navigate if there's actually a search query, or keep the original behavior 
         // to navigate when search button is clicked. We navigate to search results page
         // so it acts as the global search page.
-        navigate(`/browse/search?${params.toString()}`);
+        navigate(`/explore/search?${params.toString()}`);
     };
 
     const toggleArray = (arr, val) => arr.includes(val) ? arr.filter(i => i !== val) : [...arr, val]; 
     return (
-        <div className="BrowseBooksPage">
+        <div className="ExploreBooksPage">
             
 
-<div className="browse-hero">
-  <div className="browse-hero-inner">
-    <h1>Browse <em>Books</em></h1>
-    <p className="browse-hero-sub">Explore 12+ books available to buy or claim free across Islamabad.</p>
+<div className="explore-hero">
+  <div className="explore-hero-inner">
+    <h1>Explore <em>Books</em></h1>
+    <p className="explore-hero-sub">Explore 12+ books available to buy or claim free across Islamabad.</p>
     <div className="search-wrap">
       <div className="search-bar">
         <input type="text" id="search-inp" placeholder="Search by title, author, or category…" value={localQuery} onChange={e => setLocalQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()}/>
@@ -134,7 +134,7 @@ export default function BrowseBooksPage() {
   </div>
 </div>
 
-<div className="browse-layout">
+<div className="explore-layout">
   
   <aside className="filter-aside">
     <div className="filter-sidebar">

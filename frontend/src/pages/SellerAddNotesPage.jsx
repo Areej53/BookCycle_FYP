@@ -317,7 +317,7 @@ export default function SellerAddNotesPage() {
 <footer className="footer" style={{ marginTop: '80px' }}>
   <div className="footer-grid">
     <div><Link to="/home" className="footer-brand"><div className="f-logo"><img src={IMAGES.img_0} alt="BookCycle"/></div><span className="footer-brand-name">BookCycle</span></Link><p className="footer-desc">Islamabad's community book platform. Share, rent, and discover books across the city.</p></div>
-    <div className="footer-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/browse?tab=rent">Rent a Book</Link></li><li><Link to="/browse?tab=free">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div>
+    <div className="footer-col"><h4>Platform</h4><ul><li><Link to="/explore">Explore Books</Link></li><li><Link to="/explore?tab=rent">Rent a Book</Link></li><li><Link to="/explore?tab=free">Free Shelf</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div>
   </div>
   <div className="footer-bottom"><p>© 2025 BookCycle. All rights reserved.</p></div>
 </footer>

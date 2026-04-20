@@ -40,11 +40,11 @@ const CartPage = () => {
   const subtotal = cart.reduce((acc, item) => {
     if (item.type === 'buy') return acc + Number(item.price || 0)
     if (item.type === 'rent') return acc + (Number(item.rentPerWeek || 0) * Number(item.duration || 1))
-    if (item.type === 'free') return acc + DELIVERY_CHARGE
+    if (item.type === 'free') return acc
     return acc
   }, 0)
 
-  const delivery = 0
+  const delivery = cart.length * DELIVERY_CHARGE
   const total = subtotal + delivery
 
   const handleCheckoutClick = () => {
@@ -96,10 +96,10 @@ const CartPage = () => {
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginBottom: 32, lineHeight: 1.6, maxWidth: 400, marginInline: 'auto' }}>
               Looks like you haven't added any books yet.<br />
-              Browse the collection and start building your reading list!
+              Explore the collection and start building your reading list!
             </p>
-            <button onClick={() => navigate('/browse')} className="btn-primary">
-              Browse Books →
+            <button onClick={() => navigate('/explore')} className="btn-primary">
+              Explore Books →
             </button>
           </div>
         )}
@@ -265,11 +265,11 @@ const CartPage = () => {
                       <div style={{ minWidth: 0, flex: 1, paddingRight: 10 }}>
                         <div className="summary-item-title">{item.title}</div>
                         <div style={{ fontSize: '.72rem', color: 'var(--text-muted)', marginTop: 2 }}>
-                          {item.type === 'rent' ? `${item.duration}wk × Rs.${Number(item.rentPerWeek || 0)}` : item.type === 'free' ? 'Share (Delivery Charge)' : 'Purchase'}
+                          {item.type === 'rent' ? `${item.duration}wk × Rs.${Number(item.rentPerWeek || 0)}` : item.type === 'free' ? 'Free Shelf' : 'Purchase'}
                         </div>
                       </div>
                       <div className={`summary-item-price ${item.type === 'free' ? 'free' : ''}`} style={{ color: item.type === 'free' ? 'var(--secondary)' : '', fontWeight: item.type === 'free' ? '900' : '' }}>
-                        {item.type === 'free' ? 'Rs. 120' : `Rs. ${item.type === 'buy' ? Number(item.price || 0) : Number(item.rentPerWeek || 0) * Number(item.duration || 1)}`}
+                        {item.type === 'free' ? 'Free Book' : `Rs. ${item.type === 'buy' ? Number(item.price || 0) : Number(item.rentPerWeek || 0) * Number(item.duration || 1)}`}
                       </div>
                     </div>
                   ))}
