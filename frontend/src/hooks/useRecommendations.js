@@ -13,15 +13,8 @@ export default function useRecommendations() {
     const fetchRecommendations = async () => {
       setLoading(true);
       try {
-        if (!token) {
-          // Fallback to trending books if no user is logged in
-          const res = await api.get('/books?limit=6&sort=popular');
-          if (isMounted) setRecommended(res.data.books || []);
-        } else {
-          // Fetch authenticated recommendations
-          const res = await api.get('/books/recommendations', { headers: { Authorization: `Bearer ${token}` } });
-          if (isMounted) setRecommended(res.data.books || []);
-        }
+        const res = await api.get('/books?limit=5&sort=random');
+        if (isMounted) setRecommended(res.data.books || []);
       } catch (err) {
         console.error("Failed to fetch recommendations:", err);
         if (isMounted) setRecommended([]);

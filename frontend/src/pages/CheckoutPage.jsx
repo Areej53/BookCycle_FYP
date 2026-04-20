@@ -474,6 +474,9 @@ const CheckoutPage = () => {
                     </>
                   ) : '✓ Place Order'}
                 </button>
+                <div style={{ textAlign: 'center', fontSize: '.75rem', fontWeight: 600, color: PALETTE.cta, marginTop: 10 }}>
+                  Order will proceed after seller acceptance.
+                </div>
                 {/* Security note */}
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, marginTop: 13,
                   fontSize: '.72rem', color: PALETTE.muted, lineHeight: 1.5 }}>
@@ -514,7 +517,7 @@ const CheckoutPage = () => {
         onClose={() => setShowConsent(false)}
         onConfirm={handleAgreeAndSubmit}
         title="Confirm Your Order"
-        message="Are you sure you want to proceed with this order? You will pay via EasyPaisa."
+        message="Order will proceed after seller accepts your request"
         confirmText="Yes, place order"
         cancelText="Review again"
       />

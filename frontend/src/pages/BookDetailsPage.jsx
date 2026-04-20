@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { api, getApiErrorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -17,7 +17,7 @@ export default function BookDetailsPage() {
     const { user, token } = useAuth();
     const { addToCart } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
-    const navigate = require('react-router-dom').useNavigate();
+    const navigate = useNavigate();
     const [book, setBook] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [modalMessage, setModalMessage] = useState('');

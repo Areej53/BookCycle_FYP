@@ -52,7 +52,6 @@ const CartPage = () => {
       navigate('/login')
       return
     }
-    alert("Order will proceed after seller accepts your request")
     navigate('/checkout')
   }
 
