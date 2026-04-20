@@ -101,7 +101,7 @@ const RideDetailsPage = () => {
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: ".85rem", fontWeight: 700, color: PALETTE.text, marginBottom: 6 }}>Easypaisa Number (For COD)</label>
-                  <input type="text" name="easypaisaNumber" value={form.easypaisaNumber} onChange={handleChange} placeholder="Optional" style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${PALETTE.border}`, boxSizing: "border-box" }} />
+                  <input type="text" name="easypaisaNumber" value={form.easypaisaNumber} onChange={handleChange} placeholder="03xx-xxxxxxx" required style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${PALETTE.border}`, boxSizing: "border-box" }} />
                 </div>
                 
                 <button onClick={handleConfirm} style={{ marginTop: 12, width: "100%", background: PALETTE.cta, color: "#fff", padding: "14px", borderRadius: 8, border: "none", fontWeight: 700, fontSize: "1rem", cursor: "pointer", transition: "opacity .2s" }} onMouseEnter={e => e.currentTarget.style.opacity = .9} onMouseLeave={e => e.currentTarget.style.opacity = 1}>

@@ -96,7 +96,7 @@ const BACKEND_DOWN =
   "Backend is not running or the dev server cannot reach it. Open a terminal, run: cd backend && npm run dev — then check that PORT in backend/.env matches VITE_PROXY_TARGET in frontend/.env (both 5000). Restart frontend after changing .env (npm run dev).";
 
 const MONGO_AND_API =
-  "API error. (1) Backend terminal: if you see MongoDB errors, fix MONGO_URI in backend/.env and in Atlas: Network Access → allow your IP (or 0.0.0.0/0 for testing). (2) If the backend is not running, use: cd backend && npm run dev. (3) Test in browser: http://127.0.0.1:PORT/api/v1/health (PORT = value in backend/.env).";
+  "API error. (1) Backend terminal: if you see MongoDB errors, fix MONGO_URI in backend/.env and in Atlas: Network Access → allow your IP (or 0.0.0.0/0 for testing). (2) If the backend is not running, use: cd backend && npm run dev. (3) Test in explorer: http://127.0.0.1:PORT/api/v1/health (PORT = value in backend/.env).";
 
 export function getApiErrorMessage(err, fallback) {
   const fb = fallback || DEFAULT_ERROR;

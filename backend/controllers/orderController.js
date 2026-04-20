@@ -106,17 +106,17 @@ const updateOrderStatus = async (req, res) => {
           await Book.findByIdAndUpdate(item.bookId, { status: "Unavailable" });
         }
       }
-      await Notification.create({ userId: order.buyerId._id, message: "Your order has been accepted", type: "order_update", orderId: order._id, actionLink: `/order-tracking?orderId=${order._id}` });
+      await Notification.create({ userId: order.buyerId._id, message: "Your order has been accepted", type: "order_update", orderId: order._id });
     } else if (status === "rejected") {
       await Notification.create({ userId: order.buyerId._id, message: "Your order has been rejected", type: "order_update", orderId: order._id });
     } else if (status === "out_for_delivery") {
       const trackNo = order.trackingData?.trackingNumber || 'N/A';
-      await Notification.create({ userId: order.buyerId._id, message: `Your order is out for delivery. Click this notification to view tracking details. Tracking number: ${trackNo}`, type: "order_update", orderId: order._id, actionLink: `/order-tracking?orderId=${order._id}&trackingId=${trackNo}` });
+      await Notification.create({ userId: order.buyerId._id, message: `Your order is out for delivery. Tracking number: ${trackNo}`, type: "order_update", orderId: order._id });
     } else if (status === "payment_submitted") {
-      await Notification.create({ userId: order.buyerId._id, message: "Your payment has been submitted", type: "order_update", orderId: order._id, actionLink: `/order-tracking?orderId=${order._id}` });
-      await Notification.create({ userId: order.sellerId._id, message: "Buyer has submitted payment", type: "order_update", orderId: order._id });
+      await Notification.create({ userId: order.buyerId._id, message: "Your payment has been submitted", type: "order_update", orderId: order._id });
+      await Notification.create({ userId: order.sellerId._id, message: `${order.buyerId?.name || "Buyer"} has submitted the payment`, type: "order_update", orderId: order._id });
     } else if (status === "completed") {
-      await Notification.create({ userId: order.buyerId._id, message: "Your order is completed", type: "order_update", orderId: order._id, actionLink: `/order-tracking?orderId=${order._id}` });
+      await Notification.create({ userId: order.buyerId._id, message: "Your order is completed", type: "order_update", orderId: order._id });
       await Notification.create({ userId: order.sellerId._id, message: "Order completed. Earnings added.", type: "order_update", orderId: order._id });
       
       const earning = order.bookAmount != null ? order.bookAmount : order.totalAmount;

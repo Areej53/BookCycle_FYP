@@ -72,10 +72,7 @@ export default function HomePage() {
 
     const handleAddToCart = (book) => {
         if (!user) { navigate('/login'); return; }
-        const added = addToCart(book);
-        if (added) {
-            toast.success(`"${book.title}" added to cart!`);
-        }
+        addToCart(book);
     };
 
     useEffect(() => {
@@ -148,7 +145,7 @@ export default function HomePage() {
                 if (priceRange < 5000) params.append('price', priceRange);
                 if (activeCats.length) params.append('cats', activeCats.join(','));
                 if (activeConds.length) params.append('conds', activeConds.join(','));
-                navigate(`/browse/search?${params.toString()}`);
+                navigate(`/explore/search?${params.toString()}`);
             }
         }
     };
@@ -301,7 +298,7 @@ export default function HomePage() {
     </div>
 
     <div className="hero-btns">
-      <Link to="/browse" className="btn-primary">Browse Books</Link>
+      <Link to="/explore" className="btn-primary">Explore Books</Link>
       <Link to="/seller" className="btn-outline">List Your Book</Link>
     </div>
     <div className="hero-stats">
@@ -371,7 +368,7 @@ export default function HomePage() {
   <div>
     <div className="section-header">
       <div><div className="section-label">✦ Handpicked</div><h2 className="section-title">Featured <span>Books</span></h2></div>
-      <Link to="/browse" className="see-all">View all</Link>
+      <Link to="/explore" className="see-all">View all</Link>
     </div>
     <div className="books-grid">
       {featuredBooks.map(b => (
@@ -421,8 +418,8 @@ export default function HomePage() {
   
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
-      <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Explore</div><h2 className="section-title">Browse by <span>Category</span></h2></div>
-      <Link to="/browse" className="see-all">View All Genres</Link>
+      <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Explore</div><h2 className="section-title">Explore by <span>Category</span></h2></div>
+      <Link to="/explore" className="see-all">View All Genres</Link>
     </div>
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '14px' }}>
       <style>{`
@@ -435,49 +432,49 @@ export default function HomePage() {
         .home-cat-name { font-weight: 700; font-size: .88rem; color: #fff; text-align: center; margin: 0; }
         .home-cat-count { font-size: .72rem; color: rgba(255,255,255,.6); margin-top: 2px; }
       `}</style>
-        <div className="home-cat-card" onClick={() => navigate('/browse?cats=programming')}>
+        <div className="home-cat-card" onClick={() => navigate('/explore?cats=programming')}>
             <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&q=80" alt="Programming"/></div>
             <div className="home-cat-overlay">
                 <div className="home-cat-name">Programming</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse?cats=science')}>
+        <div className="home-cat-card" onClick={() => navigate('/explore?cats=science')}>
             <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=400&q=80" alt="Science"/></div>
             <div className="home-cat-overlay">
                 <div className="home-cat-name">Science</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse?cats=novels')}>
+        <div className="home-cat-card" onClick={() => navigate('/explore?cats=novels')}>
             <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=400&q=80" alt="Novels"/></div>
             <div className="home-cat-overlay">
                 <div className="home-cat-name">Novels</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse?cats=self%20development')}>
+        <div className="home-cat-card" onClick={() => navigate('/explore?cats=self%20development')}>
             <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80" alt="Self Development"/></div>
             <div className="home-cat-overlay">
                 <div className="home-cat-name">Self Development</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse?cats=algebra')}>
+        <div className="home-cat-card" onClick={() => navigate('/explore?cats=algebra')}>
             <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&q=80" alt="Algebra"/></div>
             <div className="home-cat-overlay">
                 <div className="home-cat-name">Algebra</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse?cats=mathematics')}>
+        <div className="home-cat-card" onClick={() => navigate('/explore?cats=mathematics')}>
             <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&q=80" alt="Mathematics"/></div>
             <div className="home-cat-overlay">
                 <div className="home-cat-name">Mathematics</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse?cats=physics')}>
+        <div className="home-cat-card" onClick={() => navigate('/explore?cats=physics')}>
             <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80" alt="Physics"/></div>
             <div className="home-cat-overlay">
                 <div className="home-cat-name">Physics</div>
             </div>
         </div>
-        <div className="home-cat-card" onClick={() => navigate('/browse?cats=notes')}>
+        <div className="home-cat-card" onClick={() => navigate('/explore?cats=notes')}>
             <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=400&q=80" alt="Notes"/></div>
             <div className="home-cat-overlay">
                 <div className="home-cat-name">Notes</div>
@@ -526,7 +523,7 @@ export default function HomePage() {
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
       <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Borrow</div><h2 className="section-title">Books for <span>Rent</span></h2></div>
-      <Link to="/browse" className="see-all">View all</Link>
+      <Link to="/explore" className="see-all">View all</Link>
     </div>
     <div className="books-grid" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))' }}>
       <div className="book-card" onClick={() => navigate('/book/6618d3f666b6c666f666f666')} style={{ cursor: 'pointer' }}>
@@ -548,7 +545,7 @@ export default function HomePage() {
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
       <div><div className="section-label" style={{ background: 'rgba(96,108,56,.1)', color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Donate & Receive</div><h2 className="section-title">Free Knowledge <span>Shelf</span></h2></div>
-      <Link to="/browse" className="see-all">Browse shelf</Link>
+      <Link to="/explore" className="see-all">Explore shelf</Link>
     </div>
     <div style={{ background: 'linear-gradient(135deg,rgba(96,108,56,.07),rgba(19,73,60,.05))', border: '1.5px solid rgba(96,108,56,.2)', borderRadius: '20px', padding: '26px' }}>
       <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
@@ -596,7 +593,7 @@ export default function HomePage() {
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
       <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Just Listed</div><h2 className="section-title">Recently <span>Added</span></h2></div>
-      <Link to="/browse" className="see-all">See all new</Link>
+      <Link to="/explore" className="see-all">See all new</Link>
     </div>
     <div className="books-grid" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))' }}>
       {recentBooks.map(b => (

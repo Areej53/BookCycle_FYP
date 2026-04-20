@@ -8,7 +8,7 @@ export { default as ResetPassword } from "./ResetPassword";
 
 // Imported User Marketplace Pages
 export { default as HomePage } from "./HomePage";
-export { default as BrowseBooksPage } from "./BrowseBooksPage";
+export { default as ExploreBooksPage } from "./ExploreBooksPage";
 export { default as CategoryResultsPage } from "./CategoryResultsPage";
 export { default as SearchResultsPage } from "./SearchResultsPage";
 export { default as BookDetailsPage } from "./BookDetailsPage";

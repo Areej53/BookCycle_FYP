@@ -107,17 +107,14 @@ export const CartProvider = ({ children }) => {
         const currentUserId = getCurrentUserId();
         const sellerId = cartItem.sellerId || book?.sellerId || book?.owner?._id || book?.owner || null;
         if (currentUserId && sellerId && String(currentUserId) === String(sellerId)) {
-            toast.warn('You cannot add your own book to cart');
             return false;
         }
         if (cartItem.type === 'rent') {
-            toast.warn('Currently unavailable');
             return false;
         }
 
         const existingInCart = cart.find(item => item.id === cartItem.id);
         if (existingInCart) {
-            toast.info('Book already added to cart');
             return false;
         }
 

@@ -58,7 +58,7 @@ export default function RecommendationWidget() {
           </div>
         ))}
       </div>
-      <div className="rec-footer"><Link to="/browse">Browse all books →</Link></div>
+      <div className="rec-footer"><Link to="/explore">Explore all books →</Link></div>
     </div>
   );
 }

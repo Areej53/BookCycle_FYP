@@ -81,7 +81,7 @@ export default function BookDetailsPage() {
         return (
             <div style={{ textAlign: 'center', padding: '100px 5%' }}>
                 <h2>Book not found</h2>
-                <Link to="/browse" className="btn-primary" style={{ marginTop: '20px', display: 'inline-block' }}>Back to Browse</Link>
+                <Link to="/explore" className="btn-primary" style={{ marginTop: '20px', display: 'inline-block' }}>Back to Explore</Link>
             </div>
         );
     }
@@ -94,7 +94,7 @@ export default function BookDetailsPage() {
                 <div className="detail-hero-inner">
                     <div className="detail-breadcrumb" style={{ color: 'rgba(255,250,224, 0.6)', gap: '8px', display: 'flex', alignItems: 'center' }}>
                         <Link to="/home">Home</Link> <span style={{ opacity: 0.5 }}>/</span>
-                        <Link to="/browse">Browse</Link> <span style={{ opacity: 0.5 }}>/</span>
+                        <Link to="/explore">Explore</Link> <span style={{ opacity: 0.5 }}>/</span>
                         <span style={{ color: 'white' }}>{book.title}</span>
                     </div>
                 </div>
@@ -191,7 +191,7 @@ export default function BookDetailsPage() {
                     <div className="footer-col">
                         <h4 style={{ color: 'var(--bg)', fontWeight: 700, fontSize: '.95rem', marginBottom: '18px' }}>Platform</h4>
                         <ul style={{ listStyle: 'none' }}>
-                            <li style={{ marginBottom: '10px' }}><Link to="/browse" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Browse Books</Link></li>
+                            <li style={{ marginBottom: '10px' }}><Link to="/explore" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Explore Books</Link></li>
                         </ul>
                     </div>
                     <div className="footer-col">

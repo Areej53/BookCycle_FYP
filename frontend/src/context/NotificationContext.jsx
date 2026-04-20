@@ -35,13 +35,6 @@ export const NotificationProvider = ({ children }) => {
       if (!isInitialLoad.current) {
         const prevIds = new Set(previousNotificationsRef.current.map(n => n._id));
         const newUnread = list.filter(n => !n.isRead && !prevIds.has(n._id));
-        newUnread.forEach(n => {
-          toast.info(n.message, {
-            onClick: () => {
-              if(n.actionLink) window.location.href = n.actionLink;
-            }
-          });
-        });
       }
 
       previousNotificationsRef.current = list;

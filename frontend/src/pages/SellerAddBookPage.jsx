@@ -201,7 +201,7 @@ export default function SellerAddBookPage() {
     <div className="dropzone" onClick={() => fileInputRef.current.click()}>
       <input type="file" ref={fileInputRef} multiple accept="image/*" style={{ display: 'none' }} onChange={handleFileChange}/>
       <div className="dz-icon"><FiUploadCloud size={32} color="var(--cta)" /></div>
-      <div className="dz-title">Click to browse images here</div>
+      <div className="dz-title">Click to explore images here</div>
       <div className="dz-sub">JPG, PNG up to 5MB · Max 6</div>
     </div>
     
@@ -230,7 +230,7 @@ export default function SellerAddBookPage() {
   
 </aside>
 </div>
-<footer className="footer"><div className="footer-grid"><div><Link to="/" className="footer-brand"><div className="f-logo"><img src={IMAGES.img_0} alt="BookCycle"/></div><span className="f-brand-name">BookCycle</span></Link><p className="f-desc">Islamabad's community book platform. Share and discover books across the city.</p></div><div className="f-col"><h4>Platform</h4><ul><li><Link to="/browse">Browse Books</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div></div></footer>
+<footer className="footer"><div className="footer-grid"><div><Link to="/" className="footer-brand"><div className="f-logo"><img src={IMAGES.img_0} alt="BookCycle"/></div><span className="f-brand-name">BookCycle</span></Link><p className="f-desc">Islamabad's community book platform. Share and discover books across the city.</p></div><div className="f-col"><h4>Platform</h4><ul><li><Link to="/explore">Explore Books</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div></div></footer>
         </div>
     );
 }
