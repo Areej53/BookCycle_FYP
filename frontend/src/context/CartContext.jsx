@@ -115,15 +115,13 @@ export const CartProvider = ({ children }) => {
             return false;
         }
 
-        setCart(prev => {
-            const existing = prev.find(item => item.id === cartItem.id);
-            if (!existing) return [...prev, cartItem];
-            return prev.map(item =>
-                item.id === cartItem.id
-                    ? { ...item, quantity: (item.quantity || 1) + 1 }
-                    : item
-            );
-        });
+        const existingInCart = cart.find(item => item.id === cartItem.id);
+        if (existingInCart) {
+            toast.info('Book already added to cart');
+            return false;
+        }
+
+        setCart(prev => [...prev, cartItem]);
         return true;
     };
 

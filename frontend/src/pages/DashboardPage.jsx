@@ -366,6 +366,7 @@ const DashboardPage = () => {
           author: order.sellerId?.name || "BookCycle",
           price: `Rs. ${order.totalAmount || 0}`,
           status: order.status,
+          paymentStatus: order.paymentData?.status || "pending",
           normalizedStatus: order.status === "completed" ? "Delivered" : "Pending",
           img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=75",
           itemsCount: order.items?.length || 1
@@ -375,8 +376,26 @@ const DashboardPage = () => {
   );
 
   const handleNotificationClick = (n) => {
+    const isFirstTime = !n.isRead;
     markAsRead(n._id);
     if (n.actionLink) {
+      if (n.actionLink.includes('/order-tracking')) {
+        const urlParams = new URLSearchParams(n.actionLink.split('?')[1] || "");
+        const trackingId = urlParams.get('trackingId');
+        const orderId = urlParams.get('orderId');
+        
+        if (!trackingId || trackingId === 'undefined' || trackingId === 'null') {
+           return;
+        }
+        
+        const matchedOrder = purchasedBooks.find(o => String(o._id) === String(orderId));
+        if (matchedOrder) {
+          const isPaid = matchedOrder.paymentStatus === 'paid' || matchedOrder.status === 'completed';
+          if (isPaid && !isFirstTime) {
+             return;
+          }
+        }
+      }
       navigate(n.actionLink);
     }
   };

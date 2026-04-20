@@ -66,9 +66,9 @@ export default function HomePage() {
         { id: 'r1', title: 'Zero to One', author: 'Peter Thiel', type: 'buy', price: '400', img: 'https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=200&q=80', timeAgo: '2 hrs ago' },
         { id: 'r2', title: 'Ikigai', author: 'Héctor García', type: 'rent', price: '35', unit: '/wk', img: 'https://images.unsplash.com/photo-1476275466078-4007374efbbe?w=200&q=80', timeAgo: '5 hrs ago' }
     ]);
-    const [freeBooks, setFreeBooks] = useState([
-        { id: 'fr1', title: 'Sapiens', author: 'Y.N. Harari', type: 'free', price: '120', img: 'https://images.unsplash.com/photo-1589998059171-988d887df646?w=300&q=80', timeAgo: '1 day ago' }
-    ]);
+    const [freeBooks, setFreeBooks] = useState([]);
+    const [topBooks, setTopBooks] = useState([]);
+    const [topSellingBooks, setTopSellingBooks] = useState([]);
 
     const handleAddToCart = (book) => {
         if (!user) { navigate('/login'); return; }
@@ -81,10 +81,12 @@ export default function HomePage() {
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const [featRes, recentRes, freeRes] = await Promise.all([
+                const [featRes, recentRes, freeRes, topRes, sellRes] = await Promise.all([
                     api.get('books?limit=8&sort=random'),
                     api.get('books?limit=10&sort=recent'),
-                    api.get('books?type=share&limit=3&sort=recent')
+                    api.get('books?type=share&limit=3&sort=recent'),
+                    api.get('books?limit=4&sort=popular'),
+                    api.get('books?type=sell&limit=3&sort=random')
                 ]);
                 
                 const formatBooks = (booksArr, max) => {
@@ -111,6 +113,12 @@ export default function HomePage() {
                 }
                 if (freeRes.data.books) {
                     setFreeBooks(formatBooks(freeRes.data.books, 3));
+                }
+                if (topRes.data.books) {
+                    setTopBooks(formatBooks(topRes.data.books, 4));
+                }
+                if (sellRes.data.books) {
+                    setTopSellingBooks(formatBooks(sellRes.data.books, 3));
                 }
             } catch (error) {
                 console.error("Failed to fetch dynamic books", error);
@@ -658,20 +666,32 @@ export default function HomePage() {
     <div className="widget-title">
       Top Books
     </div>
-    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f669')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=80&q=75" alt="Atomic Habits"/></div><div className="top-book-info"><div className="top-book-title">Atomic Habits</div><div className="top-book-meta">Read 124 times</div></div></div>
-    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f670')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1589998059171-988d887df646?w=80&q=75" alt="Sapiens"/></div><div className="top-book-info"><div className="top-book-title">Sapiens</div><div className="top-book-meta">Read 98 times</div></div></div>
-    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f666')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=80&q=75" alt="The Alchemist"/></div><div className="top-book-info"><div className="top-book-title">The Alchemist</div><div className="top-book-meta">Read 87 times</div></div></div>
-    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f667')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1495640388908-05fa85288e61?w=80&q=75" alt="1984"/></div><div className="top-book-info"><div className="top-book-title">1984</div><div className="top-book-meta">Read 74 times</div></div></div>
+    {topBooks.length === 0 && <div style={{ fontSize: '.8rem', color: 'var(--text-muted)' }}>No books found</div>}
+    {topBooks.map(b => (
+      <div className="top-book-row" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer' }}>
+        <div className="top-book-cover"><img src={b.img} alt={b.title}/></div>
+        <div className="top-book-info">
+          <div className="top-book-title">{b.title}</div>
+          <div className="top-book-meta">{b.author}</div>
+        </div>
+      </div>
+    ))}
   </div>
 
-  
   <div className="sidebar-widget">
     <div className="widget-title">
       Top Selling Books
     </div>
-    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f671')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=80&q=75" alt="Zero to One"/></div><div className="top-book-info"><div className="top-book-title">Zero to One</div><div className="top-book-meta">Sold 56 · Rs. 350 avg</div></div></div>
-    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f672')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=80&q=75" alt="Rich Dad Poor Dad"/></div><div className="top-book-info"><div className="top-book-title">Rich Dad Poor Dad</div><div className="top-book-meta">Sold 48 · Rs. 280 avg</div></div></div>
-    <div className="top-book-row" onClick={() => navigate('/book/6618d3f666b6c666f666f673')} style={{ cursor: 'pointer' }}><div className="top-book-cover"><img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=80&q=75" alt="Deep Work"/></div><div className="top-book-info"><div className="top-book-title">Deep Work</div><div className="top-book-meta">Sold 41 · Rs. 310 avg</div></div></div>
+    {topSellingBooks.length === 0 && <div style={{ fontSize: '.8rem', color: 'var(--text-muted)' }}>No books found</div>}
+    {topSellingBooks.map(b => (
+      <div className="top-book-row" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer' }}>
+        <div className="top-book-cover"><img src={b.img} alt={b.title}/></div>
+        <div className="top-book-info">
+          <div className="top-book-title">{b.title}</div>
+          <div className="top-book-meta">Rs. {b.price}</div>
+        </div>
+      </div>
+    ))}
   </div>
 
   
