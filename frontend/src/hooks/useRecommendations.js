@@ -9,11 +9,22 @@ export default function useRecommendations() {
 
   useEffect(() => {
     let isMounted = true;
+    
+    // Clear cache immediately when auth context changes
+    setRecommended([]);
 
     const fetchRecommendations = async () => {
       setLoading(true);
       try {
-        const res = await api.get('/books?limit=5&sort=random');
+        let res;
+        if (token) {
+          // If logged in, fetch personalized recommendations
+          res = await api.get('/books/recommendations', { headers: { Authorization: `Bearer ${token}` } });
+        } else {
+          // If not logged in, fetch trending/recent books
+          res = await api.get('/books?limit=8&sort=popular');
+        }
+        
         if (isMounted) setRecommended(res.data.books || []);
       } catch (err) {
         console.error("Failed to fetch recommendations:", err);
