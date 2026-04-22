@@ -24,11 +24,7 @@ const ForgotPassword = () => {
     setLoading(true);
     try {
       const { data } = await api.post("/forgot-password", { email });
-      setInlineSuccess(getApiSuccessMessage(data, "If an account exists for this email, follow the reset link."));
-      // toast.success(getApiSuccessMessage(data, "If an account exists for this email, follow the reset link.")); /* unused */
-      if (data.resetLink) {
-        window.location.assign(data.resetLink);
-      }
+      setInlineSuccess(getApiSuccessMessage(data, "Password reset email sent successfully"));
     } catch (err) {
       setInlineError(getApiErrorMessage(err));
       // toast.error(getApiErrorMessage(err)); /* unused */
