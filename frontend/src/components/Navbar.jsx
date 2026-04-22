@@ -129,7 +129,7 @@ export default function Navbar() {
               fontSize: '.85rem', 
               letterSpacing: '0.02em'
             }}>
-              Hi, <span style={{ color: '#fff', fontWeight: 600 }}>{user.name.split(' ')[0]}</span>
+              Hi, <span style={{ color: '#fff', fontWeight: 600 }}>{user?.name ? user.name.split(' ')[0] : "User"}</span>
             </li>
           )}
 
