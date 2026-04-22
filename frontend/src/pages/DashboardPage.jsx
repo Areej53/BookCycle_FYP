@@ -297,7 +297,7 @@ const DashboardPage = () => {
   const [buyerOrders, setBuyerOrders] = useState([]);
   const [activeDashboardView, setActiveDashboardView] = useState(null);
   const [editingBook, setEditingBook] = useState(null);
-  const [editingForm, setEditingForm] = useState({ title: "", price: "" });
+  const [editingForm, setEditingForm] = useState({ title: "", price: "", exchangeType: "Sell" });
   const [savingEdit, setSavingEdit] = useState(false);
   const hasLoadedBooksRef = useRef(false);
 
@@ -450,16 +450,24 @@ const DashboardPage = () => {
     setEditingForm({
       title: book.title || "",
       price: book.price != null ? String(book.price) : "",
+      exchangeType: book.exchangeType === "Share" ? "Share" : "Sell",
     });
   };
 
   const handleSaveEditBook = async () => {
     if (!token || !editingBook?._id) return;
+
+    if (editingForm.exchangeType === 'Sell' && (!editingForm.price || Number(editingForm.price) <= 0)) {
+      showToast("Please enter a valid price for Sale listing", true);
+      return;
+    }
+
     setSavingEdit(true);
     try {
       const payload = {
         title: editingForm.title,
-        price: Number(editingForm.price) || 0,
+        price: editingForm.exchangeType === 'Share' ? 0 : (Number(editingForm.price) || 0),
+        exchangeType: editingForm.exchangeType,
       };
       const { book } = await DashboardApi.updateBook({ token, id: editingBook._id, payload });
       setBooks((prev) => prev.map((b) => (b._id === editingBook._id ? { ...b, ...book } : b)));
@@ -696,14 +704,39 @@ const DashboardPage = () => {
               />
             </div>
             <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', fontSize: '.8rem', fontWeight: 600, color: PALETTE.text, marginBottom: 4 }}>Price (Rs.)</label>
-              <input
-                type="number"
-                value={editingForm.price}
-                onChange={(e) => setEditingForm((f) => ({ ...f, price: e.target.value }))}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: `1px solid ${PALETTE.border}`, fontSize: '.85rem' }}
-              />
+              <label style={{ display: 'block', fontSize: '.8rem', fontWeight: 600, color: PALETTE.text, marginBottom: 4 }}>Listing Type</label>
+              <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '.85rem', cursor: 'pointer' }}>
+                  <input 
+                    type="radio" 
+                    name="editExchangeType" 
+                    checked={editingForm.exchangeType === 'Sell'} 
+                    onChange={() => setEditingForm(f => ({ ...f, exchangeType: 'Sell' }))} 
+                  />
+                  For Sale
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '.85rem', cursor: 'pointer' }}>
+                  <input 
+                    type="radio" 
+                    name="editExchangeType" 
+                    checked={editingForm.exchangeType === 'Share'} 
+                    onChange={() => setEditingForm(f => ({ ...f, exchangeType: 'Share', price: '' }))} 
+                  />
+                  Free Shelf
+                </label>
+              </div>
             </div>
+            {editingForm.exchangeType === 'Sell' && (
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', fontSize: '.8rem', fontWeight: 600, color: PALETTE.text, marginBottom: 4 }}>Price (Rs.)</label>
+                <input
+                  type="number"
+                  value={editingForm.price}
+                  onChange={(e) => setEditingForm((f) => ({ ...f, price: e.target.value }))}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: `1px solid ${PALETTE.border}`, fontSize: '.85rem' }}
+                />
+              </div>
+            )}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
               <button
                 onClick={() => setEditingBook(null)}
