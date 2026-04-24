@@ -80,7 +80,7 @@ export default function HomePage() {
             try {
                 const [featRes, recentRes, freeRes, topRes, sellRes] = await Promise.all([
                     api.get('books?limit=8&sort=random'),
-                    api.get('books?limit=10&sort=recent'),
+                    api.get('books?limit=6&sort=recent'),
                     api.get('books?type=share&limit=3&sort=recent'),
                     api.get('books?limit=4&sort=popular'),
                     api.get('books?type=sell&limit=3&sort=random')
@@ -106,7 +106,7 @@ export default function HomePage() {
                     setFeaturedBooks(formatBooks(featRes.data.books, 8));
                 }
                 if (recentRes.data.books) {
-                    setRecentBooks(formatBooks(recentRes.data.books, 10));
+                    setRecentBooks(formatBooks(recentRes.data.books, 6));
                 }
                 if (freeRes.data.books) {
                     setFreeBooks(formatBooks(freeRes.data.books, 3));
@@ -218,6 +218,7 @@ export default function HomePage() {
         
         <div className="filter-row">
           <span className="filter-row-label">Category</span>
+          <span className={`f-chip ${activeCats.includes('literature') ? 'hide' : ''}`} style={{ display: 'none' }}></span>
           <span className={`f-chip ${activeCats.includes('programming') ? 'active' : ''}`} onClick={() => toggleCat('programming')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
             Programming
@@ -226,21 +227,29 @@ export default function HomePage() {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 3h15"></path><path d="M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3"></path><path d="M6 14h12"></path></svg>
             Science
           </span>
-          <span className={`f-chip ${activeCats.includes('literature') ? 'active' : ''}`} onClick={() => toggleCat('literature')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-            Literature
-          </span>
           <span className={`f-chip ${activeCats.includes('novels') ? 'active' : ''}`} onClick={() => toggleCat('novels')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
             Novels
           </span>
-          <span className={`f-chip ${activeCats.includes('islamic') ? 'active' : ''}`} onClick={() => toggleCat('islamic')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12a3 3 0 0 1-3 3H5a2 2 0 0 0-2 2h18a2 2 0 0 0-2-2h-4a3 3 0 0 1-3-3V3z"></path></svg>
-            Islamic
-          </span>
-          <span className={`f-chip ${activeCats.includes('psychology') ? 'active' : ''}`} onClick={() => toggleCat('psychology')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span className={`f-chip ${activeCats.includes('self-development') ? 'active' : ''}`} onClick={() => toggleCat('self-development')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"></path><path d="M12 6a4 4 0 0 1 4 4c0 2-3 5-4 5s-4-3-4-5a4 4 0 0 1 4-4z"></path></svg>
-            Psychology
+            Self-Development
+          </span>
+          <span className={`f-chip ${activeCats.includes('algebra') ? 'active' : ''}`} onClick={() => toggleCat('algebra')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>
+            Algebra
+          </span>
+          <span className={`f-chip ${activeCats.includes('mathematics') ? 'active' : ''}`} onClick={() => toggleCat('mathematics')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><line x1="8" y1="10" x2="16" y2="10"></line><line x1="8" y1="14" x2="16" y2="14"></line><line x1="12" y1="6" x2="12" y2="10"></line></svg>
+            Mathematics
+          </span>
+          <span className={`f-chip ${activeCats.includes('physics') ? 'active' : ''}`} onClick={() => toggleCat('physics')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            Physics
+          </span>
+          <span className={`f-chip ${activeCats.includes('notes') ? 'active' : ''}`} onClick={() => toggleCat('notes')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Notes
           </span>
         </div>
 
@@ -266,7 +275,6 @@ export default function HomePage() {
         
         <div className="filter-row">
           <span className="filter-row-label">Sort by</span>
-          <span className={`f-chip ${activeSort === 'recent' ? 'active' : ''}`} onClick={() => setActiveSort('recent')}>Recently Added</span>
           <span className={`f-chip ${activeSort === 'price-asc' ? 'active' : ''}`} onClick={() => setActiveSort('price-asc')}>Price: Low → High</span>
           <span className={`f-chip ${activeSort === 'price-desc' ? 'active' : ''}`} onClick={() => setActiveSort('price-desc')}>Price: High → Low</span>
           <span className={`f-chip ${activeSort === 'popular' ? 'active' : ''}`} onClick={() => setActiveSort('popular')}>Most Popular</span>
