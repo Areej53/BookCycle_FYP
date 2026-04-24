@@ -149,6 +149,7 @@ const CheckoutPage = () => {
               totalAmount: items.reduce((sum, item) => sum + getItemCost(item), 0) + (items.length * DELIVERY_CHARGE),
               shippingAddress: `${form.street}, ${form.landmark ? form.landmark + ', ' : ''}${form.area}, Islamabad`,
               shippingPhone: form.phone,
+              shippingName: form.name,
             },
           })
         )
@@ -188,11 +189,11 @@ const CheckoutPage = () => {
           </div>
           <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: '2rem',
             fontWeight: 900, color: PALETTE.primary, marginBottom: 10 }}>
-            Order <em style={{ fontStyle: 'normal', color: '#2d6a4f' }}>Confirmed!</em>
+            Order Request <em style={{ fontStyle: 'normal', color: '#2d6a4f' }}>Sent!</em>
           </h1>
           <p style={{ color: PALETTE.muted, fontSize: '.95rem', lineHeight: 1.7, maxWidth: 400, marginBottom: 32 }}>
-            Your books are on their way! You'll receive a confirmation message at <strong>{form.phone}</strong>.
-            Delivery to <strong>{form.area}</strong> within 1–2 working days.
+            Your order request has been sent.<br />
+            When the seller accepts your order, you will receive a notification on your dashboard.
           </p>
           <div style={{ background: PALETTE.bg, border: `1.5px solid ${PALETTE.border}`,
             borderRadius: 16, padding: '16px 24px', marginBottom: 28, fontSize: '.84rem', color: PALETTE.muted }}>
@@ -208,12 +209,6 @@ const CheckoutPage = () => {
                 boxShadow: '0 5px 18px rgba(19,73,60,.28)' }}>
               View Dashboard
             </button>
-            <button onClick={() => setShowTrackOrder(true)}
-              style={{ background: PALETTE.secondary, color: PALETTE.bg, padding: '12px 26px',
-                borderRadius: 50, fontWeight: 700, fontSize: '.9rem', border: 'none', cursor: 'pointer',
-                boxShadow: '0 5px 18px rgba(0,0,0,.15)' }}>
-              Track Order
-            </button>
             <button onClick={() => navigate('/')}
               style={{ background: PALETTE.cta, color: '#fff', padding: '12px 26px',
                 borderRadius: 50, fontWeight: 700, fontSize: '.9rem', border: 'none', cursor: 'pointer',
@@ -221,11 +216,7 @@ const CheckoutPage = () => {
               Explore More
             </button>
           </div>
-          <TrackOrderModal
-            isOpen={showTrackOrder}
-            onClose={() => setShowTrackOrder(false)}
-            orderId={trackingNo}
-          />
+
         </main>
         <Toast toast={toast} />
       </div>
@@ -428,7 +419,7 @@ const CheckoutPage = () => {
                       </div>
                       <div style={{ fontWeight: 700, fontSize: '.85rem', flexShrink: 0,
                         color: item.type === 'free' ? '#2d6a4f' : PALETTE.cta }}>
-                        {item.type === 'free' ? 'Free Book' : `Rs. ${getItemCost(item)}`}
+                        {item.type === 'free' ? 'Rs. 120 (Delivery Charges)' : `Rs. ${getItemCost(item)}`}
                       </div>
                     </div>
                   ))

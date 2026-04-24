@@ -105,7 +105,7 @@ const RideDetailsPage = () => {
                 </div>
                 
                 <button onClick={handleConfirm} style={{ marginTop: 12, width: "100%", background: PALETTE.cta, color: "#fff", padding: "14px", borderRadius: 8, border: "none", fontWeight: 700, fontSize: "1rem", cursor: "pointer", transition: "opacity .2s" }} onMouseEnter={e => e.currentTarget.style.opacity = .9} onMouseLeave={e => e.currentTarget.style.opacity = 1}>
-                  ✅ Confirm Ride Details
+                  Send Ride Detail
                 </button>
               </div>
             </div>
@@ -135,15 +135,12 @@ const RideDetailsPage = () => {
 
                   <div style={{ borderBottom: `1px solid ${PALETTE.border}`, paddingBottom: 16 }}>
                     <h3 style={{ fontSize: ".9rem", color: PALETTE.muted, marginBottom: 12 }}>Buyer Details</h3>
-                    <div style={{ fontSize: ".95rem", marginBottom: 4 }}><strong>Name:</strong> {order.buyerId?.name || "Unknown"}</div>
+                    <div style={{ fontSize: ".95rem", marginBottom: 4 }}><strong>Name:</strong> {order.shippingName || order.buyerId?.name || "Unknown"}</div>
                     <div style={{ fontSize: ".95rem", marginBottom: 4 }}><strong>Phone:</strong> {order.buyerId?.phone || order.shippingPhone || "Not provided"}</div>
                     <div style={{ fontSize: ".95rem", marginBottom: 4 }}><strong>Address:</strong> {order.shippingAddress || order.buyerId?.address || "Address not provided"}</div>
                   </div>
 
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(221,161,94,.1)", padding: "12px 16px", borderRadius: 8 }}>
-                    <span style={{ fontWeight: 600, color: PALETTE.cta, fontSize: ".9rem" }}>Status</span>
-                    <span style={{ fontWeight: 800, color: PALETTE.cta, fontSize: ".85rem" }}>Awaiting Ride Details</span>
-                  </div>
+
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
                     <span style={{ fontSize: "1.1rem", fontWeight: 700 }}>Total Amount</span>

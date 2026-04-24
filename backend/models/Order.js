@@ -31,6 +31,7 @@ const OrderSchema = new mongoose.Schema(
     totalAmount: { type: Number, default: 0 },
     shippingAddress: { type: String },
     shippingPhone: { type: String },
+    shippingName: { type: String },
     trackingData: {
       riderName: String,
       riderPhone: String,
@@ -61,10 +62,12 @@ const OrderSchema = new mongoose.Schema(
         "delivered",
         "payment_submitted",
         "completed",
-        "cancelled"
+        "cancelled",
+        "complain"
       ],
       default: "pending",
     },
+    complainReason: { type: String },
   },
   { timestamps: { createdAt: true, updatedAt: true } }
 );

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+﻿import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { SellerContext } from '../context/SellerContext';
@@ -75,19 +75,19 @@ export default function SellerReviewPage() {
 <header className="seller-header">
 
 
-<div className="progress-wrap"><div className="progress-steps"><div className="p-step done"><div className="p-num">✓</div>Categories</div><div className="p-line done"></div><div className="p-step done"><div className="p-num">✓</div>Book Details</div><div className="p-line done"></div><div className="p-step active"><div className="p-num">3</div>Review</div><div className="p-line "></div><div className="p-step "><div className="p-num">4</div>Published!</div></div></div>
+<div className="progress-wrap"><div className="progress-steps"><div className="p-step done"><div className="p-num">âœ“</div>Categories</div><div className="p-line done"></div><div className="p-step done"><div className="p-num">âœ“</div>Book Details</div><div className="p-line done"></div><div className="p-step active"><div className="p-num">3</div>Review</div><div className="p-line "></div><div className="p-step "><div className="p-num">4</div>Published!</div></div></div>
 </header>
 
 <div className="page-layout"><main>
 <div className="rev-header">
-  <div className="rev-tag">Step 3 of 4 — Almost There!</div>
+  <div className="rev-tag">Step 3 of 4 â€” Almost There!</div>
   <h1 className="rev-title">Review Your <em>Listing</em></h1>
   <p className="rev-sub">Check all details before publishing. Once live, buyers across Islamabad can see your book.</p>
 </div>
 
 {error && (
   <div className="err-banner" style={{ display: 'block', background: 'rgba(255,100,100,0.1)', color: '#ff6b6b', border: '1px solid #ff6b6b' }}>
-    ⚠ {error}
+    âš  {error}
   </div>
 )}
 
@@ -104,7 +104,7 @@ export default function SellerReviewPage() {
       <div className="preview-book-title">{sellerData.title || 'Untitled Book'}</div>
       <div className="preview-author">{sellerData.author || 'Author not provided'}</div>
       <div className="preview-badges">
-        <span className="prev-badge" style={{ background: 'rgba(126,200,164,.2)', color: '#7ec8a4' }}>✓ Listed</span>
+        <span className="prev-badge" style={{ background: 'rgba(126,200,164,.2)', color: '#7ec8a4' }}>âœ“ Listed</span>
         <span className="prev-badge" style={{ background: 'rgba(221,161,94,.2)', color: 'var(--accent)' }}>{sellerData.category || 'N/A'}</span>
         <span className="prev-badge" style={{ background: 'rgba(96,108,56,.2)', color: 'rgba(255,250,224,.7)' }}>{sellerData.condition || 'New'}</span>
       </div>
@@ -148,14 +148,14 @@ export default function SellerReviewPage() {
 </div>
 
 <div className="rev-actions">
-  <button className="btn-back-rev" style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }} onClick={handleEdit}>← Back: Edit Book</button>
-  <button onClick={handlePublish} disabled={loading} className="btn-publish">{loading ? 'Publishing...' : '✓ Publish Book Now'}</button>
+  <button className="btn-back-rev" style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }} onClick={handleEdit}>â† Back: Edit Book</button>
+  <button onClick={handlePublish} disabled={loading} className="btn-publish">{loading ? 'Publishing...' : 'âœ“ Publish Book Now'}</button>
 </div>
 </main>
 <aside className="sidebar">
-  <div className="steps-widget"><div className="sw-head">Your Progress</div><div className="sw-body"><div className="sw-item"><div className="sw-num done">✓</div><div><div className="sw-label ">Select Categories</div><div className="sw-sub">Choose what you want to sell</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num done">✓</div><div><div className="sw-label ">Add Book Details</div><div className="sw-sub">Fill in book info & images</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num active">3</div><div><div className="sw-label ">Review Listing</div><div className="sw-sub">Preview before going live</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num ">4</div><div><div className="sw-label upcoming">Published!</div><div className="sw-sub">Your book is now live</div></div></div></div></div>
+  <div className="steps-widget"><div className="sw-head">Your Progress</div><div className="sw-body"><div className="sw-item"><div className="sw-num done">âœ“</div><div><div className="sw-label ">Select Categories</div><div className="sw-sub">Choose what you want to sell</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num done">âœ“</div><div><div className="sw-label ">Add Book Details</div><div className="sw-sub">Fill in book info & images</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num active">3</div><div><div className="sw-label ">Review Listing</div><div className="sw-sub">Preview before going live</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num ">4</div><div><div className="sw-label upcoming">Published!</div><div className="sw-sub">Your book is now live</div></div></div></div></div>
 </aside></div>
-<footer className="footer"><div className="footer-grid"><div><Link to="/" className="footer-brand"><div className="f-logo"><img src={IMAGES.img_0} alt="BookCycle"/></div><span className="f-brand-name">BookCycle</span></Link><p className="f-desc">Islamabad's community book platform. Share, rent, and discover books across the city.</p></div><div className="f-col"><h4>Platform</h4><ul><li><Link to="/explore">Explore Books</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div></div></footer>
+{/* Removed upper footer */}
 
             <ActionModal isOpen={!!modalMessage} message={modalMessage} onClose={() => {
                 setModalMessage('');

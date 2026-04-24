@@ -17,6 +17,10 @@ const login = async (req, res) => {
 
   const foundUser = await User.findOne({ email: req.body.email });
   if (foundUser) {
+    if (foundUser.isBlocked) {
+      return res.status(403).json({ msg: "Your account has been blocked due to a complaint." });
+    }
+
     const isMatch = await foundUser.comparePassword(password);
 
     if (isMatch) {

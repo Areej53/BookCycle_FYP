@@ -269,7 +269,7 @@ const CartPage = () => {
                         </div>
                       </div>
                       <div className={`summary-item-price ${item.type === 'free' ? 'free' : ''}`} style={{ color: item.type === 'free' ? 'var(--secondary)' : '', fontWeight: item.type === 'free' ? '900' : '' }}>
-                        {item.type === 'free' ? 'Free Book' : `Rs. ${item.type === 'buy' ? Number(item.price || 0) : Number(item.rentPerWeek || 0) * Number(item.duration || 1)}`}
+                        {item.type === 'free' ? 'Rs. 120 (Delivery Charges)' : `Rs. ${item.type === 'buy' ? Number(item.price || 0) : Number(item.rentPerWeek || 0) * Number(item.duration || 1)}`}
                       </div>
                     </div>
                   ))}
