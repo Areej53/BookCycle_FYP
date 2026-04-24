@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { api, getApiErrorMessage } from '../api/client';
@@ -179,40 +179,7 @@ export default function BookDetailsPage() {
             </div>
 
             {/* SAME FOOTER AS HOME PAGE */}
-            <footer style={{ background: '#0d2e26', color: 'rgba(255,250,224,.75)', padding: '60px 5% 30px', marginTop: '80px' }}>
-                <div className="footer-grid">
-                    <div className="footer-brand" style={{ display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'flex-start' }}>
-                        <Link to="#" className="logo" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontFamily: "'Playfair Display', serif", fontSize: '1.8rem', fontWeight: 700, color: 'var(--bg)', textDecoration: 'none', lineHeight: 1 }}>
-                            <div className="logo-icon" style={{ width: '64px', height: '64px' }}><img src={IMAGES.img_0} alt="BookCycle logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }}/></div>
-                            BookCycle
-                        </Link>
-                        <p style={{ fontSize: '.88rem', lineHeight: 1.7, maxWidth: '260px', marginTop: '14px' }}>Islamabad's community book platform. Share and discover books across the city. Making knowledge accessible to all.</p>
-                    </div>
-                    <div className="footer-col">
-                        <h4 style={{ color: 'var(--bg)', fontWeight: 700, fontSize: '.95rem', marginBottom: '18px' }}>Platform</h4>
-                        <ul style={{ listStyle: 'none' }}>
-                            <li style={{ marginBottom: '10px' }}><Link to="/explore" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>Explore Books</Link></li>
-                        </ul>
-                    </div>
-                    <div className="footer-col">
-                        <h4 style={{ color: 'var(--bg)', fontWeight: 700, fontSize: '.95rem', marginBottom: '18px' }}>Company</h4>
-                        <ul style={{ listStyle: 'none' }}>
-                            <li style={{ marginBottom: '10px' }}><Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>About Us</Link></li>
-                        </ul>
-                    </div>
-                    <div className="footer-col">
-                        <h4 style={{ color: 'var(--bg)', fontWeight: 700, fontSize: '.95rem', marginBottom: '18px' }}>Contact</h4>
-                        <ul style={{ listStyle: 'none' }}>
-                            <li style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '10px' }}>
-                                <Link to="#" style={{ color: 'rgba(255,250,224,.6)', textDecoration: 'none', fontSize: '.88rem' }}>contact@bookcycle.com</Link>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div className="footer-bottom" style={{ borderTop: '1px solid rgba(255,250,224,.1)', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <p style={{ fontSize: '.82rem' }}>© 2025 BookCycle. All rights reserved.</p>
-                </div>
-            </footer>
+            {/* Removed upper footer */}
             <ActionModal isOpen={!!modalMessage} message={modalMessage} onClose={() => setModalMessage("")} />
         </div>
     );

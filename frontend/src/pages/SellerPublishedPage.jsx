@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Link } from 'react-router-dom';
 import { FiCheckCircle, FiLayout, FiPlusCircle, FiArrowUpRight } from 'react-icons/fi';
 import { IMAGES } from '../data/assets';
@@ -14,7 +14,7 @@ export default function SellerPublishedPage() {
 <header className="seller-header">
 
 
-<div className="progress-wrap"><div className="progress-steps"><div className="p-step done"><div className="p-num">✓</div>Categories</div><div className="p-line done"></div><div className="p-step done"><div className="p-num">✓</div>Book Details</div><div className="p-line done"></div><div className="p-step done"><div className="p-num">✓</div>Review</div><div className="p-line done"></div><div className="p-step active"><div className="p-num">4</div>Published!</div></div></div>
+<div className="progress-wrap"><div className="progress-steps"><div className="p-step done"><div className="p-num">âœ“</div>Categories</div><div className="p-line done"></div><div className="p-step done"><div className="p-num">âœ“</div>Book Details</div><div className="p-line done"></div><div className="p-step done"><div className="p-num">âœ“</div>Review</div><div className="p-line done"></div><div className="p-step active"><div className="p-num">4</div>Published!</div></div></div>
 </header>
 
 <div className="page-layout published-layout">
@@ -40,7 +40,7 @@ export default function SellerPublishedPage() {
 </main>
 </div>
 
-<footer className="footer"><div className="footer-grid"><div><Link to="/" className="footer-brand"><div className="f-logo"><img src={IMAGES.img_0} alt="BookCycle"/></div><span className="f-brand-name">BookCycle</span></Link><p className="f-desc">Islamabad's community book platform. Share, rent, and discover books across the city.</p></div><div className="f-col"><h4>Platform</h4><ul><li><Link to="/explore">Explore Books</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div></div></footer>
+{/* Removed upper footer */}
         </div>
     );
 }

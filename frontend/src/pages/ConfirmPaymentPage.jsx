@@ -18,6 +18,7 @@ const ConfirmPaymentPage = () => {
     transactionId: ""
   });
   const [receiptMode, setReceiptMode] = useState(false);
+  const [receiptUrl, setReceiptUrl] = useState(null);
 
   useEffect(() => {
     if (orderId && token && user) {
@@ -36,7 +37,12 @@ const ConfirmPaymentPage = () => {
       showToast('Only JPG and PNG files are accepted', true);
       return;
     }
-    setReceiptMode(true);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setReceiptUrl(reader.result);
+      setReceiptMode(true);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async () => {
@@ -50,7 +56,7 @@ const ConfirmPaymentPage = () => {
         orderId: order._id,
         payload: {
           status: "payment_submitted",
-          paymentData: { transactionId: form.transactionId, receiptUrl: "uploaded_receipt.jpg" }
+          paymentData: { transactionId: form.transactionId, receiptUrl: receiptUrl }
         }
       });
       showToast("Payment submitted successfully! Your order will be processed soon.");
@@ -118,13 +124,19 @@ const ConfirmPaymentPage = () => {
                   <div style={{ 
                       border: `2px dashed ${receiptMode ? PALETTE.cta : 'rgba(188,108,37,.4)'}`, 
                       background: 'rgba(188,108,37,.05)',
-                      padding: "24px", borderRadius: 16, textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 6
+                      padding: receiptMode ? "10px" : "24px", borderRadius: 16, textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, overflow: "hidden"
                     }}>
-                    <span style={{ fontSize: '1.4rem', color: PALETTE.cta }}>↑</span>
-                    <div style={{ fontSize: '.95rem', color: '#000' }}>
-                      {receiptMode ? "✅ Receipt Ready" : "Click to upload or drag your receipt image"}
-                    </div>
-                    <div style={{ fontSize: '.8rem', color: PALETTE.muted }}>Supported formats: JPG, PNG</div>
+                    {receiptMode && receiptUrl ? (
+                      <img src={receiptUrl} alt="Receipt Preview" style={{ width: '100%', maxHeight: '250px', objectFit: 'contain', borderRadius: '8px' }} onClick={(e) => { e.stopPropagation(); window.open(receiptUrl, '_blank'); }} title="Click to enlarge" />
+                    ) : (
+                      <>
+                        <span style={{ fontSize: '1.4rem', color: PALETTE.cta }}>↑</span>
+                        <div style={{ fontSize: '.95rem', color: '#000' }}>
+                          Click to upload or drag your receipt image
+                        </div>
+                        <div style={{ fontSize: '.8rem', color: PALETTE.muted }}>Supported formats: JPG, PNG</div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

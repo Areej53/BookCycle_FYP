@@ -18,6 +18,8 @@ export const STATUS = {
   pending: { bg: 'rgba(221,161,94,.15)', c: PALETTE.cta, l: 'Pending' },
   Delivered: { bg: 'rgba(45,106,79,.12)', c: '#2d6a4f', l: 'Delivered' },
   Pending: { bg: 'rgba(221,161,94,.15)', c: PALETTE.cta, l: 'Pending' },
+  Rejected: { bg: 'rgba(200,0,0,.15)', c: '#a00', l: 'Rejected' },
+  complain: { bg: 'rgba(200,0,0,.15)', c: '#a00', l: 'Complaint' },
 };
 
 export const Card = ({ title, action, onAction, children }) => (
@@ -73,9 +75,9 @@ const SellerOrdersPanel = ({ orders, loading }) => {
   )
 };
 
-const BuyerPurchasesPanel = ({ purchases, onTrack }) => (
+const BuyerPurchasesPanel = ({ purchases, onTrack, emptyMessage }) => (
   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-    {purchases.length === 0 && <div style={{ color: PALETTE.muted, fontSize: ".84rem" }}>No purchased books yet.</div>}
+    {purchases.length === 0 && <div style={{ color: PALETTE.muted, fontSize: ".84rem" }}>{emptyMessage || "No purchased books yet."}</div>}
     {purchases.map((b, i) => {
       const s = STATUS[b.status] || STATUS[b.normalizedStatus] || STATUS.Pending;
       return (
@@ -338,12 +340,12 @@ const DashboardPage = () => {
   );
   
   const activeSellerOrders = useMemo(
-    () => sellerOrders.filter((o) => !["completed", "rejected", "cancelled"].includes(o.status)),
+    () => sellerOrders.filter((o) => !["completed", "rejected", "cancelled", "complain"].includes(o.status)),
     [sellerOrders]
   );
   
   const historySellerOrders = useMemo(
-    () => sellerOrders.filter((o) => ["completed", "rejected", "cancelled"].includes(o.status)),
+    () => sellerOrders.filter((o) => ["completed", "rejected", "cancelled", "complain"].includes(o.status)),
     [sellerOrders]
   );
 
@@ -357,21 +359,45 @@ const DashboardPage = () => {
 
   const purchasedBooks = useMemo(
     () =>
-      buyerOrders.map((order) => {
-        const item = order.items?.[0] || {};
-        return {
-          _id: order._id,
-          trackingId: order.trackingData?.trackingNumber,
-          title: item.title || "Order",
-          author: order.sellerId?.name || "BookCycle",
-          price: `Rs. ${order.totalAmount || 0}`,
-          status: order.status,
-          paymentStatus: order.paymentData?.status || "pending",
-          normalizedStatus: order.status === "completed" ? "Delivered" : "Pending",
-          img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=75",
-          itemsCount: order.items?.length || 1
-        };
-      }),
+      buyerOrders
+        .filter((o) => o.status !== "rejected" && o.status !== "cancelled")
+        .map((order) => {
+          const item = order.items?.[0] || {};
+          return {
+            _id: order._id,
+            trackingId: order.trackingData?.trackingNumber,
+            title: item.title || "Order",
+            author: order.sellerId?.name || "BookCycle",
+            price: `Rs. ${order.totalAmount || 0}`,
+            status: order.status,
+            paymentStatus: order.paymentData?.status || "pending",
+            normalizedStatus: order.status === "completed" ? "Delivered" : "Pending",
+            img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=75",
+            itemsCount: order.items?.length || 1
+          };
+        }),
+    [buyerOrders]
+  );
+
+  const rejectedBooks = useMemo(
+    () =>
+      buyerOrders
+        .filter((o) => o.status === "rejected" || o.status === "cancelled")
+        .map((order) => {
+          const item = order.items?.[0] || {};
+          return {
+            _id: order._id,
+            trackingId: order.trackingData?.trackingNumber,
+            title: item.title || "Order",
+            author: order.sellerId?.name || "BookCycle",
+            price: `Rs. ${order.totalAmount || 0}`,
+            status: order.status,
+            paymentStatus: order.paymentData?.status || "pending",
+            normalizedStatus: "Rejected",
+            img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=75",
+            itemsCount: order.items?.length || 1
+          };
+        }),
     [buyerOrders]
   );
 
@@ -494,9 +520,9 @@ const DashboardPage = () => {
     const totalSharedBooks = books.filter((b) => String(b.exchangeType || "").toLowerCase() === "share").length;
 
     return [
-      { bg: `linear-gradient(135deg,${PALETTE.cta},#8B4513)`, icon: "💰", label: "Total Sales", val: `Rs. ${totalSales}`, badge: `${completedOrders.length} done` },
+      { bg: `linear-gradient(135deg,${PALETTE.cta},#8B4513)`, icon: "💰", label: "Total Sales", val: `Rs. ${totalSales}` },
       { bg: `linear-gradient(135deg,${PALETTE.primary},#0e3328)`, icon: "📚", label: "Total Listings", val: String(totalListings), badge: "live" },
-      { bg: `linear-gradient(135deg,${PALETTE.secondary},#3d4e22)`, icon: "👥", label: "Total Buyers", val: String(uniqueBuyers || users.length), badge: "users" },
+      { bg: `linear-gradient(135deg,${PALETTE.secondary},#3d4e22)`, icon: "👥", label: "Total Buyers", val: String(uniqueBuyers || 0), badge: "users" },
       { bg: `linear-gradient(135deg,${PALETTE.accent},#c8883e)`, icon: "📋", label: "Active Listings", val: String(activeListings), badge: "active" },
       { bg: `linear-gradient(135deg,#2d6a4f,#13493c)`, icon: "🛍️", label: "Books Purchased", val: String(totalPurchasedBooks), badge: "history" },
       { bg: `linear-gradient(135deg,#bc6c25,#8a4c14)`, icon: "🎁", label: "Books Shared", val: String(totalSharedBooks), badge: "shared" },
@@ -522,7 +548,7 @@ const DashboardPage = () => {
         .stats-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 20px; margin-bottom: 32px; }
         .content-grid { display: grid; grid-template-columns: 2fr 1.4fr 1.4fr; gap: 20px; margin-bottom: 32px; }
         .finance-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.2fr; gap: 20px; }
-        .buyer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 32px; }
+        .buyer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 32px; }
         .orders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; align-items: start; }
         .quick-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         
@@ -590,6 +616,9 @@ const DashboardPage = () => {
                 <Card title="Purchased Books" action="See All" onAction={() => setActiveDashboardView("allPurchases")}>
                   <BuyerPurchasesPanel purchases={purchasedBooks.slice(0, 5)} onTrack={handleTrackPurchase} />
                 </Card>
+                <Card title="Rejected Books" action="See All" onAction={() => setActiveDashboardView("allRejected")}>
+                  <BuyerPurchasesPanel purchases={rejectedBooks.slice(0, 5)} emptyMessage="No Rejected Books Yet" />
+                </Card>
                 <Card title="Notifications" action="See All" onAction={() => setActiveDashboardView("allNotifications")}>
                   <div style={{ maxHeight: 260, overflowY: "auto" }}>
                     {notifications.slice(0, 5).map((n) => (
@@ -603,6 +632,11 @@ const DashboardPage = () => {
               {activeDashboardView === "allPurchases" && (
                 <Card title="All Purchased Books">
                   {purchasedBooks.length === 0 ? <div style={{ color: PALETTE.muted, fontSize: ".84rem" }}>No books yet</div> : <BuyerPurchasesPanel purchases={purchasedBooks} onTrack={handleTrackPurchase} />}
+                </Card>
+              )}
+              {activeDashboardView === "allRejected" && (
+                <Card title="All Rejected Books">
+                  <BuyerPurchasesPanel purchases={rejectedBooks} emptyMessage="No Rejected Books Yet" />
                 </Card>
               )}
               {activeDashboardView === "allListings" && (

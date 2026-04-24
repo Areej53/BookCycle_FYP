@@ -51,7 +51,9 @@ const UserSchema = new mongoose.Schema({
     category: { type: String },
     views: { type: Number, default: 1 },
     updatedAt: { type: Date, default: Date.now }
-  }]
+  }],
+  isBlocked: { type: Boolean, default: false },
+  complaintCount: { type: Number, default: 0 }
 });
 
 UserSchema.pre("save", async function () {

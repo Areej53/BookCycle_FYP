@@ -1,4 +1,4 @@
-import React, { useContext, useState, useRef } from 'react';
+﻿import React, { useContext, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { SellerContext } from '../context/SellerContext';
@@ -88,7 +88,7 @@ export default function SellerAddBookPage() {
 <header className="seller-header">
 
 
-<div className="progress-wrap"><div className="progress-steps"><div className="p-step done"><div className="p-num">✓</div>Categories</div><div className="p-line done"></div><div className="p-step active"><div className="p-num">2</div>Book Details</div><div className="p-line "></div><div className="p-step "><div className="p-num">3</div>Review</div><div className="p-line "></div><div className="p-step "><div className="p-num">4</div>Published!</div></div></div>
+<div className="progress-wrap"><div className="progress-steps"><div className="p-step done"><div className="p-num">âœ“</div>Categories</div><div className="p-line done"></div><div className="p-step active"><div className="p-num">2</div>Book Details</div><div className="p-line "></div><div className="p-step "><div className="p-num">3</div>Review</div><div className="p-line "></div><div className="p-step "><div className="p-num">4</div>Published!</div></div></div>
 </header>
 
 <div className="page-layout">
@@ -190,7 +190,7 @@ export default function SellerAddBookPage() {
     <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiAlignLeft /></div>Description</div>
     <div className="field">
       <label>Book Description <span className="req">*</span></label>
-      <textarea name="description" value={sellerData.description} onChange={handleChange} rows="4" placeholder="Describe the book — content, condition, why someone should read it…"></textarea>
+      <textarea name="description" value={sellerData.description} onChange={handleChange} rows="4" placeholder="Describe the book â€” content, condition, why someone should read itâ€¦"></textarea>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '3px' }}>
         {errors.description && <span className="err-msg" style={{ display: 'block' }}>{errors.description}</span>}
         <span className="char-counter" style={{ marginLeft: 'auto' }}>{(sellerData.description || '').length} / 500 (min 50)</span>
@@ -202,7 +202,7 @@ export default function SellerAddBookPage() {
       <input type="file" ref={fileInputRef} multiple accept="image/*" style={{ display: 'none' }} onChange={handleFileChange}/>
       <div className="dz-icon"><FiUploadCloud size={32} color="var(--cta)" /></div>
       <div className="dz-title">Click to explore images here</div>
-      <div className="dz-sub">JPG, PNG up to 5MB · Max 6</div>
+      <div className="dz-sub">JPG, PNG up to 5MB Â· Max 6</div>
     </div>
     
     {(sellerData.images && sellerData.images.length > 0) && (
@@ -210,7 +210,7 @@ export default function SellerAddBookPage() {
         {sellerData.images.map((img, idx) => (
           <div key={idx} style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)' }}>
             <img src={img.preview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            <button onClick={(e) => { e.stopPropagation(); removeImage(idx); }} style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', fontSize: '10px' }}>✕</button>
+            <button onClick={(e) => { e.stopPropagation(); removeImage(idx); }} style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', fontSize: '10px' }}>âœ•</button>
           </div>
         ))}
       </div>
@@ -218,19 +218,19 @@ export default function SellerAddBookPage() {
 
     <div className="form-actions" style={{ marginTop: '30px' }}>
       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-        <button className="btn-back" onClick={() => navigate('/seller')}>← Back</button>
+        <button className="btn-back" onClick={() => navigate('/seller')}>â† Back</button>
       </div>
-      <button className="btn-next-form" onClick={handleNext}>Next: Review Listing →</button>
+      <button className="btn-next-form" onClick={handleNext}>Next: Review Listing â†’</button>
     </div>
   </div>
 </div>
 </main>
 <aside className="sidebar">
-  <div className="steps-widget"><div className="sw-head">Your Progress</div><div className="sw-body"><div className="sw-item"><div className="sw-num done">✓</div><div><div className="sw-label ">Select Categories</div><div className="sw-sub">Choose what you want to sell</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num active">2</div><div><div className="sw-label ">Add Book Details</div><div className="sw-sub">Fill in book info & images</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num ">3</div><div><div className="sw-label upcoming">Review Listing</div><div className="sw-sub">Preview before going live</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num ">4</div><div><div className="sw-label upcoming">Published!</div><div className="sw-sub">Your book is now live</div></div></div></div></div>
+  <div className="steps-widget"><div className="sw-head">Your Progress</div><div className="sw-body"><div className="sw-item"><div className="sw-num done">âœ“</div><div><div className="sw-label ">Select Categories</div><div className="sw-sub">Choose what you want to sell</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num active">2</div><div><div className="sw-label ">Add Book Details</div><div className="sw-sub">Fill in book info & images</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num ">3</div><div><div className="sw-label upcoming">Review Listing</div><div className="sw-sub">Preview before going live</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num ">4</div><div><div className="sw-label upcoming">Published!</div><div className="sw-sub">Your book is now live</div></div></div></div></div>
   
 </aside>
 </div>
-<footer className="footer"><div className="footer-grid"><div><Link to="/" className="footer-brand"><div className="f-logo"><img src={IMAGES.img_0} alt="BookCycle"/></div><span className="f-brand-name">BookCycle</span></Link><p className="f-desc">Islamabad's community book platform. Share and discover books across the city.</p></div><div className="f-col"><h4>Platform</h4><ul><li><Link to="/explore">Explore Books</Link></li><li><Link to="/seller">Sell Your Book</Link></li></ul></div></div></footer>
+{/* Removed upper footer */}
         </div>
     );
 }

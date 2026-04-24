@@ -382,7 +382,7 @@ export default function HomePage() {
             <div className="book-author">{b.author}</div>
             <div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span className={`book-price ${b.type === 'free' ? 'free' : ''}`}>
-                {b.type === 'free' ? 'Rs. 120' : `Rs. ${b.price}${b.unit}`}
+                {b.type === 'free' ? 'Free' : `Rs. ${b.price}${b.unit}`}
               </span>
               {b.type === 'rent' ? (
                 <span style={{ fontSize: '.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Currently unavailable</span>
@@ -559,7 +559,7 @@ export default function HomePage() {
               <div className="book-title">{b.title}</div>
               <div className="book-author">{b.author}</div>
               <div className="book-footer">
-                <span className="book-price free" style={{ color: 'var(--cta)', fontWeight: '900' }}>Rs. 120</span>
+                <span className="book-price free" style={{ color: 'var(--cta)', fontWeight: '900' }}>Free</span>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <button 
                       onClick={(e) => { e.stopPropagation(); toggleWishlist(b); }}
@@ -607,7 +607,7 @@ export default function HomePage() {
             <div className="book-author">{b.author}</div>
             <div style={{ marginTop: '5px', fontSize: '.77rem', color: 'var(--text-muted)' }}>Added {b.timeAgo}</div>
             <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-              <span className={`book-price ${b.type === 'free' ? 'free' : ''}`} style={{ flexShrink: 0, fontWeight: '900', color: b.type === 'free' ? 'var(--cta)' : '' }}>{b.type === 'free' ? 'Rs. 120' : `Rs. ${b.price}${b.unit}`}</span>
+              <span className={`book-price ${b.type === 'free' ? 'free' : ''}`} style={{ flexShrink: 0, fontWeight: '900', color: b.type === 'free' ? 'var(--cta)' : '' }}>{b.type === 'free' ? 'Free' : `Rs. ${b.price}${b.unit}`}</span>
               <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginLeft: 'auto' }}>
                 {b.badge === 'free' ? (
                   <Link to={`/book/${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)', color: '#fff', padding: '4px 12px', borderRadius: '6px', fontSize: '.75rem', fontWeight: '700' }}>Claim</Link>
