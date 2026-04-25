@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import RecommendationWidget from '../components/RecommendationWidget';
+import ActionModal from '../components/ActionModal';
 
 const getImageUrl = (book) => {
     const imagePath = book.image || (book.images && book.images[0]);
@@ -57,6 +58,8 @@ export default function HomePage() {
     const [activeCats, setActiveCats] = useState([]);
     const [activeConds, setActiveConds] = useState([]);
     const [priceRange, setPriceRange] = useState(5000);
+    const [selectedPdf, setSelectedPdf] = useState(null);
+    const [modalMessage, setModalMessage] = useState("");
     const wrapperRef = useRef(null);
     const [featuredBooks, setFeaturedBooks] = useState([
         { id: 'f1', title: 'Atomic Habits', author: 'James Clear', type: 'rent', price: '30', unit: '/wk', img: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80', timeAgo: 'Just now' },
@@ -94,6 +97,8 @@ export default function HomePage() {
                         type: b.exchangeType === 'Sell' ? 'buy' : b.exchangeType === 'Rent' ? 'rent' : 'free',
                         title: b.title,
                         author: b.author,
+                        category: b.category,
+                        condition: b.condition,
                         price: b.exchangeType === 'Share' ? 120 : extractNumericPrice(b.price),
                         unit: b.exchangeType === 'Rent' ? '/wk' : '',
                         timeAgo: getTimeAgo(b.createdAt),
@@ -392,7 +397,39 @@ export default function HomePage() {
               <span className={`book-price ${b.type === 'free' ? 'free' : ''}`}>
                 {b.type === 'free' ? 'Free' : `Rs. ${b.price}${b.unit}`}
               </span>
-              {b.type === 'rent' ? (
+              {b.category === 'Notes' ? (
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button 
+                      onClick={(e) => { e.stopPropagation(); if (!user) { navigate('/login'); return; } toggleWishlist(b); }}
+                      style={{ 
+                          background: 'none', border: '1.5px solid var(--border)', 
+                          borderRadius: '50%', width: '30px', height: '30px', 
+                          display: 'grid', placeItems: 'center', cursor: 'pointer', 
+                          color: isInWishlist(b.id) ? 'var(--cta)' : 'var(--text-muted)',
+                          transition: 'all .2s'
+                      }}
+                  >
+                      <FiHeart size={14} fill={isInWishlist(b.id) ? "var(--cta)" : "none"} />
+                  </button>
+                  <button className="btn-mini" style={{ background: 'var(--primary)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '6px 14px', border: 'none', color: '#fff', borderRadius: '8px', cursor: 'pointer', transition: 'all .2s' }} onClick={async (e) => { 
+                      e.stopPropagation(); 
+                      if (!user) { navigate('/login'); return; }
+                      try {
+                          const res = await api.get(`/books/${b.id}/pdf`);
+                          if (res.data.pdf) {
+                              setSelectedPdf(res.data.pdf);
+                          } else {
+                              setModalMessage("No PDF attached to these notes.");
+                          }
+                      } catch(err) {
+                          console.error('Failed to fetch pdf', err);
+                      }
+                  }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                      View PDF
+                  </button>
+                </div>
+              ) : b.type === 'rent' ? (
                 <span style={{ fontSize: '.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Currently unavailable</span>
               ) : (
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -568,6 +605,39 @@ export default function HomePage() {
               <div className="book-author">{b.author}</div>
               <div className="book-footer">
                 <span className="book-price free" style={{ color: 'var(--cta)', fontWeight: '900' }}>Free</span>
+                {b.category === 'Notes' ? (
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); if (!user) { navigate('/login'); return; } toggleWishlist(b); }}
+                        style={{ 
+                            background: 'none', border: '1.5px solid var(--border)', 
+                            borderRadius: '50%', width: '30px', height: '30px', 
+                            display: 'grid', placeItems: 'center', cursor: 'pointer', 
+                            color: isInWishlist(b.id) ? 'var(--cta)' : 'var(--text-muted)',
+                            transition: 'all .2s'
+                        }}
+                    >
+                        <FiHeart size={14} fill={isInWishlist(b.id) ? "var(--cta)" : "none"} />
+                    </button>
+                    <button className="btn-mini" style={{ background: 'var(--primary)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '6px 14px', border: 'none', color: '#fff', borderRadius: '8px', cursor: 'pointer', transition: 'all .2s' }} onClick={async (e) => { 
+                        e.stopPropagation(); 
+                        if (!user) { navigate('/login'); return; }
+                        try {
+                            const res = await api.get(`/books/${b.id}/pdf`);
+                            if (res.data.pdf) {
+                                setSelectedPdf(res.data.pdf);
+                            } else {
+                                setModalMessage("No PDF attached to these notes.");
+                            }
+                        } catch(err) {
+                            console.error('Failed to fetch pdf', err);
+                        }
+                    }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        View PDF
+                    </button>
+                  </div>
+                ) : (
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <button 
                       onClick={(e) => { e.stopPropagation(); toggleWishlist(b); }}
@@ -589,6 +659,7 @@ export default function HomePage() {
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                     </button>
                 </div>
+                )}
               </div>
             </div>
           </div>
@@ -617,7 +688,25 @@ export default function HomePage() {
             <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
               <span className={`book-price ${b.type === 'free' ? 'free' : ''}`} style={{ flexShrink: 0, fontWeight: '900', color: b.type === 'free' ? 'var(--cta)' : '' }}>{b.type === 'free' ? 'Free' : `Rs. ${b.price}${b.unit}`}</span>
               <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginLeft: 'auto' }}>
-                {b.badge === 'free' ? (
+                {b.category === 'Notes' ? (
+                    <button className="btn-mini" style={{ background: 'var(--primary)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '4px 10px', border: 'none', color: '#fff', borderRadius: '6px', cursor: 'pointer', transition: 'all .2s', fontSize: '.75rem', fontWeight: '700' }} onClick={async (e) => { 
+                        e.stopPropagation(); 
+                        if (!user) { navigate('/login'); return; }
+                        try {
+                            const res = await api.get(`/books/${b.id}/pdf`);
+                            if (res.data.pdf) {
+                                setSelectedPdf(res.data.pdf);
+                            } else {
+                                setModalMessage("No PDF attached to these notes.");
+                            }
+                        } catch(err) {
+                            console.error('Failed to fetch pdf', err);
+                        }
+                    }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        View PDF
+                    </button>
+                ) : b.badge === 'free' ? (
                   <Link to={`/book/${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)', color: '#fff', padding: '4px 12px', borderRadius: '6px', fontSize: '.75rem', fontWeight: '700' }}>Claim</Link>
                 ) : b.type === 'rent' ? (
                   <span style={{ fontSize: '.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Currently unavailable</span>
@@ -763,10 +852,25 @@ export default function HomePage() {
   </div>
 </section>
 
+<ActionModal isOpen={!!modalMessage} message={modalMessage} onClose={() => setModalMessage("")} />
 
-
-
-
+{selectedPdf && (
+    <div className="pdf-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', zIndex: 999999, display: 'flex', flexDirection: 'column' }} onClick={() => setSelectedPdf(null)} onContextMenu={(e) => e.preventDefault()}>
+        <div style={{ width: '100%', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#111', borderBottom: '1px solid #333' }}>
+            <span style={{ color: '#fff', fontSize: '1.1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                PDF Document
+            </span>
+            <button onClick={() => setSelectedPdf(null)} style={{ background: '#333', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseOver={(e) => e.currentTarget.style.background = '#444'} onMouseOut={(e) => e.currentTarget.style.background = '#333'}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                Close & Go Back
+            </button>
+        </div>
+        <div style={{ flex: 1, padding: '20px', display: 'flex', justifyContent: 'center', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
+            <iframe src={selectedPdf + '#toolbar=0'} style={{ width: '100%', maxWidth: '900px', height: '100%', border: 'none', borderRadius: '8px', background: '#fff', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }} title="PDF Viewer" />
+        </div>
+    </div>
+)}
 
         </div>
     );

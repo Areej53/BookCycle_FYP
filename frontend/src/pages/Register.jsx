@@ -155,7 +155,7 @@ const Register = () => {
             </form>
           </div>
 
-          <p className="login-bottom-p">
+          <p className="register-bottom-p">
             Already have an account? <Link to="/login">Login</Link>
           </p>
         </div>
