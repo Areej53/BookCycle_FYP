@@ -115,7 +115,7 @@ const getAllBooks = async (req, res) => {
 
 const getBook = async (req, res) => {
   const { id } = req.params;
-  const book = await Book.findById(id).populate('owner', 'name email');
+  const book = await Book.findById(id).select('-pdf').populate('owner', 'name email');
   if (!book) return res.status(404).json({ msg: `No book with id ${id}` });
 
   // Increment global views
@@ -247,4 +247,11 @@ const getRecommendedBooks = async (req, res) => {
   }
 };
 
-module.exports = { getAllBooks, getBook, createBook, updateBook, deleteBook, getRecommendedBooks };
+const getBookPdf = async (req, res) => {
+  const { id } = req.params;
+  const book = await Book.findById(id).select('pdf');
+  if (!book) return res.status(404).json({ msg: `No book with id ${id}` });
+  res.status(200).json({ pdf: book.pdf || null });
+};
+
+module.exports = { getAllBooks, getBook, createBook, updateBook, deleteBook, getRecommendedBooks, getBookPdf };

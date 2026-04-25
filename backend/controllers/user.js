@@ -32,9 +32,9 @@ const login = async (req, res) => {
 
       return res.status(200).json({ msg: "user logged in", token });
     }
-    return res.status(400).json({ msg: "Bad password" });
+    return res.status(400).json({ msg: "Wrong password" });
   }
-  return res.status(400).json({ msg: "Bad credentials" });
+  return res.status(400).json({ msg: "Wrongcredentials" });
 };
 
 const dashboard = async (req, res) => {
