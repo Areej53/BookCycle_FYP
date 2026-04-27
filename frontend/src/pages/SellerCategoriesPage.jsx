@@ -84,7 +84,7 @@ export default function SellerCategoriesPage() {
 <div className="cat-actions">
   <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
     <button className="btn-clear" onClick={() => updateSellerData({ category: '' })}>Clear All</button>
-    <span className="cat-hint">ℹ Update categories anytime from your dashboard.</span>
+
   </div>
   <button className="btn-next" onClick={handleNext}>Next: Add Book Details →</button>
 </div>

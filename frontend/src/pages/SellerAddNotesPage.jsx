@@ -142,7 +142,7 @@ export default function SellerAddNotesPage() {
 
 <div className="progress-wrap" style={{ marginTop: '20px' }}>
   <div className="progress-steps">
-    <div className="p-step done"><div className="p-num">âœ“</div>Categories</div>
+    <div className="p-step done"><div className="p-num">✓</div>Categories</div>
     <div className="p-line done"></div>
     <div className="p-step active"><div className="p-num">2</div>Upload Notes</div>
     <div className="p-line "></div>
@@ -275,7 +275,7 @@ export default function SellerAddNotesPage() {
     <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiAlignLeft /></div>Description</div>
     <div className="field">
       <label>Notes Description <span className="req">*</span></label>
-      <textarea name="description" value={sellerData.description} onChange={handleChange} rows="4" placeholder="Describe the notes â€” content, what chapters it covers, why it's usefulâ€¦"></textarea>
+      <textarea name="description" value={sellerData.description} onChange={handleChange} rows="4" placeholder="Describe the notes — content, what chapters it covers, why it's useful…"></textarea>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '3px' }}>
         {errors.description && <span className="err-msg" style={{ display: 'block' }}>{errors.description}</span>}
         <span className="char-counter" style={{ marginLeft: 'auto' }}>{(sellerData.description || '').length} / 500 (min 50)</span>
@@ -287,7 +287,7 @@ export default function SellerAddNotesPage() {
       <input type="file" ref={fileInputRef} accept=".pdf,application/pdf" style={{ display: 'none' }} onChange={handleFileChange}/>
       {sellerData.pdf ? (
           <div>
-              <div className="dz-icon" style={{ color: 'var(--primary)', fontSize: '2rem' }}>âœ“</div>
+              <div className="dz-icon" style={{ color: 'var(--primary)', fontSize: '2rem' }}>✓</div>
               <div className="dz-title" style={{ color: 'var(--primary)' }}>{sellerData.pdfName || 'PDF Selected'}</div>
               <div className="dz-sub">Click to change file (Max 2MB)</div>
           </div>
@@ -295,7 +295,7 @@ export default function SellerAddNotesPage() {
           <div>
               <div className="dz-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiUploadCloud /></div>
               <div className="dz-title">Click to select PDF here</div>
-              <div className="dz-sub">PDF format only Â· Max 2MB</div>
+              <div className="dz-sub">PDF format only · Max 2MB</div>
           </div>
       )}
     </div>
@@ -303,15 +303,15 @@ export default function SellerAddNotesPage() {
 
     <div className="form-actions" style={{ marginTop: '30px' }}>
       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-        <button className="btn-back" onClick={() => navigate('/seller')}>â† Back</button>
+        <button className="btn-back" onClick={() => navigate('/seller')}>← Back</button>
       </div>
-      <button className="btn-next-form" onClick={handlePublish} disabled={loading}>{loading ? 'Publishing...' : 'Publish Notes âœ“'}</button>
+      <button className="btn-next-form" onClick={handlePublish} disabled={loading}>{loading ? 'Publishing...' : 'Publish Notes ✓'}</button>
     </div>
   </div>
 </div>
 </main>
 <aside className="sidebar">
-  <div className="steps-widget"><div className="sw-head">Your Progress</div><div className="sw-body"><div className="sw-item"><div className="sw-num done">âœ“</div><div><div className="sw-label ">Select Categories</div><div className="sw-sub">Choose what you want to sell</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num active">2</div><div><div className="sw-label ">Upload Notes</div><div className="sw-sub">Add details & PDF file</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num ">3</div><div><div className="sw-label upcoming">Published!</div><div className="sw-sub">Your notes are live</div></div></div></div></div>
+  <div className="steps-widget"><div className="sw-head">Your Progress</div><div className="sw-body"><div className="sw-item"><div className="sw-num done">✓</div><div><div className="sw-label ">Select Categories</div><div className="sw-sub">Choose what you want to sell</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num active">2</div><div><div className="sw-label ">Upload Notes</div><div className="sw-sub">Add details & PDF file</div></div></div><div className="sw-connector"></div><div className="sw-item"><div className="sw-num ">3</div><div><div className="sw-label upcoming">Published!</div><div className="sw-sub">Your notes are live</div></div></div></div></div>
 </aside>
 </div>
 {/* Removed upper footer */}
