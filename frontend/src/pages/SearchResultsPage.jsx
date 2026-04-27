@@ -87,13 +87,13 @@ export default function SearchResultsPage() {
 <div className="search-hero">
   <div className="search-hero-inner">
     <div className="search-hero-top">
-      <button className="back-btn" onClick={() => navigate(-1)}>â† Back</button>
+      <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
     </div>
     <h1>Results for: {q ? <em>"{q}"</em> : <em>"All Books"</em>}</h1>
-    <p className="search-hero-sub" id="result-summary">{isLoading ? "Searchingâ€¦" : `Found ${books.length} matching results`}</p>
+    <p className="search-hero-sub" id="result-summary">{isLoading ? "Searching…" : `Found ${books.length} matching results`}</p>
     <div className="search-wrap-hero">
       <div className="search-bar">
-        <input type="text" id="search-inp" placeholder="Search by title, author, or categoryâ€¦" value={localQuery} onChange={e => setLocalQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()}/>
+        <input type="text" id="search-inp" placeholder="Search by title, author, or category…" value={localQuery} onChange={e => setLocalQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()}/>
         <button className="search-btn" onClick={handleSearch} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8"></circle>
@@ -133,7 +133,7 @@ export default function SearchResultsPage() {
     <div className="filter-label">Price Range</div>
     <div className="price-inputs">
       <input type="number" className="price-inp" id="price-min" placeholder="Min" min="0" value={minPrice} onChange={e => setMinPrice(e.target.value)}/>
-      <span className="price-sep">â€”</span>
+      <span className="price-sep">—</span>
       <input type="number" className="price-inp" id="price-max" placeholder="Max" min="0" value={maxPrice} onChange={e => setMaxPrice(e.target.value)}/>
     </div>
     {priceError && <div style={{color: 'red', fontSize: '0.85rem', marginTop: '8px', marginBottom: '8px'}}>{priceError}</div>}
@@ -161,8 +161,8 @@ export default function SearchResultsPage() {
       <div className="result-count"><strong id="result-count">{books.length}</strong> results</div>
       <select className="sort-select" value={sort} onChange={(e) => { const p = new URLSearchParams(searchParams); p.set('sort', e.target.value); setSearchParams(p); }}>
         <option value="default">Most Relevant</option>
-        <option value="price-asc">Price: Low â†’ High</option>
-        <option value="price-desc">Price: High â†’ Low</option>
+        <option value="price-asc">Price: Low → High</option>
+        <option value="price-desc">Price: High → Low</option>
         <option value="stars">Most Popular</option>
       </select>
     </div>
@@ -255,7 +255,7 @@ export default function SearchResultsPage() {
         </div>
       ))}
     </div>
-    {!isLoading && books.length === 0 && <div className="no-results" id="no-results" style={{ display: 'none' }}>
+    {!isLoading && books.length === 0 && <div className="no-results" id="no-results">
       <div className="no-results-icon" style={{ opacity: 0.7, marginBottom: '10px' }}>
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
       </div>
@@ -269,8 +269,8 @@ export default function SearchResultsPage() {
         <span className="no-results-cat" onClick={function(){}}>ðŸ“– Novels</span>
         <span className="no-results-cat" onClick={function(){}}>ðŸ“ Mathematics</span>
         <span className="no-results-cat" onClick={function(){}}>âš›ï¸ Physics</span>
-        <span className="no-results-cat" onClick={function(){}}>âž• Algebra</span>
-        <span className="no-results-cat" onClick={() => navigate('/explore')}>Explore All â†’</span>
+        <span className="no-results-cat" onClick={function(){}}>➕ Algebra</span>
+        <span className="no-results-cat" onClick={() => navigate('/explore')}>Explore All →</span>
       </div>
     </div>}
 

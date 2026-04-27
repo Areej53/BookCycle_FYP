@@ -33,8 +33,12 @@ const ConfirmPaymentPage = () => {
     const file = e.target.files[0];
     if (!file) return;
     const type = file.type;
-    if (type !== 'image/jpeg' && type !== 'image/png') {
-      showToast('Only JPG and PNG files are accepted', true);
+    if (!type.startsWith('image/')) {
+      showToast('Only image files are accepted', true);
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Image file must be less than 5MB', true);
       return;
     }
     const reader = new FileReader();
@@ -47,7 +51,7 @@ const ConfirmPaymentPage = () => {
 
   const handleSubmit = async () => {
     if (!receiptMode) {
-      showToast("Please upload a receipt (JPG or PNG) first", true);
+      showToast("Please upload a receipt first", true);
       return;
     }
     try {
@@ -119,7 +123,7 @@ const ConfirmPaymentPage = () => {
               <div>
                 <label style={{ display: "block", fontSize: ".95rem", color: '#000', marginBottom: 8 }}>Upload Payment Receipt</label>
                 <div style={{ position: 'relative' }}>
-                  <input type="file" accept=".jpg,.jpeg,.png" onChange={handleFileSelect} 
+                  <input type="file" accept="image/*" onChange={handleFileSelect} 
                     style={{ opacity: 0, position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', cursor: 'pointer', zIndex: 10 }} />
                   <div style={{ 
                       border: `2px dashed ${receiptMode ? PALETTE.cta : 'rgba(188,108,37,.4)'}`, 
@@ -134,7 +138,7 @@ const ConfirmPaymentPage = () => {
                         <div style={{ fontSize: '.95rem', color: '#000' }}>
                           Click to upload or drag your receipt image
                         </div>
-                        <div style={{ fontSize: '.8rem', color: PALETTE.muted }}>Supported formats: JPG, PNG</div>
+                        <div style={{ fontSize: '.8rem', color: PALETTE.muted }}>Supported formats: Any Image (Max 5MB)</div>
                       </>
                     )}
                   </div>

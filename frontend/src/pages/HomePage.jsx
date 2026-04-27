@@ -380,7 +380,7 @@ export default function HomePage() {
   
   <div>
     <div className="section-header">
-      <div><div className="section-label">✦ Handpicked</div><h2 className="section-title">Featured <span>Books</span></h2></div>
+      <div><h2 className="section-title">Featured <span>Books</span></h2></div>
       <Link to="/explore" className="see-all">View all</Link>
     </div>
     <div className="books-grid">
