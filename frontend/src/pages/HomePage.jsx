@@ -98,7 +98,8 @@ export default function HomePage() {
                         unit: b.exchangeType === 'Rent' ? '/wk' : '',
                         timeAgo: getTimeAgo(b.createdAt),
                         exchangeType: b.exchangeType,
-                        sellerId: b.owner?._id || b.owner || null
+                        sellerId: b.owner?._id || b.owner || null,
+                        category: b.category
                     }));
                 };
 
@@ -177,6 +178,21 @@ export default function HomePage() {
     activeCats.forEach(cat => activeTags.push({ group: 'cat', val: cat, label: cat }));
     activeConds.forEach(cond => activeTags.push({ group: 'cond', val: cond, label: cond }));
     if (activeSort !== 'recent') activeTags.push({ group: 'sort', val: activeSort, label: activeSort });
+
+    const categoryCount = {};
+    const allFetchedBooks = [...featuredBooks, ...recentBooks, ...freeBooks, ...topBooks, ...topSellingBooks];
+    
+    allFetchedBooks.forEach(book => {
+      const cat = book.category;
+      if (cat) {
+        categoryCount[cat] = (categoryCount[cat] || 0) + 1;
+      }
+    });
+
+    const sortedCategories = Object.entries(categoryCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4);
+
     return (
         <div className="HomePage">
             
@@ -375,7 +391,7 @@ export default function HomePage() {
   
   <div>
     <div className="section-header">
-      <div><div className="section-label">✦ Handpicked</div><h2 className="section-title">Featured <span>Books</span></h2></div>
+      <div><h2 className="section-title">Featured <span>Books</span></h2></div>
       <Link to="/explore" className="see-all">View all</Link>
     </div>
     <div className="books-grid">
@@ -426,7 +442,7 @@ export default function HomePage() {
   
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
-      <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Explore</div><h2 className="section-title">Explore by <span>Category</span></h2></div>
+      <div><h2 className="section-title">Explore by <span>Category</span></h2></div>
       <Link to="/explore" className="see-all">View All Genres</Link>
     </div>
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '14px' }}>
@@ -494,7 +510,7 @@ export default function HomePage() {
   
   <div style={{ marginTop: '60px', background: '#f5f0d0', borderRadius: '24px', padding: '40px' }}>
     <div className="section-header">
-      <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Simple Process</div><h2 className="section-title">How BookCycle <span>Works</span></h2></div>
+      <div><h2 className="section-title">How BookCycle <span>Works</span></h2></div>
     </div>
     <div className="steps-grid">
       <div className="step">
@@ -530,7 +546,7 @@ export default function HomePage() {
   
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
-      <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Borrow</div><h2 className="section-title">Books for <span>Rent</span></h2></div>
+      <div><h2 className="section-title">Books for <span>Rent</span></h2></div>
       <Link to="/explore" className="see-all">View all</Link>
     </div>
     <div className="books-grid" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))' }}>
@@ -552,7 +568,7 @@ export default function HomePage() {
   
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
-      <div><div className="section-label" style={{ background: 'rgba(96,108,56,.1)', color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Donate & Receive</div><h2 className="section-title">Free Knowledge <span>Shelf</span></h2></div>
+      <div><h2 className="section-title">Free Knowledge <span>Shelf</span></h2></div>
       <Link to="/explore" className="see-all">Explore shelf</Link>
     </div>
     <div style={{ background: 'linear-gradient(135deg,rgba(96,108,56,.07),rgba(19,73,60,.05))', border: '1.5px solid rgba(96,108,56,.2)', borderRadius: '20px', padding: '26px' }}>
@@ -600,7 +616,7 @@ export default function HomePage() {
   
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
-      <div><div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.8 }}><path d="M12 2l10 10-10 10-10-10z"/></svg> Just Listed</div><h2 className="section-title">Recently <span>Added</span></h2></div>
+      <div><h2 className="section-title">Recently <span>Added</span></h2></div>
       <Link to="/explore" className="see-all">See all new</Link>
     </div>
     <div className="books-grid" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))' }}>
@@ -705,10 +721,15 @@ export default function HomePage() {
       Popular Genres
     </div>
     <div className="tag-cloud">
-      <span className="tag">Fiction</span><span className="tag">Self-Help</span><span className="tag">Urdu Adab</span>
-      <span className="tag">Tech</span><span className="tag">Islam</span><span className="tag">Novels</span>
-      <span className="tag">Science</span><span className="tag">Biography</span><span className="tag">Islamic</span>
-      <span className="tag">Children</span><span className="tag">Poetry</span>
+      {sortedCategories.map(([cat]) => (
+        <span 
+          key={cat} 
+          className="tag"
+          onClick={() => navigate(`/explore?cats=${cat.toLowerCase()}`)}
+        >
+          {cat}
+        </span>
+      ))}
     </div>
   </div>
 

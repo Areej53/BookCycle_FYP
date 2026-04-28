@@ -187,7 +187,7 @@ const OrderCard = ({ order }) => {
                 style={{ background: PALETTE.cta, color: "#fff", border: "none", padding: "6px 14px", borderRadius: 50, fontWeight: 700, fontSize: ".75rem", cursor: "pointer", transition: "opacity 0.2s" }}
                 onMouseEnter={e => e.currentTarget.style.opacity = .8} onMouseLeave={e => e.currentTarget.style.opacity = 1}
               >
-                ✅ Confirm Order
+                ✅ Complete Order
               </button>
             </div>
           </div>

@@ -140,7 +140,8 @@ const updateOrderStatus = async (req, res) => {
       if (complainReason) order.complainReason = complainReason;
       await order.save();
       await Notification.create({ userId: order.sellerId._id, message: "Your complaint has been received and will be reviewed.", type: "order_update", orderId: order._id });
-      const emailMessage = `A seller has submitted a complaint against your order: ${complainReason}`;
+      const bookName = order.items?.[0]?.title || "Unknown Book";
+      const emailMessage = `Seller has raised a complaint on your order for '${bookName}': ${complainReason}`;
       await Notification.create({ userId: order.buyerId._id, message: emailMessage, type: "complaint", orderId: order._id });
       
       if (userToBlock.email) {

@@ -75,13 +75,16 @@ const SellerOrdersPanel = ({ orders, loading }) => {
   )
 };
 
-const BuyerPurchasesPanel = ({ purchases, onTrack, emptyMessage }) => (
+const BuyerPurchasesPanel = ({ purchases, onTrack, emptyMessage, onReceiptClick }) => (
   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
     {purchases.length === 0 && <div style={{ color: PALETTE.muted, fontSize: ".84rem" }}>{emptyMessage || "No purchased books yet."}</div>}
     {purchases.map((b, i) => {
       const s = STATUS[b.status] || STATUS[b.normalizedStatus] || STATUS.Pending;
       return (
         <div key={i}
+          onClick={() => {
+            if (b.receiptUrl && onReceiptClick) onReceiptClick(b.receiptUrl);
+          }}
           style={{
             display: 'flex', alignItems: 'center', gap: 12,
             padding: '10px 12px', borderRadius: 12,
@@ -99,6 +102,11 @@ const BuyerPurchasesPanel = ({ purchases, onTrack, emptyMessage }) => (
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
             }}>{b.title}</div>
             <div style={{ fontSize: '.72rem', color: PALETTE.muted, marginTop: 1 }}>{b.author}</div>
+            {b.complainReason && (
+              <div style={{ fontSize: '.72rem', color: PALETTE.cta, marginTop: 4, fontStyle: 'italic' }}>
+                Seller complaint: {b.complainReason}
+              </div>
+            )}
             {b.status === "out_for_delivery" && onTrack && (
               <button 
                 onClick={(e) => { e.stopPropagation(); onTrack(b); }} 
@@ -301,6 +309,7 @@ const DashboardPage = () => {
   const [editingBook, setEditingBook] = useState(null);
   const [editingForm, setEditingForm] = useState({ title: "", price: "", exchangeType: "Sell" });
   const [savingEdit, setSavingEdit] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
   const hasLoadedBooksRef = useRef(false);
 
   useEffect(() => {
@@ -334,6 +343,14 @@ const DashboardPage = () => {
     })();
   }, [token, user?.id, fetchOrders, fetchNotifications, showToast]);
 
+  useEffect(() => {
+    if (!token || !user?.id) return;
+    const intervalId = setInterval(() => {
+      fetchOrders({ sellerId: user.id });
+    }, 10000);
+    return () => clearInterval(intervalId);
+  }, [token, user?.id, fetchOrders]);
+
   const sellerOrders = useMemo(
     () => orders.filter((o) => o.sellerId?._id === user?.id),
     [orders, user]
@@ -360,7 +377,7 @@ const DashboardPage = () => {
   const purchasedBooks = useMemo(
     () =>
       buyerOrders
-        .filter((o) => o.status !== "rejected" && o.status !== "cancelled")
+        .filter((o) => o.status !== "rejected" && o.status !== "cancelled" && o.status !== "complain")
         .map((order) => {
           const item = order.items?.[0] || {};
           return {
@@ -373,7 +390,8 @@ const DashboardPage = () => {
             paymentStatus: order.paymentData?.status || "pending",
             normalizedStatus: order.status === "completed" ? "Delivered" : "Pending",
             img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=75",
-            itemsCount: order.items?.length || 1
+            itemsCount: order.items?.length || 1,
+            receiptUrl: order.paymentData?.receiptUrl
           };
         }),
     [buyerOrders]
@@ -395,7 +413,32 @@ const DashboardPage = () => {
             paymentStatus: order.paymentData?.status || "pending",
             normalizedStatus: "Rejected",
             img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=75",
-            itemsCount: order.items?.length || 1
+            itemsCount: order.items?.length || 1,
+            receiptUrl: order.paymentData?.receiptUrl
+          };
+        }),
+    [buyerOrders]
+  );
+
+  const complaintBooks = useMemo(
+    () =>
+      buyerOrders
+        .filter((o) => o.status === "complain")
+        .map((order) => {
+          const item = order.items?.[0] || {};
+          return {
+            _id: order._id,
+            trackingId: order.trackingData?.trackingNumber,
+            title: item.title || "Order",
+            author: order.sellerId?.name || "BookCycle",
+            price: `Rs. ${order.totalAmount || 0}`,
+            status: order.status,
+            paymentStatus: order.paymentData?.status || "pending",
+            normalizedStatus: "complain",
+            img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=75",
+            itemsCount: order.items?.length || 1,
+            complainReason: order.complainReason,
+            receiptUrl: order.paymentData?.receiptUrl
           };
         }),
     [buyerOrders]
@@ -622,10 +665,13 @@ const DashboardPage = () => {
               <SectionLabel>Buyer Activity</SectionLabel>
               <div className="buyer-grid" style={{ animation: 'fadeUp .45s ease .1s both' }}>
                 <Card title="Purchased Books" action="See All" onAction={() => setActiveDashboardView("allPurchases")}>
-                  <BuyerPurchasesPanel purchases={purchasedBooks.slice(0, 5)} onTrack={handleTrackPurchase} />
+                  <BuyerPurchasesPanel purchases={purchasedBooks.slice(0, 5)} onTrack={handleTrackPurchase} onReceiptClick={setSelectedReceipt} />
+                </Card>
+                <Card title="Complaint Orders" action="See All" onAction={() => setActiveDashboardView("allComplaints")}>
+                  <BuyerPurchasesPanel purchases={complaintBooks.slice(0, 5)} emptyMessage="No Complaint Orders" onReceiptClick={setSelectedReceipt} />
                 </Card>
                 <Card title="Rejected Books" action="See All" onAction={() => setActiveDashboardView("allRejected")}>
-                  <BuyerPurchasesPanel purchases={rejectedBooks.slice(0, 5)} emptyMessage="No Rejected Books Yet" />
+                  <BuyerPurchasesPanel purchases={rejectedBooks.slice(0, 5)} emptyMessage="No Rejected Books Yet" onReceiptClick={setSelectedReceipt} />
                 </Card>
                 <Card title="Notifications" action="See All" onAction={() => setActiveDashboardView("allNotifications")}>
                   <div style={{ maxHeight: 260, overflowY: "auto" }}>
@@ -639,12 +685,17 @@ const DashboardPage = () => {
 
               {activeDashboardView === "allPurchases" && (
                 <Card title="All Purchased Books">
-                  {purchasedBooks.length === 0 ? <div style={{ color: PALETTE.muted, fontSize: ".84rem" }}>No books yet</div> : <BuyerPurchasesPanel purchases={purchasedBooks} onTrack={handleTrackPurchase} />}
+                  {purchasedBooks.length === 0 ? <div style={{ color: PALETTE.muted, fontSize: ".84rem" }}>No books yet</div> : <BuyerPurchasesPanel purchases={purchasedBooks} onTrack={handleTrackPurchase} onReceiptClick={setSelectedReceipt} />}
+                </Card>
+              )}
+              {activeDashboardView === "allComplaints" && (
+                <Card title="All Complaint Orders">
+                  <BuyerPurchasesPanel purchases={complaintBooks} emptyMessage="No Complaint Orders" onReceiptClick={setSelectedReceipt} />
                 </Card>
               )}
               {activeDashboardView === "allRejected" && (
                 <Card title="All Rejected Books">
-                  <BuyerPurchasesPanel purchases={rejectedBooks} emptyMessage="No Rejected Books Yet" />
+                  <BuyerPurchasesPanel purchases={rejectedBooks} emptyMessage="No Rejected Books Yet" onReceiptClick={setSelectedReceipt} />
                 </Card>
               )}
               {activeDashboardView === "allListings" && (
@@ -786,6 +837,15 @@ const DashboardPage = () => {
                 {savingEdit ? 'Saving…' : 'Save'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {selectedReceipt && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 30000 }} onClick={() => setSelectedReceipt(null)}>
+          <div style={{ position: 'relative', background: '#fff', padding: 8, borderRadius: 12, maxWidth: '90vw', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setSelectedReceipt(null)} style={{ position: 'absolute', top: -16, right: -16, background: '#fff', border: 'none', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontWeight: 900, color: '#000', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', zIndex: 30001 }}>✕</button>
+            <img src={selectedReceipt} alt="Receipt" style={{ maxWidth: '100%', maxHeight: 'calc(90vh - 16px)', objectFit: 'contain', borderRadius: 8 }} />
           </div>
         </div>
       )}
