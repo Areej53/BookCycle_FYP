@@ -122,15 +122,15 @@ export default function CategoryResultsPage() {
 <div className="cat-hero">
   <div className="cat-hero-inner">
     <div className="cat-breadcrumb">
-      <Link to="/">Home</Link>â€º
-      <Link to="/explore">Explore</Link>â€º
+      <Link to="/">Home</Link>›
+      <Link to="/explore">Explore</Link>›
       <span id="crumb-cat">Results</span>
     </div>
     <h1 id="page-heading">Category: <em id="heading-cat">{cats || 'All Books'}</em></h1>
     <p className="cat-hero-sub" id="page-sub">{isLoading ? "Loading books..." : `Showing ${books.length} available books`}</p>
     <div className="search-wrap">
       <div className="search-bar">
-        <input type="text" id="search-inp" placeholder="Search within resultsâ€¦" value={localQuery} onChange={e => setLocalQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()}/>
+        <input type="text" id="search-inp" placeholder="Search within results…" value={localQuery} onChange={e => setLocalQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()}/>
         <button className="search-btn" onClick={handleSearch} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8"></circle>
@@ -166,7 +166,7 @@ export default function CategoryResultsPage() {
     <div className="filter-label">Price Range</div>
     <div className="price-inputs">
       <input type="number" className="price-inp" id="price-min" placeholder="Min" min="0" value={minPrice} onChange={e => setMinPrice(e.target.value)}/>
-      <span className="price-sep">â€”</span>
+      <span className="price-sep">—</span>
       <input type="number" className="price-inp" id="price-max" placeholder="Max" min="0" value={maxPrice} onChange={e => setMaxPrice(e.target.value)}/>
     </div>
     {priceError && <div style={{color: 'red', fontSize: '0.85rem', marginTop: '8px', marginBottom: '8px'}}>{priceError}</div>}
@@ -195,8 +195,8 @@ export default function CategoryResultsPage() {
       <div className="result-count"><strong id="result-count">{books.length}</strong> books found</div>
       <select className="sort-select" value={sort} onChange={(e) => { const p = new URLSearchParams(searchParams); p.set('sort', e.target.value); setSearchParams(p); }}>
         <option value="default">Default</option>
-        <option value="price-asc">Price: Low â†’ High</option>
-        <option value="price-desc">Price: High â†’ Low</option>
+        <option value="price-asc">Price: Low → High</option>
+        <option value="price-desc">Price: High → Low</option>
         <option value="stars">Most Popular</option>
         <option value="newest">Newest First</option>
       </select>

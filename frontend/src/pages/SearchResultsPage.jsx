@@ -87,13 +87,13 @@ export default function SearchResultsPage() {
 <div className="search-hero">
   <div className="search-hero-inner">
     <div className="search-hero-top">
-      <button className="back-btn" onClick={() => navigate(-1)}>â† Back</button>
+      <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
     </div>
     <h1>Results for: {q ? <em>"{q}"</em> : <em>"All Books"</em>}</h1>
-    <p className="search-hero-sub" id="result-summary">{isLoading ? "Searchingâ€¦" : `Found ${books.length} matching results`}</p>
+    <p className="search-hero-sub" id="result-summary">{isLoading ? "Searching…" : `Found ${books.length} matching results`}</p>
     <div className="search-wrap-hero">
       <div className="search-bar">
-        <input type="text" id="search-inp" placeholder="Search by title, author, or categoryâ€¦" value={localQuery} onChange={e => setLocalQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()}/>
+        <input type="text" id="search-inp" placeholder="Search by title, author, or category…" value={localQuery} onChange={e => setLocalQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()}/>
         <button className="search-btn" onClick={handleSearch} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8"></circle>
@@ -133,7 +133,7 @@ export default function SearchResultsPage() {
     <div className="filter-label">Price Range</div>
     <div className="price-inputs">
       <input type="number" className="price-inp" id="price-min" placeholder="Min" min="0" value={minPrice} onChange={e => setMinPrice(e.target.value)}/>
-      <span className="price-sep">â€”</span>
+      <span className="price-sep">—</span>
       <input type="number" className="price-inp" id="price-max" placeholder="Max" min="0" value={maxPrice} onChange={e => setMaxPrice(e.target.value)}/>
     </div>
     {priceError && <div style={{color: 'red', fontSize: '0.85rem', marginTop: '8px', marginBottom: '8px'}}>{priceError}</div>}
@@ -161,8 +161,8 @@ export default function SearchResultsPage() {
       <div className="result-count"><strong id="result-count">{books.length}</strong> results</div>
       <select className="sort-select" value={sort} onChange={(e) => { const p = new URLSearchParams(searchParams); p.set('sort', e.target.value); setSearchParams(p); }}>
         <option value="default">Most Relevant</option>
-        <option value="price-asc">Price: Low â†’ High</option>
-        <option value="price-desc">Price: High â†’ Low</option>
+        <option value="price-asc">Price: Low → High</option>
+        <option value="price-desc">Price: High → Low</option>
         <option value="stars">Most Popular</option>
       </select>
     </div>
@@ -196,23 +196,37 @@ export default function SearchResultsPage() {
                   )}
               </div>
               {book.category === 'Notes' ? (
-                  <button className="btn-mini" style={{ background: 'var(--primary)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '6px 14px', border: 'none', color: '#fff', borderRadius: '8px', cursor: 'pointer', transition: 'all .2s' }} onClick={async (e) => { 
-                      e.stopPropagation(); 
-                      if (!user) { navigate('/login'); return; }
-                      try {
-                          const res = await api.get(`/books/${book._id}`);
-                          if (res.data.book.pdf) {
-                              setSelectedPdf(res.data.book.pdf);
-                          } else {
-                              setModalMessage("No PDF attached to these notes.");
-                          }
-                      } catch(err) {
-                          console.error('Failed to fetch pdf', err);
-                      }
-                  }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                      View PDF
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); if (!user) { navigate('/login'); return; } toggleWishlist(book); }}
+                        style={{ 
+                            background: 'none', border: '1.5px solid var(--border)', 
+                            borderRadius: '50%', width: '30px', height: '30px', 
+                            display: 'grid', placeItems: 'center', cursor: 'pointer', 
+                            color: isInWishlist(book._id) ? 'var(--cta)' : 'var(--text-muted)',
+                            transition: 'all .2s'
+                        }}
+                    >
+                        <FiHeart size={14} fill={isInWishlist(book._id) ? "var(--cta)" : "none"} />
+                    </button>
+                    <button className="btn-mini" style={{ background: 'var(--primary)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '6px 14px', border: 'none', color: '#fff', borderRadius: '8px', cursor: 'pointer', transition: 'all .2s' }} onClick={async (e) => { 
+                        e.stopPropagation(); 
+                        if (!user) { navigate('/login'); return; }
+                        try {
+                            const res = await api.get(`/books/${book._id}/pdf`);
+                            if (res.data.pdf) {
+                                setSelectedPdf(res.data.pdf);
+                            } else {
+                                setModalMessage("No PDF attached to these notes.");
+                            }
+                        } catch(err) {
+                            console.error('Failed to fetch pdf', err);
+                        }
+                    }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        View PDF
+                    </button>
+                  </div>
               ) : (
                   book.exchangeType === 'Rent' ? (
                     <span style={{ fontSize: '.8rem', color: 'var(--muted)', fontWeight: 600 }}>Currently unavailable</span>
@@ -241,7 +255,7 @@ export default function SearchResultsPage() {
         </div>
       ))}
     </div>
-    {!isLoading && books.length === 0 && <div className="no-results" id="no-results" style={{ display: 'none' }}>
+    {!isLoading && books.length === 0 && <div className="no-results" id="no-results">
       <div className="no-results-icon" style={{ opacity: 0.7, marginBottom: '10px' }}>
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
       </div>
@@ -255,8 +269,8 @@ export default function SearchResultsPage() {
         <span className="no-results-cat" onClick={function(){}}>ðŸ“– Novels</span>
         <span className="no-results-cat" onClick={function(){}}>ðŸ“ Mathematics</span>
         <span className="no-results-cat" onClick={function(){}}>âš›ï¸ Physics</span>
-        <span className="no-results-cat" onClick={function(){}}>âž• Algebra</span>
-        <span className="no-results-cat" onClick={() => navigate('/explore')}>Explore All â†’</span>
+        <span className="no-results-cat" onClick={function(){}}>➕ Algebra</span>
+        <span className="no-results-cat" onClick={() => navigate('/explore')}>Explore All →</span>
       </div>
     </div>}
 
@@ -310,12 +324,19 @@ export default function SearchResultsPage() {
 <ActionModal isOpen={!!modalMessage} message={modalMessage} onClose={() => setModalMessage("")} />
 
 {selectedPdf && (
-    <div className="pdf-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', flexDirection: 'column' }} onClick={() => setSelectedPdf(null)} onContextMenu={(e) => e.preventDefault()}>
-        <div style={{ padding: '15px 20px', display: 'flex', justifyContent: 'flex-end', background: '#222' }}>
-            <button onClick={() => setSelectedPdf(null)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer' }}>Close ✕</button>
+    <div className="pdf-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', zIndex: 999999, display: 'flex', flexDirection: 'column' }} onClick={() => setSelectedPdf(null)} onContextMenu={(e) => e.preventDefault()}>
+        <div style={{ width: '100%', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#111', borderBottom: '1px solid #333' }}>
+            <span style={{ color: '#fff', fontSize: '1.1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                PDF Document
+            </span>
+            <button onClick={() => setSelectedPdf(null)} style={{ background: '#333', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }} onMouseOver={(e) => e.currentTarget.style.background = '#444'} onMouseOut={(e) => e.currentTarget.style.background = '#333'}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                Close & Go Back
+            </button>
         </div>
-        <div style={{ flex: 1, padding: '20px', display: 'flex', justifyContent: 'center' }} onClick={(e) => e.stopPropagation()}>
-            <iframe src={selectedPdf + '#toolbar=0'} style={{ width: '100%', maxWidth: '900px', height: '100%', border: 'none', borderRadius: '8px', background: '#fff' }} title="PDF Viewer" />
+        <div style={{ flex: 1, padding: '20px', display: 'flex', justifyContent: 'center', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
+            <iframe src={selectedPdf + '#toolbar=0'} style={{ width: '100%', maxWidth: '900px', height: '100%', border: 'none', borderRadius: '8px', background: '#fff', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }} title="PDF Viewer" />
         </div>
     </div>
 )}
