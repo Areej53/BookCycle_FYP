@@ -64,7 +64,7 @@ const ConfirmPaymentPage = () => {
         }
       });
       showToast("Payment submitted successfully! Your order will be processed soon.");
-      navigate("/");
+      navigate("/dashboard");
     } catch (err) {
       showToast("Failed to submit payment", true);
     }

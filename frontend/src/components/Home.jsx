@@ -242,6 +242,7 @@ export default function Home({ onNavigate }) {
   const [toast, setToast] = useState({ show: false, msg: "" });
   const [featuredBooks, setFeaturedBooks] = useState([]);
   const [recentBooks, setRecentBooks] = useState([]);
+  const [popularCats, setPopularCats] = useState([]);
   const navigate = useNavigate();
   const { cart, addToCart } = useCart();
   const cartCount = cart ? cart.length : 0;
@@ -255,9 +256,10 @@ export default function Home({ onNavigate }) {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const [featRes, recentRes] = await Promise.all([
+        const [featRes, recentRes, allRes] = await Promise.all([
           api.get('books?limit=8&sort=random'),
-          api.get('books?limit=10&sort=recent')
+          api.get('books?limit=10&sort=recent'),
+          api.get('books')
         ]);
         
         const formatBooks = (booksArr, max) => {
@@ -284,6 +286,29 @@ export default function Home({ onNavigate }) {
             setRecentBooks(formatBooks(recentRes.data.books, 10));
         } else {
             setRecentBooks(FEATURED_BOOKS);
+        }
+
+        if (allRes.data.books && allRes.data.books.length > 0) {
+            const catCounts = {};
+            allRes.data.books.forEach(b => {
+                if (b.category) {
+                    catCounts[b.category] = (catCounts[b.category] || 0) + 1;
+                }
+            });
+            const sorted = Object.entries(catCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 4)
+                .map(([name, count]) => {
+                    const iconMatch = CATEGORIES.find(c => c.name.toLowerCase() === name.toLowerCase());
+                    return {
+                        name,
+                        count: `${count} books`,
+                        icon: iconMatch ? iconMatch.icon : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    };
+                });
+            setPopularCats(sorted);
+        } else {
+            setPopularCats(CATEGORIES.slice(0, 4));
         }
 
       } catch (error) {
@@ -489,7 +514,7 @@ export default function Home({ onNavigate }) {
               <button className="h-see-all">All categories →</button>
             </div>
             <div className="h-cats-grid">
-              {CATEGORIES.map(c => (
+              {popularCats.map(c => (
                 <div key={c.name} className="h-cat-pill">
                   <span className="h-cat-icon">{c.icon}</span>
                   <div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { Link } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import RecommendationWidget from '../components/RecommendationWidget';
@@ -15,13 +16,20 @@ import ActionModal from '../components/ActionModal';
 export default function ExploreBooksPage() {
     const { user } = useAuth();
     const { wishlist, toggleWishlist, isInWishlist } = useWishlist();
+    const { addToCart } = useCart();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [books, setBooks] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedPdf, setSelectedPdf] = useState(null);
     const [modalMessage, setModalMessage] = useState("");
+    const [toast, setToast] = useState({ show: false, msg: "" });
     const { recommended } = useRecommendations();
+
+    const showToast = (msg) => {
+        setToast({ show: true, msg });
+        setTimeout(() => setToast({ show: false, msg: "" }), 2600);
+    };
 
     const initialTab = searchParams.get('tab') || 'all';
     const initCatsString = searchParams.get('cats');
@@ -273,7 +281,11 @@ export default function ExploreBooksPage() {
                           >
                               <FiHeart size={14} fill={isInWishlist(book._id) ? "var(--cta)" : "none"} />
                         </button>
-                        <Link to={`/book/${book._id}`} className="btn-mini-cart" style={{ color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--primary)', width: '30px', height: '30px', borderRadius: '50%' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></Link>
+                        <button onClick={(e) => { 
+                            e.stopPropagation(); 
+                            const added = addToCart(book);
+                            if (added) showToast(`"${book.title}" added to cart!`);
+                        }} className="btn-mini-cart" style={{ color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--primary)', border: 'none', width: '30px', height: '30px', borderRadius: '50%', cursor: 'pointer' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></button>
                       </div>
                     )
                 )}
@@ -324,7 +336,11 @@ export default function ExploreBooksPage() {
                             >
                                 <FiHeart size={12} fill={isInWishlist(bk._id) ? 'var(--cta)' : 'none'} />
                             </button>
-                            <button style={{ background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'transform 0.15s ease', boxShadow: '0 2px 8px rgba(19,73,60,0.2)' }} onMouseOver={(e)=>e.currentTarget.style.transform='scale(1.1)'} onMouseOut={(e)=>e.currentTarget.style.transform='scale(1)'}>
+                            <button onClick={(e) => {
+                                e.stopPropagation();
+                                const added = addToCart(bk);
+                                if (added) showToast(`"${bk.title}" added to cart!`);
+                            }} style={{ background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'transform 0.15s ease', boxShadow: '0 2px 8px rgba(19,73,60,0.2)' }} onMouseOver={(e)=>e.currentTarget.style.transform='scale(1.1)'} onMouseOut={(e)=>e.currentTarget.style.transform='scale(1)'}>
                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                             </button>
                         </div>
@@ -343,7 +359,21 @@ export default function ExploreBooksPage() {
 </div>
 
 
-{/* <div className="toast" id="toast"><span className="toast-dot"></span><span id="toast-msg"></span></div> */}
+{/* Toast */}
+<div className={`h-toast${toast.show ? " show" : ""}`} style={{
+    position: 'fixed', bottom: '28px', right: '28px', zIndex: 9999, 
+    background: 'var(--primary)', color: 'var(--bg)', padding: '11px 18px', 
+    borderRadius: '11px', fontSize: '.88rem', fontWeight: 500, 
+    display: 'flex', alignItems: 'center', gap: '8px', 
+    boxShadow: '0 6px 24px rgba(19,73,60,.3)', 
+    transform: toast.show ? 'translateY(0)' : 'translateY(60px)', 
+    opacity: toast.show ? 1 : 0, pointerEvents: 'none', 
+    transition: 'transform .3s cubic-bezier(.34,1.56,.64,1), opacity .3s', 
+    fontFamily: "'DM Sans',sans-serif"
+}}>
+    <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)", flexShrink: 0 }} />
+    <span>{toast.msg}</span>
+</div>
 
 <ActionModal isOpen={!!modalMessage} message={modalMessage} onClose={() => setModalMessage("")} />
 
