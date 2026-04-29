@@ -20,22 +20,7 @@ const StatCard = ({ card }) => (
       e.currentTarget.style.boxShadow = "none";
     }}
   >
-    <div
-      style={{
-        position: "absolute",
-        top: 16,
-        right: 16,
-        width: 32,
-        height: 32,
-        borderRadius: 8,
-        background: "rgba(255,255,255,.12)",
-        display: "grid",
-        placeItems: "center",
-        fontSize: "1rem",
-      }}
-    >
-      {card.icon}
-    </div>
+
     <div style={{ fontSize: ".8rem", fontWeight: 600, color: "rgba(255,255,255,.75)", marginBottom: 14 }}>
       {card.label}
     </div>

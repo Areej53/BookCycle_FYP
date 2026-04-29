@@ -161,16 +161,16 @@ const OrderCard = ({ order }) => {
               cursor: "pointer",
             }}
           >
-            🚚 Book Ride
+            Book Ride
           </button>
         ) : order.status === "out_for_delivery" ? (
           <div style={{ background: "rgba(221,161,94,.1)", color: PALETTE.cta, fontWeight: 800, fontSize: ".75rem", padding: "8px 16px", borderRadius: 50 }}>
-            🚚 Out for delivery
+            Out for delivery
           </div>
         ) : order.status === "payment_submitted" ? (
           <div style={{ display: "flex", gap: "8px", flexDirection: "column", alignItems: "flex-end" }}>
             <div style={{ background: "rgba(45,106,79,.08)", color: "#2d6a4f", fontWeight: 800, fontSize: ".75rem", padding: "8px 16px", borderRadius: 50 }}>
-              💳 Payment Submitted
+              Payment Submitted
             </div>
             <div style={{ display: 'flex', gap: '6px' }}>
               <button
@@ -179,7 +179,7 @@ const OrderCard = ({ order }) => {
                 style={{ background: "transparent", color: "#a00", border: "1.5px solid #a00", padding: "6px 12px", borderRadius: 50, fontWeight: 700, fontSize: ".75rem", cursor: "pointer", transition: "opacity 0.2s" }}
                 onMouseEnter={e => e.currentTarget.style.opacity = .8} onMouseLeave={e => e.currentTarget.style.opacity = 1}
               >
-                ❌ Complain
+                Complain
               </button>
               <button
                 onClick={() => handleAction("completed")}
@@ -187,21 +187,21 @@ const OrderCard = ({ order }) => {
                 style={{ background: PALETTE.cta, color: "#fff", border: "none", padding: "6px 14px", borderRadius: 50, fontWeight: 700, fontSize: ".75rem", cursor: "pointer", transition: "opacity 0.2s" }}
                 onMouseEnter={e => e.currentTarget.style.opacity = .8} onMouseLeave={e => e.currentTarget.style.opacity = 1}
               >
-                ✅ Complete Order
+                Complete Order
               </button>
             </div>
           </div>
         ) : order.status === "rejected" ? (
           <div style={{ background: "rgba(200,0,0,.08)", color: "#a00", fontWeight: 800, fontSize: ".75rem", padding: "8px 16px", borderRadius: 50 }}>
-            ❌ Rejected
+            Rejected
           </div>
         ) : order.status === "complain" ? (
           <div style={{ background: "rgba(200,0,0,.08)", color: "#a00", fontWeight: 800, fontSize: ".75rem", padding: "8px 16px", borderRadius: 50 }}>
-            ❌ Complaint Submitted: {order.complainReason}
+            Complaint Submitted: {order.complainReason}
           </div>
         ) : (
           <div style={{ background: "rgba(45,106,79,.08)", border: `1.5px solid ${PALETTE.primary}`, color: PALETTE.primary, fontWeight: 800, fontSize: ".75rem", padding: "8px 16px", borderRadius: 50 }}>
-            ✓ Ride Assigned
+            Ride Assigned
           </div>
         )}
       </div>

@@ -46,9 +46,9 @@ const SectionCard = ({ icon, title, subtitle, children, step }) => (
     borderRadius: 20, overflow: 'hidden', boxShadow: '0 3px 18px rgba(19,73,60,.06)' }}>
     <div style={{ background: PALETTE.primary, padding: '18px 24px',
       display: 'flex', alignItems: 'center', gap: 14 }}>
-      <div style={{ width: 34, height: 34, borderRadius: 10,
+      {icon && <div style={{ width: 34, height: 34, borderRadius: 10,
         background: 'rgba(255,250,224,.12)', display: 'grid', placeItems: 'center',
-        fontSize: '1rem', flexShrink: 0 }}>{icon}</div>
+        fontSize: '1rem', flexShrink: 0 }}>{icon}</div>}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontFamily: "'Playfair Display',serif", fontSize: '1rem',
@@ -253,7 +253,7 @@ const CheckoutPage = () => {
           <div style={{ flex: '1 1 600px', display: 'flex', flexDirection: 'column', gap: 20 }}>
             {/* ── SECTION 1: Delivery Info ── */}
             <div style={{ animation: 'fadeUp .45s ease .1s both' }}>
-              <SectionCard icon="📦" title="Delivery Information" subtitle="Islamabad only · We deliver within 1–2 days" step={1}>
+              <SectionCard title="Delivery Information" subtitle="Islamabad only · We deliver within 1–2 days" step={1}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                   {/* Name */}
                   <div style={{ gridColumn: '1 / -1' }}>
@@ -346,10 +346,10 @@ const CheckoutPage = () => {
 
             {/* ── SECTION 2: Payment Method ── */}
             <div style={{ animation: 'fadeUp .45s ease .18s both' }}>
-              <SectionCard icon="💳" title="Payment Method" subtitle="Choose how you'd like to pay" step={2}>
+              <SectionCard title="Payment Method" subtitle="Choose how you'd like to pay" step={2}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {[
-                    { val: 'easypaisa', icon: '📱', label: 'Easypaisa',    sub: 'Send to the seller\'s EasyPaisa number'            },
+                    { val: 'easypaisa', label: 'Easypaisa',    sub: 'Send to the seller\'s EasyPaisa number'            },
                   ].map(opt => (
                     <div key={opt.val}
                       onClick={() => set('paymentMethod', opt.val)}
