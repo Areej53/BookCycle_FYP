@@ -62,7 +62,6 @@ const SellerOrdersPanel = ({ orders, loading }) => {
         <div style={{ padding: 20, borderRadius: 16, background: PALETTE.card, border: `1px solid ${PALETTE.border}` }}>Loading orders...</div>
       ) : orders.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 20px', background: PALETTE.bg, border: `1px dashed ${PALETTE.border}`, borderRadius: 18 }}>
-          <div style={{ fontSize: '2rem', marginBottom: 12 }}>🔍</div>
           <div style={{ color: PALETTE.primary, fontWeight: 700, fontSize: '1.05rem', marginBottom: 4 }}>No active orders</div>
           <div style={{ color: PALETTE.muted, fontSize: '.85rem' }}>When buyers place orders, they will appear right here.</div>
         </div>

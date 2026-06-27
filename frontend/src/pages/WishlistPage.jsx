@@ -8,13 +8,13 @@ import { FiHeart, FiTrash2, FiArrowRight, FiBookOpen } from 'react-icons/fi';
 import { IMAGES } from '../data/assets';
 
 export default function WishlistPage() {
-    const { wishlist, toggleWishlist, clearWishlist } = useWishlist();
+    const { wishlist, toggleWishlist, removeFromWishlist, clearWishlist } = useWishlist();
     const { addToCart } = useCart();
     const navigate = useNavigate();
 
     const handleMoveToCart = (book) => {
         addToCart(book);
-        toggleWishlist(book); // Remove from wishlist when moving to cart
+        removeFromWishlist(book.id || book._id); // Remove from wishlist when moving to cart
     };
 
     return (
@@ -58,10 +58,11 @@ export default function WishlistPage() {
                                 <div style={{ height: '220px', overflow: 'hidden', position: 'relative' }}>
                                     <img src={book.img} alt={book.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                     <button 
-                                        onClick={(e) => { e.stopPropagation(); toggleWishlist(book); }}
+                                        onClick={(e) => { e.stopPropagation(); removeFromWishlist(book.id || book._id); }}
                                         style={{ position: 'absolute', top: '15px', right: '15px', background: '#fff', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'grid', placeItems: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', color: 'var(--cta)', zIndex: 10 }}
+                                        title="Remove from Wishlist"
                                     >
-                                        <FiHeart fill="var(--cta)" />
+                                        <FiTrash2 />
                                     </button>
                                     <div style={{ position: 'absolute', bottom: '12px', left: '12px' }}>
                                         {book.badge && <span className={`book-badge badge-${book.badge}`} style={{ position: 'static', padding: '4px 12px' }}>

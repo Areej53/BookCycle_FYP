@@ -1,11 +1,35 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { getStoredAuthToken } from '../utils/authStorage';
+import ActionModal from '../components/ActionModal';
 
 const WishlistContext = createContext();
 
 export const useWishlist = () => useContext(WishlistContext);
 
 export const WishlistProvider = ({ children }) => {
+    const [modalConfig, setModalConfig] = useState({ isOpen: false, message: '' });
+
+    const getCurrentUserId = () => {
+        const token = getStoredAuthToken();
+        if (!token) return null;
+        try {
+            const base64Url = token.split('.')[1];
+            if (!base64Url) return null;
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(
+                atob(base64)
+                    .split('')
+                    .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                    .join('')
+            );
+            const decoded = JSON.parse(jsonPayload);
+            return decoded?.id || null;
+        } catch {
+            return null;
+        }
+    };
+
     const [wishlist, setWishlist] = useState(() => {
         try {
             const localData = localStorage.getItem('bookcycle_wishlist');
@@ -31,12 +55,20 @@ export const WishlistProvider = ({ children }) => {
     };
 
     const toggleWishlist = (book) => {
+        const currentUserId = getCurrentUserId();
+        const sellerId = book.sellerId || book.owner?._id || book.owner || null;
+        
+        if (currentUserId && sellerId && String(currentUserId) === String(sellerId)) {
+            setModalConfig({ isOpen: true, message: "The book is already in your listings" });
+            return false;
+        }
+
         const id = book._id || book.id;
         const exists = wishlist.some(item => (item._id || item.id) === id);
 
         if (exists) {
-            setWishlist(prev => prev.filter(item => (item._id || item.id) !== id));
-            toast.info(`"${book.title}" removed from wishlist`);
+            setModalConfig({ isOpen: true, message: "That book is already in your wishlist" });
+            return false;
         } else {
             const wishItem = {
                 id: id,
@@ -52,7 +84,12 @@ export const WishlistProvider = ({ children }) => {
             };
             setWishlist(prev => [...prev, wishItem]);
             toast.success(`"${book.title}" added to wishlist!`);
+            return true;
         }
+    };
+
+    const removeFromWishlist = (id) => {
+        setWishlist(prev => prev.filter(item => (item._id || item.id) !== id));
     };
 
     const isInWishlist = (id) => {
@@ -68,10 +105,16 @@ export const WishlistProvider = ({ children }) => {
         <WishlistContext.Provider value={{
             wishlist,
             toggleWishlist,
+            removeFromWishlist,
             isInWishlist,
             clearWishlist
         }}>
             {children}
+            <ActionModal 
+                isOpen={modalConfig.isOpen} 
+                message={modalConfig.message} 
+                onClose={() => setModalConfig({ isOpen: false, message: '' })} 
+            />
         </WishlistContext.Provider>
     );
 };

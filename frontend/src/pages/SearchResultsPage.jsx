@@ -9,10 +9,12 @@ import useRecommendations from '../hooks/useRecommendations';
 import { useWishlist } from '../context/WishlistContext';
 import { FiHeart } from 'react-icons/fi';
 import ActionModal from '../components/ActionModal';
+import { useCart } from '../context/CartContext';
 
 export default function SearchResultsPage() {
     const { user } = useAuth();
     const { wishlist, toggleWishlist, isInWishlist } = useWishlist();
+    const { addToCart } = useCart();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const [books, setBooks] = useState([]);
@@ -61,6 +63,14 @@ export default function SearchResultsPage() {
         };
         fetchBooks();
     }, [searchParams]);
+
+    const handleAddToCart = (book) => {
+        if (!user) { navigate('/login'); return; }
+        const added = addToCart(book);
+        if (added) {
+            setModalMessage("Added to cart");
+        }
+    };
 
     const handleSearch = () => {
         if (minPrice && maxPrice && Number(minPrice) > Number(maxPrice)) {
@@ -209,7 +219,7 @@ export default function SearchResultsPage() {
                     >
                         <FiHeart size={14} fill={isInWishlist(book._id) ? "var(--cta)" : "none"} />
                     </button>
-                    <button className="btn-mini" style={{ background: 'var(--primary)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '6px 14px', border: 'none', color: '#fff', borderRadius: '8px', cursor: 'pointer', transition: 'all .2s' }} onClick={async (e) => { 
+                    <button className="btn-mini" style={{ background: 'var(--primary)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '4px 8px', border: 'none', color: '#fff', borderRadius: '6px', cursor: 'pointer', transition: 'all .2s', fontSize: '.75rem', fontWeight: '700', whiteSpace: 'nowrap' }} onClick={async (e) => { 
                         e.stopPropagation(); 
                         if (!user) { navigate('/login'); return; }
                         try {
@@ -223,8 +233,17 @@ export default function SearchResultsPage() {
                             console.error('Failed to fetch pdf', err);
                         }
                     }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                         View PDF
+                    </button>
+                    <button 
+                        onClick={(e) => { 
+                            e.stopPropagation(); 
+                            handleAddToCart(book);
+                        }}
+                        className="btn-mini-cart"
+                        style={{ color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--primary)', border: 'none', width: '30px', height: '30px', borderRadius: '50%', cursor: 'pointer' }}
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                     </button>
                   </div>
               ) : (

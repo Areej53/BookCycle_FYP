@@ -75,7 +75,10 @@ export default function HomePage() {
 
     const handleAddToCart = (book) => {
         if (!user) { navigate('/login'); return; }
-        addToCart(book);
+        const added = addToCart(book);
+        if (added) {
+            setModalMessage("Added to cart");
+        }
     };
 
     useEffect(() => {
@@ -427,7 +430,7 @@ export default function HomePage() {
                   >
                       <FiHeart size={14} fill={isInWishlist(b.id) ? "var(--cta)" : "none"} />
                   </button>
-                  <button className="btn-mini" style={{ background: 'var(--primary)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '6px 14px', border: 'none', color: '#fff', borderRadius: '8px', cursor: 'pointer', transition: 'all .2s' }} onClick={async (e) => { 
+                  <button className="btn-mini" style={{ background: 'var(--primary)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '4px 8px', border: 'none', color: '#fff', borderRadius: '6px', cursor: 'pointer', transition: 'all .2s', fontSize: '.75rem', fontWeight: '700', whiteSpace: 'nowrap' }} onClick={async (e) => { 
                       e.stopPropagation(); 
                       if (!user) { navigate('/login'); return; }
                       try {
@@ -441,8 +444,13 @@ export default function HomePage() {
                           console.error('Failed to fetch pdf', err);
                       }
                   }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                       View PDF
+                  </button>
+                  <button 
+                      onClick={(e) => { e.stopPropagation(); handleAddToCart(b); }}
+                      className="btn-mini-cart"
+                  >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                   </button>
                 </div>
               ) : b.type === 'rent' ? (
@@ -635,7 +643,7 @@ export default function HomePage() {
                     >
                         <FiHeart size={14} fill={isInWishlist(b.id) ? "var(--cta)" : "none"} />
                     </button>
-                    <button className="btn-mini" style={{ background: 'var(--primary)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '6px 14px', border: 'none', color: '#fff', borderRadius: '8px', cursor: 'pointer', transition: 'all .2s' }} onClick={async (e) => { 
+                    <button className="btn-mini" style={{ background: 'var(--primary)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '4px 8px', border: 'none', color: '#fff', borderRadius: '6px', cursor: 'pointer', transition: 'all .2s', fontSize: '.75rem', fontWeight: '700', whiteSpace: 'nowrap' }} onClick={async (e) => { 
                         e.stopPropagation(); 
                         if (!user) { navigate('/login'); return; }
                         try {
@@ -649,8 +657,14 @@ export default function HomePage() {
                             console.error('Failed to fetch pdf', err);
                         }
                     }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                         View PDF
+                    </button>
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); handleAddToCart(b); }}
+                        className="btn-mini-cart"
+                        style={{ borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                     </button>
                   </div>
                 ) : (
@@ -705,7 +719,8 @@ export default function HomePage() {
               <span className={`book-price ${b.type === 'free' ? 'free' : ''}`} style={{ flexShrink: 0, fontWeight: '900', color: b.type === 'free' ? 'var(--cta)' : '' }}>{b.type === 'free' ? 'Free' : `Rs. ${b.price}${b.unit}`}</span>
               <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginLeft: 'auto' }}>
                 {b.category === 'Notes' ? (
-                    <button className="btn-mini" style={{ background: 'var(--primary)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '4px 10px', border: 'none', color: '#fff', borderRadius: '6px', cursor: 'pointer', transition: 'all .2s', fontSize: '.75rem', fontWeight: '700' }} onClick={async (e) => { 
+                    <>
+                    <button className="btn-mini" style={{ background: 'var(--primary)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '4px 8px', border: 'none', color: '#fff', borderRadius: '6px', cursor: 'pointer', transition: 'all .2s', fontSize: '.75rem', fontWeight: '700', whiteSpace: 'nowrap' }} onClick={async (e) => { 
                         e.stopPropagation(); 
                         if (!user) { navigate('/login'); return; }
                         try {
@@ -719,9 +734,15 @@ export default function HomePage() {
                             console.error('Failed to fetch pdf', err);
                         }
                     }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                         View PDF
                     </button>
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); handleAddToCart(b); }}
+                        className="btn-mini-cart"
+                    >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    </button>
+                    </>
                 ) : b.badge === 'free' ? (
                   <Link to={`/book/${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)', color: '#fff', padding: '4px 12px', borderRadius: '6px', fontSize: '.75rem', fontWeight: '700' }}>Claim</Link>
                 ) : b.type === 'rent' ? (

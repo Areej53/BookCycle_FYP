@@ -1,12 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { getStoredAuthToken } from '../utils/authStorage';
+import ActionModal from '../components/ActionModal';
 
 const CartContext = createContext();
 
 export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
+    const [modalConfig, setModalConfig] = useState({ isOpen: false, message: '' });
+
     const getCurrentUserId = () => {
         const token = getStoredAuthToken();
         if (!token) return null;
@@ -107,6 +110,7 @@ export const CartProvider = ({ children }) => {
         const currentUserId = getCurrentUserId();
         const sellerId = cartItem.sellerId || book?.sellerId || book?.owner?._id || book?.owner || null;
         if (currentUserId && sellerId && String(currentUserId) === String(sellerId)) {
+            setModalConfig({ isOpen: true, message: "The book is already in your listings" });
             return false;
         }
         if (cartItem.type === 'rent') {
@@ -115,6 +119,7 @@ export const CartProvider = ({ children }) => {
 
         const existingInCart = cart.find(item => item.id === cartItem.id);
         if (existingInCart) {
+            setModalConfig({ isOpen: true, message: "That book is already in your cart" });
             return false;
         }
 
@@ -169,6 +174,11 @@ export const CartProvider = ({ children }) => {
             moveToCart
         }}>
             {children}
+            <ActionModal 
+                isOpen={modalConfig.isOpen} 
+                message={modalConfig.message} 
+                onClose={() => setModalConfig({ isOpen: false, message: '' })} 
+            />
         </CartContext.Provider>
     );
 };

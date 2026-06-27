@@ -297,7 +297,6 @@ export default function Home({ onNavigate }) {
             });
             const sorted = Object.entries(catCounts)
                 .sort((a, b) => b[1] - a[1])
-                .slice(0, 4)
                 .map(([name, count]) => {
                     const iconMatch = CATEGORIES.find(c => c.name.toLowerCase() === name.toLowerCase());
                     return {
@@ -308,7 +307,7 @@ export default function Home({ onNavigate }) {
                 });
             setPopularCats(sorted);
         } else {
-            setPopularCats(CATEGORIES.slice(0, 4));
+            setPopularCats(CATEGORIES);
         }
 
       } catch (error) {
@@ -511,11 +510,11 @@ export default function Home({ onNavigate }) {
                 </div>
                 <h2 className="h-section-title">Explore by <em>Category</em></h2>
               </div>
-              <button className="h-see-all">All categories →</button>
+              <button className="h-see-all" onClick={() => navigate('/explore')}>All categories →</button>
             </div>
             <div className="h-cats-grid">
               {popularCats.map(c => (
-                <div key={c.name} className="h-cat-pill">
+                <div key={c.name} className="h-cat-pill" onClick={() => navigate(`/explore?cats=${encodeURIComponent(c.name.toLowerCase())}`)}>
                   <span className="h-cat-icon">{c.icon}</span>
                   <div>
                     <div className="h-cat-name">{c.name}</div>
