@@ -143,6 +143,7 @@ export function getApiErrorMessage(err, fallback) {
   const status = err?.response?.status;
 
   if (status === 401) {
+    localStorage.removeItem('auth');
     return normalizeUserMessage(err?.response?.data?.msg, "Please log in again.");
   }
   if (status === 403) return "You are not allowed to do that.";

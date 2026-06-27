@@ -22,7 +22,16 @@ export const AuthProvider = ({ children }) => {
               .join('')
           );
           const decodedUser = JSON.parse(jsonPayload);
-          setUser(decodedUser);
+          
+          // Check if token has expired
+          if (decodedUser.exp && decodedUser.exp * 1000 < Date.now()) {
+            console.warn("Auth token has expired. Logging out automatically.");
+            localStorage.removeItem('auth');
+            setTokenState('');
+            setUser(null);
+          } else {
+            setUser(decodedUser);
+          }
         } else {
           setUser(null);
         }
