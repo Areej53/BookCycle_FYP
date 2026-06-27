@@ -85,7 +85,7 @@ const Register = () => {
   }
 
   useEffect(() => {
-    if(token !== ""){
+    if (token !== "") {
       navigate("/home");
     }
   }, []);
@@ -110,14 +110,14 @@ const Register = () => {
               <input type="email" placeholder="Email" name="email" />
               <div className="pass-input-div">
                 <input type={showPassword ? "text" : "password"} placeholder="Password" name="password" />
-                {showPassword ? <FaEyeSlash onClick={() => {setShowPassword(!showPassword)}} /> : <FaEye onClick={() => {setShowPassword(!showPassword)}} />}
-                
+                {showPassword ? <FaEyeSlash onClick={() => { setShowPassword(!showPassword) }} /> : <FaEye onClick={() => { setShowPassword(!showPassword) }} />}
+
               </div>
               <div className="pass-input-div">
                 <input type={showPassword ? "text" : "password"} placeholder="Confirm Password" name="confirmPassword" />
-                {showPassword ? <FaEyeSlash onClick={() => {setShowPassword(!showPassword)}} /> : <FaEye onClick={() => {setShowPassword(!showPassword)}} />}
+                {showPassword ? <FaEyeSlash onClick={() => { setShowPassword(!showPassword) }} /> : <FaEye onClick={() => { setShowPassword(!showPassword) }} />}
               </div>
-              
+
               <div className="role-selection">
                 <p>Role *</p>
                 <div className="role-options">
