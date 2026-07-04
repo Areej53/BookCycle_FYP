@@ -67,8 +67,9 @@ export const WishlistProvider = ({ children }) => {
         const exists = wishlist.some(item => (item._id || item.id) === id);
 
         if (exists) {
-            setModalConfig({ isOpen: true, message: "That book is already in your wishlist" });
-            return false;
+            removeFromWishlist(id);
+            toast.info(`"${book.title}" removed from wishlist`);
+            return true;
         } else {
             const wishItem = {
                 id: id,

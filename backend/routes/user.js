@@ -1,5 +1,4 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const router = express.Router();
 
 const {
@@ -12,14 +11,22 @@ const {
 } = require("../controllers/user");
 const authMiddleware = require("../middleware/auth");
 
-router.get("/health", (req, res) => {
-  const dbOk = mongoose.connection.readyState === 1;
+const { sequelize } = require("../db/connectPostgres");
+
+router.get("/health", async (req, res) => {
+  let dbOk = false;
+  try {
+    await sequelize.authenticate();
+    dbOk = true;
+  } catch (error) {
+    dbOk = false;
+  }
   res.status(dbOk ? 200 : 503).json({
     ok: true,
     database: dbOk ? "connected" : "disconnected",
     msg: dbOk
-      ? "API is running and MongoDB is connected."
-      : "API process is running but MongoDB is not connected.",
+      ? "API is running and PostgreSQL is connected."
+      : "API process is running but PostgreSQL is not connected.",
   });
 });
 

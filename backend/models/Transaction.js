@@ -1,32 +1,62 @@
-const mongoose = require('mongoose');
+const { DataTypes, Model } = require('sequelize');
+const { sequelize } = require('../db/connectPostgres');
 
-const TransactionSchema = new mongoose.Schema({
+class Transaction extends Model {
+  toJSON() {
+    const values = { ...this.get() };
+    values._id = values.id;
+    return values;
+  }
+}
+
+Transaction.init({
+  id: {
+    type: DataTypes.STRING(24),
+    primaryKey: true,
+    allowNull: false,
+    defaultValue: () => require('crypto').randomBytes(12).toString('hex')
+  },
   book: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'Book',
-    required: true
+    type: DataTypes.STRING(24),
+    allowNull: false
   },
   requester: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'User',
-    required: true
+    type: DataTypes.STRING(24),
+    allowNull: false
   },
   owner: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'User',
-    required: true
+    type: DataTypes.STRING(24),
+    allowNull: false
   },
   exchangeType: {
-    type: String,
-    enum: ['Buy', 'Rent', 'Borrow'],
-    required: true
+    type: DataTypes.STRING(20),
+    allowNull: false,
+    validate: {
+      isIn: {
+        args: [['Buy', 'Rent', 'Borrow']],
+        msg: "Exchange type is not supported"
+      }
+    }
   },
   status: {
-    type: String,
-    enum: ['Pending', 'Accepted', 'Rejected', 'Completed'],
-    default: 'Pending'
+    type: DataTypes.STRING(20),
+    defaultValue: 'Pending',
+    validate: {
+      isIn: {
+        args: [['Pending', 'Accepted', 'Rejected', 'Completed']],
+        msg: "Status is not supported"
+      }
+    }
   },
-  message: { type: String }
-}, { timestamps: true });
+  message: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  }
+}, {
+  sequelize,
+  modelName: 'Transaction',
+  tableName: 'transactions',
+  timestamps: true
+});
 
-module.exports = mongoose.model('Transaction', TransactionSchema);
+module.exports = Transaction;

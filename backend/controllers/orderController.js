@@ -1,7 +1,4 @@
-const mongoose = require("mongoose");
-const Order = require("../models/Order");
-const Notification = require("../models/Notification");
-const User = require("../models/User");
+const { Order, OrderItem, Notification, User, Book, sequelize } = require("../models");
 
 const sendEmailMock = (to, subject, text) => {
   console.log(`\n================= EMAIL =================`);
@@ -51,38 +48,76 @@ const createOrder = async (req, res) => {
     trackingNumber: `BC-${Date.now().toString().slice(-6)}`
   };
 
-  const order = await Order.create(payload);
+  const t = await sequelize.transaction();
 
-  await Notification.create({
-    userId: payload.sellerId,
-    message: `New order received from ${payload.shippingName || "Buyer"}`,
-    type: "order",
-    isRead: false,
-  });
+  try {
+    const order = await Order.create(payload, { transaction: t });
 
-  await Notification.create({
-    userId: payload.buyerId,
-    message: "Order placed successfully",
-    type: "order",
-    isRead: false,
-  });
+    const itemsToCreate = payload.items.map(item => ({
+      orderId: order.id,
+      bookId: item.bookId,
+      title: item.title,
+      type: item.type,
+      price: item.price,
+      quantity: item.quantity
+    }));
 
-  return res.status(201).json({ order });
+    await OrderItem.bulkCreate(itemsToCreate, { transaction: t });
+
+    await t.commit();
+
+    await Notification.create({
+      userId: payload.sellerId,
+      message: `New order received from ${payload.shippingName || "Buyer"}`,
+      type: "order",
+      isRead: false,
+    });
+
+    await Notification.create({
+      userId: payload.buyerId,
+      message: "Order placed successfully",
+      type: "order",
+      isRead: false,
+    });
+
+    const completeOrder = await Order.findByPk(order.id, {
+      include: [{ model: OrderItem, as: 'items' }]
+    });
+
+    return res.status(201).json({ order: completeOrder });
+  } catch (error) {
+    await t.rollback();
+    console.error("Order creation failed:", error);
+    return res.status(500).json({ msg: "Order creation failed", error: error.message });
+  }
 };
 
 const getOrders = async (req, res) => {
   const { sellerId, buyerId } = req.query;
   const query = {};
 
-  if (sellerId && mongoose.isValidObjectId(sellerId)) query.sellerId = sellerId;
-  if (buyerId && mongoose.isValidObjectId(buyerId)) query.buyerId = buyerId;
+  const isValidId = id => typeof id === 'string' && id.length === 24;
+  if (sellerId && isValidId(sellerId)) query.sellerId = sellerId;
+  if (buyerId && isValidId(buyerId)) query.buyerId = buyerId;
 
-  const orders = await Order.find(query)
-    .sort("-createdAt")
-    .populate("buyerId", "name email")
-    .populate("sellerId", "name email");
+  const orders = await Order.findAll({
+    where: query,
+    order: [["createdAt", "DESC"]],
+    include: [
+      { model: User, as: "buyer", attributes: ["name", "email"] },
+      { model: User, as: "seller", attributes: ["name", "email"] },
+      { model: OrderItem, as: "items" }
+    ]
+  });
 
-  return res.status(200).json({ orders, count: orders.length });
+  const formattedOrders = orders.map(o => {
+    const json = o.toJSON();
+    if (json.buyer) json.buyerId = json.buyer;
+    if (json.seller) json.sellerId = json.seller;
+    return json;
+  });
+
+  return res.status(200).json({ orders: formattedOrders, count: formattedOrders.length });
 };
 
 const updateOrderStatus = async (req, res) => {
@@ -90,13 +125,19 @@ const updateOrderStatus = async (req, res) => {
     const { orderId } = req.params;
     const { status, trackingData, paymentData, complainReason } = req.body;
     
-    const order = await Order.findById(orderId).populate("buyerId").populate("sellerId");
+    const order = await Order.findByPk(orderId, {
+      include: [
+        { model: User, as: "buyer" },
+        { model: User, as: "seller" },
+        { model: OrderItem, as: "items" }
+      ]
+    });
     if (!order) return res.status(404).json({ msg: "Order not found" });
 
     // Status transitions
     if (status) order.status = status;
     if (trackingData) {
-      const existingTracking = order.trackingData ? (order.trackingData.toObject ? order.trackingData.toObject() : order.trackingData) : {};
+      const existingTracking = order.trackingData || {};
       order.trackingData = { ...existingTracking, ...trackingData };
     }
     if (paymentData) {
@@ -107,57 +148,71 @@ const updateOrderStatus = async (req, res) => {
 
     // Notification Logic
     if (status === "accepted") {
-      const Book = require("../models/Book");
       for (const item of order.items) {
         if (item.bookId) {
-          await Book.findByIdAndUpdate(item.bookId, { status: "Unavailable" });
+          const book = await Book.findByPk(item.bookId);
+          if (book) {
+            await book.update({ status: "Unavailable" });
+          }
         }
       }
-      await Notification.create({ userId: order.buyerId._id, message: "Your order has been accepted", type: "order_update", orderId: order._id });
+      await Notification.create({ userId: order.buyerId, message: "Your order has been accepted", type: "order_update", orderId: order.id });
     } else if (status === "rejected") {
-      await Notification.create({ userId: order.buyerId._id, message: "Your order has been rejected", type: "order_update", orderId: order._id });
+      await Notification.create({ userId: order.buyerId, message: "Your order has been rejected", type: "order_update", orderId: order.id });
     } else if (status === "out_for_delivery") {
       const trackNo = order.trackingData?.trackingNumber || 'N/A';
-      await Notification.create({ userId: order.buyerId._id, message: `Your order is out for delivery. Tracking number: ${trackNo}`, type: "order_update", orderId: order._id });
+      await Notification.create({ userId: order.buyerId, message: `Your order is out for delivery. Tracking number: ${trackNo}`, type: "order_update", orderId: order.id });
     } else if (status === "payment_submitted") {
-      await Notification.create({ userId: order.buyerId._id, message: "Your payment has been submitted", type: "order_update", orderId: order._id });
-      await Notification.create({ userId: order.sellerId._id, message: `${order.shippingName || order.buyerId?.name || "Buyer"} has submitted the payment`, type: "order_update", orderId: order._id });
+      await Notification.create({ userId: order.buyerId, message: "Your payment has been submitted", type: "order_update", orderId: order.id });
+      await Notification.create({ userId: order.sellerId, message: `${order.shippingName || (order.buyer && order.buyer.name) || "Buyer"} has submitted the payment`, type: "order_update", orderId: order.id });
     } else if (status === "completed") {
-      await Notification.create({ userId: order.buyerId._id, message: "Your order is completed", type: "order_update", orderId: order._id });
-      await Notification.create({ userId: order.sellerId._id, message: "Order completed. Earnings added.", type: "order_update", orderId: order._id });
+      await Notification.create({ userId: order.buyerId, message: "Your order is completed", type: "order_update", orderId: order.id });
+      await Notification.create({ userId: order.sellerId, message: "Order completed. Earnings added.", type: "order_update", orderId: order.id });
       
-      const earning = order.bookAmount != null ? order.bookAmount : order.totalAmount;
-      await User.findByIdAndUpdate(order.sellerId._id, {
-        $inc: { 
-          'finance.totalEarnings': earning, 
-          'finance.monthlyEarnings': earning, 
-          'finance.completedOrdersRevenue': earning 
-        }
-      });
-    } else if (status === "complain") {
-      const userToBlock = await User.findByIdAndUpdate(order.buyerId._id, { $inc: { complaintCount: 1 } }, { new: true });
-      order.status = "complain";
-      if (complainReason) order.complainReason = complainReason;
-      await order.save();
-      await Notification.create({ userId: order.sellerId._id, message: "Your complaint has been received and will be reviewed.", type: "order_update", orderId: order._id });
-      const bookName = order.items?.[0]?.title || "Unknown Book";
-      const emailMessage = `Seller has raised a complaint on your order for '${bookName}': ${complainReason}`;
-      await Notification.create({ userId: order.buyerId._id, message: emailMessage, type: "complaint", orderId: order._id });
+      const earning = order.bookAmount != null ? Number(order.bookAmount) : Number(order.totalAmount);
       
-      if (userToBlock.email) {
-        sendEmailMock(userToBlock.email, "Notice: Complaint Received", emailMessage);
+      const seller = await User.findByPk(order.sellerId);
+      if (seller) {
+        seller.finance_totalEarnings = Number(seller.finance_totalEarnings || 0) + earning;
+        seller.finance_monthlyEarnings = Number(seller.finance_monthlyEarnings || 0) + earning;
+        seller.finance_completedOrdersRevenue = Number(seller.finance_completedOrdersRevenue || 0) + earning;
+        await seller.save();
       }
-      
-      if (userToBlock.complaintCount >= 3) {
-        userToBlock.isBlocked = true;
-        await userToBlock.save();
-        await Notification.create({ userId: order.buyerId._id, message: "Your account has been permanently blocked due to multiple complaints.", type: "system" });
+    } else if (status === "complain") {
+      const buyer = await User.findByPk(order.buyerId);
+      if (buyer) {
+        buyer.complaintCount = (buyer.complaintCount || 0) + 1;
+        await buyer.save();
+        
+        order.status = "complain";
+        if (complainReason) order.complainReason = complainReason;
+        await order.save();
+        
+        await Notification.create({ userId: order.sellerId, message: "Your complaint has been received and will be reviewed.", type: "order_update", orderId: order.id });
+        const bookName = order.items?.[0]?.title || "Unknown Book";
+        const emailMessage = `Seller has raised a complaint on your order for '${bookName}': ${complainReason}`;
+        await Notification.create({ userId: order.buyerId, message: emailMessage, type: "complaint", orderId: order.id });
+        
+        if (buyer.email) {
+          sendEmailMock(buyer.email, "Notice: Complaint Received", emailMessage);
+        }
+        
+        if (buyer.complaintCount >= 3) {
+          buyer.isBlocked = true;
+          await buyer.save();
+          await Notification.create({ userId: order.buyerId, message: "Your account has been permanently blocked due to multiple complaints.", type: "system" });
+        }
       }
     }
 
-    res.status(200).json({ order });
+    const finalFormattedOrder = order.toJSON();
+    if (finalFormattedOrder.buyer) finalFormattedOrder.buyerId = finalFormattedOrder.buyer;
+    if (finalFormattedOrder.seller) finalFormattedOrder.sellerId = finalFormattedOrder.seller;
+
+    res.status(200).json({ order: finalFormattedOrder });
   } catch (error) {
-    res.status(500).json({ msg: "Server Error", error });
+    console.error("Order status update failed:", error);
+    res.status(500).json({ msg: "Server Error", error: error.message });
   }
 };
 

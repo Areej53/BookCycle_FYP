@@ -1,45 +1,138 @@
-const mongoose = require('mongoose');
+const { DataTypes, Model } = require('sequelize');
+const { sequelize } = require('../db/connectPostgres');
 
-const BookSchema = new mongoose.Schema({
-  title: { type: String, required: [true, 'Please provide book title'], trim: true },
-  author: { type: String, required: [true, 'Please provide author name'], trim: true },
-  description: { type: String, required: [true, 'Please provide description'] },
-  condition: { 
-    type: String, 
-    enum: ['New', 'Used/Good'], 
-    required: [true, 'Please provide condition'] 
+class Book extends Model {
+  toJSON() {
+    const values = { ...this.get() };
+    values._id = values.id;
+    return values;
+  }
+}
+
+Book.init({
+  id: {
+    type: DataTypes.STRING(24),
+    primaryKey: true,
+    allowNull: false,
+    defaultValue: () => require('crypto').randomBytes(12).toString('hex')
   },
-  category: { 
-    type: String, 
-    enum: ['Programming', 'Science', 'Novels', 'Self Development', 'Algebra', 'Mathematics', 'Physics', 'Notes', 'Other'],
-    required: [true, 'Please provide category'],
-    default: 'Other'
+  title: {
+    type: DataTypes.STRING(255),
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: "Please provide book title"
+      }
+    }
+  },
+  author: {
+    type: DataTypes.STRING(255),
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: "Please provide author name"
+      }
+    }
+  },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+    validate: {
+      notEmpty: {
+        msg: "Please provide description"
+      }
+    }
+  },
+  condition: {
+    type: DataTypes.STRING(20),
+    allowNull: false,
+    validate: {
+      isIn: {
+        args: [['New', 'Used/Good']],
+        msg: "Please provide valid condition"
+      }
+    }
+  },
+  category: {
+    type: DataTypes.STRING(30),
+    allowNull: false,
+    defaultValue: 'Other',
+    validate: {
+      isIn: {
+        args: [['Programming', 'Science', 'Novels', 'Self Development', 'Algebra', 'Mathematics', 'Physics', 'Notes', 'Other']],
+        msg: "Please provide valid category"
+      }
+    }
   },
   exchangeType: {
-    type: String,
-    enum: ['Sell', 'Rent', 'Share'],
-    required: [true, 'Please specify exchange type']
+    type: DataTypes.STRING(20),
+    allowNull: false,
+    validate: {
+      isIn: {
+        args: [['Sell', 'Rent', 'Share']],
+        msg: "Please specify exchange type"
+      }
+    }
   },
-  price: { type: Number, default: 0 },
-  rentWeek: { type: Number, default: 0 },
-  rentMonth: { type: Number, default: 0 },
-  securityDeposit: { type: Number, default: 0 },
-  images: [{ type: String }],
-  image: { type: String },
-  pdf: { type: String },
-  subject: { type: String },
-  duration: { type: String },
+  price: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0.00
+  },
+  rentWeek: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0.00
+  },
+  rentMonth: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0.00
+  },
+  securityDeposit: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0.00
+  },
+  images: {
+    type: DataTypes.ARRAY(DataTypes.TEXT),
+    defaultValue: []
+  },
+  image: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  pdf: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  subject: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
+  duration: {
+    type: DataTypes.STRING(100),
+    allowNull: true
+  },
   status: {
-    type: String,
-    enum: ['Available', 'Pending', 'Unavailable'],
-    default: 'Available'
+    type: DataTypes.STRING(20),
+    defaultValue: 'Available',
+    validate: {
+      isIn: {
+        args: [['Available', 'Pending', 'Unavailable']],
+        msg: "Please provide valid status"
+      }
+    }
   },
-  views: { type: Number, default: 0 },
-  owner: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'User',
-    required: true
+  views: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  },
+  ownerId: {
+    type: DataTypes.STRING(24),
+    allowNull: false
   }
-}, { timestamps: true });
+}, {
+  sequelize,
+  modelName: 'Book',
+  tableName: 'books',
+  timestamps: true
+});
 
-module.exports = mongoose.model('Book', BookSchema);
+module.exports = Book;

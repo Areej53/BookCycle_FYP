@@ -1,75 +1,92 @@
-const mongoose = require("mongoose");
+const { DataTypes, Model } = require('sequelize');
+const { sequelize } = require('../db/connectPostgres');
 
-const OrderItemSchema = new mongoose.Schema(
-  {
-    bookId: { type: mongoose.Schema.Types.ObjectId, ref: "Book" },
-    title: { type: String, trim: true },
-    type: { type: String, enum: ["buy", "rent", "free"], default: "buy" },
-    price: { type: Number, default: 0 },
-    quantity: { type: Number, default: 1 },
+class Order extends Model {
+  toJSON() {
+    const values = { ...this.get() };
+    values._id = values.id;
+    return values;
+  }
+}
+
+Order.init({
+  id: {
+    type: DataTypes.STRING(24),
+    primaryKey: true,
+    allowNull: false,
+    defaultValue: () => require('crypto').randomBytes(12).toString('hex')
   },
-  { _id: false }
-);
-
-const OrderSchema = new mongoose.Schema(
-  {
-    buyerId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-      index: true,
-    },
-    sellerId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-      index: true,
-    },
-    items: { type: [OrderItemSchema], default: [] },
-    bookAmount: { type: Number, default: 0 },
-    deliveryFee: { type: Number, default: 0 },
-    totalAmount: { type: Number, default: 0 },
-    shippingAddress: { type: String },
-    shippingPhone: { type: String },
-    shippingName: { type: String },
-    trackingData: {
-      riderName: String,
-      riderPhone: String,
-      phoneNumber: String,
-      bikeNumber: String,
-      trackingLink: String,
-      pickupLocation: String,
-      dropLocation: String,
-      vehicleType: String,
-      estimatedTime: String,
-      trackingNumber: String,
-      easypaisaNumber: String,
-      notes: String,
-    },
-    paymentData: {
-      receiptUrl: String,
-      transactionId: String,
-    },
-    status: {
-      type: String,
-      enum: [
-        "pending",
-        "pending_seller",
-        "accepted",
-        "rejected",
-        "ride_assigned",
-        "out_for_delivery",
-        "delivered",
-        "payment_submitted",
-        "completed",
-        "cancelled",
-        "complain"
-      ],
-      default: "pending",
-    },
-    complainReason: { type: String },
+  buyerId: {
+    type: DataTypes.STRING(24),
+    allowNull: false
   },
-  { timestamps: { createdAt: true, updatedAt: true } }
-);
+  sellerId: {
+    type: DataTypes.STRING(24),
+    allowNull: false
+  },
+  bookAmount: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0.00
+  },
+  deliveryFee: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0.00
+  },
+  totalAmount: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0.00
+  },
+  shippingAddress: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  shippingPhone: {
+    type: DataTypes.STRING(50),
+    allowNull: true
+  },
+  shippingName: {
+    type: DataTypes.STRING(100),
+    allowNull: true
+  },
+  trackingData: {
+    type: DataTypes.JSONB,
+    defaultValue: {}
+  },
+  paymentData: {
+    type: DataTypes.JSONB,
+    defaultValue: {}
+  },
+  status: {
+    type: DataTypes.STRING(30),
+    defaultValue: 'pending',
+    validate: {
+      isIn: {
+        args: [[
+          "pending",
+          "pending_seller",
+          "accepted",
+          "rejected",
+          "ride_assigned",
+          "out_for_delivery",
+          "delivered",
+          "payment_submitted",
+          "completed",
+          "cancelled",
+          "complain"
+        ]],
+        msg: "Status is not supported"
+      }
+    }
+  },
+  complainReason: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  }
+}, {
+  sequelize,
+  modelName: 'Order',
+  tableName: 'orders',
+  timestamps: true
+});
 
-module.exports = mongoose.model("Order", OrderSchema);
+module.exports = Order;

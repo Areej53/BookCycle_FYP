@@ -1,5 +1,5 @@
-const Book = require('../models/Book');
-const User = require('../models/User');
+const { Book, User, UserViewedBook } = require('../models');
+const { Op } = require('sequelize');
 const fs = require('fs');
 const path = require('path');
 
@@ -24,7 +24,6 @@ const exactTypeEnums = ['Sell', 'Rent', 'Share'];
 
 const matchEnum = (arr, val) => {
   let lowerVal = val.toLowerCase().trim();
-  // Map any frontend values that might not strictly match the db schema
   if (lowerVal === 'self-development') lowerVal = 'self development';
   if (lowerVal === 'buy') lowerVal = 'sell';
   if (lowerVal === 'free') lowerVal = 'share';
@@ -34,11 +33,8 @@ const matchEnum = (arr, val) => {
 
 const getAllBooks = async (req, res) => {
   const { category, cats, search, q, type, conds, condition, price, minPrice, maxPrice, sort, sellerId } = req.query;
-  const queryObject = sellerId ? {} : { status: 'Available' };
-  if (sellerId) {
-    queryObject.owner = sellerId;
-  }
-
+  
+  const whereClause = sellerId ? { ownerId: sellerId } : { status: 'Available' };
 
   const finalCategory = category || cats;
   const finalSearch = search || q;
@@ -46,81 +42,90 @@ const getAllBooks = async (req, res) => {
 
   if (finalCategory) {
     const categoryList = finalCategory.split(',').map(c => matchEnum(exactCategoryEnums, c));
-    queryObject.category = { $in: categoryList };
+    whereClause.category = { [Op.in]: categoryList };
   }
   if (type) {
     const typeList = type.split(',').map(t => matchEnum(exactTypeEnums, t));
-    queryObject.exchangeType = { $in: typeList };
+    whereClause.exchangeType = { [Op.in]: typeList };
   }
   if (finalSearch) {
-    queryObject.$or = [
-      { title: { $regex: finalSearch, $options: 'i' } },
-      { author: { $regex: finalSearch, $options: 'i' } },
-      { category: { $regex: finalSearch, $options: 'i' } },
-      { description: { $regex: finalSearch, $options: 'i' } }
+    whereClause[Op.or] = [
+      { title: { [Op.iLike]: `%${finalSearch}%` } },
+      { author: { [Op.iLike]: `%${finalSearch}%` } },
+      { category: { [Op.iLike]: `%${finalSearch}%` } },
+      { description: { [Op.iLike]: `%${finalSearch}%` } }
     ];
   }
   if (finalCondition) {
     const condArray = finalCondition.split(',').map(c => matchEnum(exactCondEnums, c));
-    queryObject.condition = { $in: condArray };
+    whereClause.condition = { [Op.in]: condArray };
   }
   if (minPrice !== undefined || maxPrice !== undefined || price !== undefined) {
     const finalMin = minPrice !== undefined && minPrice !== '' && !isNaN(Number(minPrice)) ? Number(minPrice) : null;
     const finalMax = maxPrice !== undefined && maxPrice !== '' && !isNaN(Number(maxPrice)) ? Number(maxPrice) : (price !== undefined && price !== '' && !isNaN(Number(price)) ? Number(price) : null);
 
     if (finalMin !== null || finalMax !== null) {
-      queryObject.price = {};
-      if (finalMin !== null) queryObject.price.$gte = finalMin;
-      if (finalMax !== null) queryObject.price.$lte = finalMax;
+      whereClause.price = {};
+      if (finalMin !== null) whereClause.price[Op.gte] = finalMin;
+      if (finalMax !== null) whereClause.price[Op.lte] = finalMax;
 
-      // Crucial explicitly: Ensure that if a user sets max price, "free/share" books might show up (since price=0).
-      // Let's filter out "Share" books ONLY if price filter is used AND Type filter doesn't explicitly INCLUDE 'share'.
       if (!type || !type.toLowerCase().includes('share')) {
-          queryObject.exchangeType = { $ne: 'Share' };
+        whereClause.exchangeType = { ...whereClause.exchangeType, [Op.ne]: 'Share' };
       }
     }
   }
 
-  let result = Book.find(queryObject).select('-pdf').populate('owner', 'name');
-
-  // Sorting
+  // Parse Sorting
+  let sequelizeOrder = [['createdAt', 'DESC']];
   if (sort === 'price-asc') {
-    result = result.sort('price');
+    sequelizeOrder = [['price', 'ASC']];
   } else if (sort === 'price-desc') {
-    result = result.sort('-price');
+    sequelizeOrder = [['price', 'DESC']];
   } else if (sort === 'popular') {
-    result = result.sort('-views -createdAt');
-  } else if (sort === 'random') {
-    // Randomization happens after the query
-  } else if (sort === 'recent' || !sort) {
-    result = result.sort('-createdAt');
+    sequelizeOrder = [['views', 'DESC'], ['createdAt', 'DESC']];
+  }
+
+  let limitNum = undefined;
+  if (req.query.limit) {
+    const parsedLimit = Number(req.query.limit);
+    if (!isNaN(parsedLimit) && parsedLimit > 0) {
+      limitNum = parsedLimit;
+    }
   }
 
   if (sort === 'random') {
-    const allBooks = await result;
+    const allBooks = await Book.findAll({
+      where: whereClause,
+      attributes: { exclude: ['pdf'] },
+      include: [{ model: User, as: 'owner', attributes: ['name'] }]
+    });
     const shuffled = allBooks.sort(() => 0.5 - Math.random());
-    const limitNum = Number(req.query.limit);
-    const books = !isNaN(limitNum) && limitNum > 0 ? shuffled.slice(0, limitNum) : shuffled;
+    const books = limitNum ? shuffled.slice(0, limitNum) : shuffled;
     return res.status(200).json({ books, count: books.length });
   }
 
-  if (req.query.limit) {
-    const limitNum = Number(req.query.limit);
-    if (!isNaN(limitNum) && limitNum > 0) result = result.limit(limitNum);
-  }
+  const books = await Book.findAll({
+    where: whereClause,
+    attributes: { exclude: ['pdf'] },
+    include: [{ model: User, as: 'owner', attributes: ['name'] }],
+    order: sequelizeOrder,
+    limit: limitNum
+  });
 
-  const books = await result;
   res.status(200).json({ books, count: books.length });
 };
 
 const getBook = async (req, res) => {
   const { id } = req.params;
-  const book = await Book.findById(id).select('-pdf').populate('owner', 'name email');
+  const book = await Book.findByPk(id, {
+    attributes: { exclude: ['pdf'] },
+    include: [{ model: User, as: 'owner', attributes: ['name', 'email'] }]
+  });
   if (!book) return res.status(404).json({ msg: `No book with id ${id}` });
 
   // Increment global views
   book.views = (book.views || 0) + 1;
-  await book.save({ validateBeforeSave: false });
+  await book.save();
 
   // Track views securely if token is present
   const authHeader = req.headers.authorization;
@@ -129,16 +134,16 @@ const getBook = async (req, res) => {
       const token = authHeader.split(" ")[1];
       const decoded = require("jsonwebtoken").verify(token, process.env.JWT_SECRET);
       if (decoded && decoded.id) {
-        const user = await User.findById(decoded.id);
+        const user = await User.findByPk(decoded.id);
         if (user) {
-          const viewIndex = user.viewedBooks.findIndex(vb => vb.book && vb.book.toString() === id);
-          if (viewIndex > -1) {
-            user.viewedBooks[viewIndex].views += 1;
-            user.viewedBooks[viewIndex].updatedAt = Date.now();
-          } else {
-            user.viewedBooks.push({ book: id, category: book.category, views: 1, updatedAt: Date.now() });
+          const [viewRecord, created] = await UserViewedBook.findOrCreate({
+            where: { userId: decoded.id, bookId: id },
+            defaults: { category: book.category, views: 1 }
+          });
+          if (!created) {
+            viewRecord.views += 1;
+            await viewRecord.save();
           }
-          await user.save();
         }
       }
     } catch (e) {
@@ -150,7 +155,7 @@ const getBook = async (req, res) => {
 };
 
 const createBook = async (req, res) => {
-  req.body.owner = req.body.sellerId || req.user.id;
+  req.body.ownerId = req.body.sellerId || req.user.id;
   if (req.body.type) {
     req.body.exchangeType = matchEnum(exactTypeEnums, req.body.type);
   }
@@ -177,66 +182,88 @@ const createBook = async (req, res) => {
 
 const updateBook = async (req, res) => {
   const { id } = req.params;
-  const book = await Book.findOneAndUpdate(
-    { _id: id, owner: req.user.id },
-    req.body,
-    { new: true, runValidators: true }
-  );
+  const book = await Book.findOne({ where: { id, ownerId: req.user.id } });
   if (!book) return res.status(404).json({ msg: `No book with id ${id} found for user` });
+  
+  if (req.body.image) {
+    req.body.image = saveBase64Image(req.body.image);
+  }
+  if (req.body.images && Array.isArray(req.body.images)) {
+    req.body.images = req.body.images.map(img => saveBase64Image(img));
+  }
+
+  await book.update(req.body);
   res.status(200).json({ book });
 };
 
 const deleteBook = async (req, res) => {
   const { id } = req.params;
-  const book = await Book.findOneAndDelete({ _id: id, owner: req.user.id });
+  const book = await Book.findOne({ where: { id, ownerId: req.user.id } });
   if (!book) return res.status(404).json({ msg: `No book with id ${id} found for user` });
+  
+  await book.destroy();
   res.status(200).json({ msg: "Book deleted" });
 };
 
 const getRecommendedBooks = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findByPk(req.user.id);
     if (!user) return res.status(200).json({ books: [] });
 
     const interests = user.interests || [];
     
-    // Extract top categories from viewing behavior (sort by views descending)
-    const viewingBehavior = user.viewedBooks || [];
-    viewingBehavior.sort((a,b) => b.views - a.views);
+    // Extract top categories from viewing behavior
+    const viewingBehavior = await UserViewedBook.findAll({
+      where: { userId: req.user.id },
+      order: [['views', 'DESC']]
+    });
     const viewedCategories = viewingBehavior.map(vb => vb.category).filter(Boolean);
     
     const combinedCategories = [...new Set([...interests, ...viewedCategories])];
 
     let booksRaw = [];
     if (combinedCategories.length > 0) {
-      const regexCategories = combinedCategories.map(cat => new RegExp(`^${cat}$`, 'i'));
+      const categoryOrConditions = combinedCategories.map(cat => ({
+        category: { [Op.iLike]: cat }
+      }));
       
-      // Combine and utilize optimized single MongoDB query using $in
-      booksRaw = await Book.find({
-          category: { $in: regexCategories },
+      booksRaw = await Book.findAll({
+        where: {
+          [Op.or]: categoryOrConditions,
           status: 'Available',
-          owner: { $ne: req.user.id }
-      }).sort('-createdAt').limit(50).populate('owner', 'name');
+          ownerId: { [Op.ne]: req.user.id }
+        },
+        order: [['createdAt', 'DESC']],
+        limit: 50,
+        include: [{ model: User, as: 'owner', attributes: ['name'] }]
+      });
     }
 
     const finalBooks = [];
     const catCount = {};
     for (const book of booksRaw) {
-        if (!catCount[book.category]) catCount[book.category] = 0;
-        // Limit to 3 books maximum per category
-        if (catCount[book.category] < 3) {
-            catCount[book.category]++;
+        const catKey = book.category.toLowerCase();
+        if (!catCount[catKey]) catCount[catKey] = 0;
+        if (catCount[catKey] < 3) {
+            catCount[catKey]++;
             finalBooks.push(book);
         }
-        if (finalBooks.length >= 8) break; // Strict UI rule maximum 6-8 books
+        if (finalBooks.length >= 8) break;
     }
 
-    // Fallback logic for users with no interests or if their interests have no matched books yet
     if (finalBooks.length === 0) {
-      const fallbackBooks = await Book.find({
-        status: 'Available',
-        owner: { $ne: req.user.id }
-      }).sort('-views -createdAt').limit(8).populate('owner', 'name');
+      const fallbackBooks = await Book.findAll({
+        where: {
+          status: 'Available',
+          ownerId: { [Op.ne]: req.user.id }
+        },
+        order: [
+          ['views', 'DESC'],
+          ['createdAt', 'DESC']
+        ],
+        limit: 8,
+        include: [{ model: User, as: 'owner', attributes: ['name'] }]
+      });
       
       return res.status(200).json({ books: fallbackBooks });
     }
@@ -249,7 +276,7 @@ const getRecommendedBooks = async (req, res) => {
 
 const getBookPdf = async (req, res) => {
   const { id } = req.params;
-  const book = await Book.findById(id).select('pdf');
+  const book = await Book.findByPk(id, { attributes: ['pdf'] });
   if (!book) return res.status(404).json({ msg: `No book with id ${id}` });
   res.status(200).json({ pdf: book.pdf || null });
 };

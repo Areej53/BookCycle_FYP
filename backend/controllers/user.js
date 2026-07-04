@@ -1,10 +1,9 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+const { User } = require("../models");
 const sendEmail = require("../utils/sendEmail");
 
 // Simple in-memory rate limiter for password reset abuse prevention
 const resetRequests = new Map();
-
 
 const login = async (req, res) => {
   const { email, password } = req.body;
@@ -15,7 +14,7 @@ const login = async (req, res) => {
     });
   }
 
-  const foundUser = await User.findOne({ email: req.body.email });
+  const foundUser = await User.findOne({ where: { email } });
   if (foundUser) {
     if (foundUser.isBlocked) {
       return res.status(403).json({ msg: "Your account has been blocked due to a complaint." });
@@ -25,7 +24,7 @@ const login = async (req, res) => {
 
     if (isMatch) {
       const token = jwt.sign(
-        { id: String(foundUser._id), name: foundUser.name },
+        { id: String(foundUser.id), name: foundUser.name },
         process.env.JWT_SECRET,
         { expiresIn: "30d" }
       );
@@ -47,7 +46,7 @@ const dashboard = async (req, res) => {
 };
 
 const getAllUsers = async (req, res) => {
-  const users = await User.find({});
+  const users = await User.findAll();
   return res.status(200).json({ users });
 };
 
@@ -60,7 +59,7 @@ const register = async (req, res) => {
     });
   }
 
-  const existingUser = await User.findOne({ email });
+  const existingUser = await User.findOne({ where: { email } });
 
   if (existingUser) {
     return res.status(400).json({
@@ -102,7 +101,7 @@ const forgotPassword = async (req, res) => {
   }
   resetRequests.set(email, now);
 
-  const user = await User.findOne({ email: email.trim() });
+  const user = await User.findOne({ where: { email: email.trim() } });
   
   // To avoid email enumeration attacks, always say we've processed it
   if (!user) {
@@ -110,7 +109,7 @@ const forgotPassword = async (req, res) => {
   }
 
   const resetToken = jwt.sign(
-    { id: user._id.toString(), purpose: "password-reset" },
+    { id: user.id.toString(), purpose: "password-reset" },
     process.env.JWT_SECRET,
     { expiresIn: "1h" }
   );
@@ -166,14 +165,14 @@ const resetPassword = async (req, res) => {
   }
 
   try {
-    const user = await User.findById(decoded.id);
+    const user = await User.findByPk(decoded.id);
     if (!user) {
       return res.status(400).json({ msg: "User not found" });
     }
 
     user.password = password;
-    // Disable validation so legacy users missing 'interests' or 'role' can still reset passwords
-    await user.save({ validateBeforeSave: false });
+    // Save password. In Sequelize, hooks: true ensures password hashing hook is invoked
+    await user.save();
 
     return res.status(200).json({
       msg: "Password reset successful. You can log in with your new password.",
