@@ -1,0 +1,664 @@
+[
+  {
+    "_id": "69c554fab7a5f9c8615e97b7",
+    "clerkId": "user_3BUKJCKWiMGUWlXfHRVmIRBHErk",
+    "__v": 0,
+    "createdAt": "2026-03-26T15:47:05.906Z",
+    "email": "moonzyi664@gmail.com",
+    "updatedAt": "2026-03-26T16:00:47.706Z"
+  },
+  {
+    "_id": "69c57f6bf23e702ddd762754",
+    "name": "Fix Test",
+    "email": "fixsignup2139985931@bookcycle.dev",
+    "password": "$2b$12$57uzkf2kZG2HXqwgbfjsUOLjk45HvD24ovOQu.vwbE9M7rzeksuMO",
+    "phone": "",
+    "interest": "",
+    "role": "customer",
+    "createdAt": "2026-03-26T18:48:11.989Z",
+    "updatedAt": "2026-03-26T18:48:11.989Z",
+    "__v": 0
+  },
+  {
+    "_id": "69d00b18cf7353bb70144613",
+    "name": "saraa s",
+    "email": "sara@gmail.com",
+    "password": "$2a$10$MULvzF.K272zLZVTvMAeNuRnSQveAogCZCRbaUOpoBk5aUneQR8Wi",
+    "role": "customer",
+    "interests": [
+      "Science",
+      "Engineering"
+    ],
+    "__v": 1,
+    "viewedBooks": [
+      {
+        "book": "69da186af9052bbae43c51fd",
+        "views": 1,
+        "_id": "69deb4d104d39cc2310a88bb"
+      }
+    ]
+  },
+  {
+    "_id": "69d9d41aaed4d40ffc6fda58",
+    "name": "Test User",
+    "email": "test3@example.com",
+    "password": "$2a$10$.GnMjUnQzgag0P32lqfGveUtYYk5il4PbWOzcobapez2pMzdCCJPK",
+    "role": "customer",
+    "interests": [
+      "fiction"
+    ],
+    "__v": 0
+  },
+  {
+    "_id": "69da17c2f9052bbae43c51fa",
+    "name": "Jane Doe",
+    "email": "jane.test@example.com",
+    "password": "$2a$10$ThdGMXvlvEYkZisseIieSecPzcCOkur/h7rlrnRHmdN0bl8EpgVLm",
+    "role": "customer",
+    "interests": [
+      "Programming"
+    ],
+    "__v": 0
+  },
+  {
+    "_id": "69da70729456a1a65a12f8ac",
+    "name": "Hafsa Sarfaraz",
+    "email": "hafsarfaraz@gmail.com",
+    "password": "$2a$10$C6ZaycNFqnCd.jFp9DXEYORXFPVSVFS9fnUZaTgkYkD3skiIzK826",
+    "role": "customer",
+    "interests": [
+      "Programming",
+      "Engineering",
+      "Islamic Books"
+    ],
+    "__v": 12,
+    "viewedBooks": [
+      {
+        "book": "69e13dda9c18d8abe21322cf",
+        "category": "Science",
+        "views": 5,
+        "updatedAt": "2026-04-17T09:37:56.871Z",
+        "_id": "69e1f69a9c18d8abe213fafb"
+      },
+      {
+        "book": "69de537da1e1cf208ed74dc3",
+        "category": "Physics",
+        "views": 5,
+        "updatedAt": "2026-04-26T16:28:30.087Z",
+        "_id": "69e1f6ed9c18d8abe213fb14"
+      },
+      {
+        "book": "69e204c89c18d8abe21408ae",
+        "category": "Science",
+        "views": 3,
+        "updatedAt": "2026-04-20T12:57:29.619Z",
+        "_id": "69e204d79c18d8abe21408bd"
+      },
+      {
+        "book": "69dea452b87d265fc3f2e64f",
+        "category": "Novels",
+        "views": 5,
+        "updatedAt": "2026-04-21T10:14:56.025Z",
+        "_id": "69e621fa44c8758f12303838"
+      },
+      {
+        "book": "69daba70443f8a2d1ca24096",
+        "category": "Mathematics",
+        "views": 4,
+        "updatedAt": "2026-04-26T15:55:47.225Z",
+        "_id": "69e6229244c8758f1230385c"
+      },
+      {
+        "book": "69e363b0a1b98f3d5390a239",
+        "category": "Algebra",
+        "views": 1,
+        "updatedAt": "2026-04-20T19:36:46.637Z",
+        "_id": "69e6804e4fd5c73b586a9f85"
+      },
+      {
+        "book": "69de64faa1e1cf208ed74dce",
+        "category": "Notes",
+        "views": 3,
+        "updatedAt": "2026-04-26T15:55:05.618Z",
+        "_id": "69e752d21352600bd05bbd52"
+      },
+      {
+        "book": "69dab487443f8a2d1ca24044",
+        "category": "Science",
+        "views": 1,
+        "updatedAt": "2026-04-21T10:36:09.444Z",
+        "_id": "69e753191352600bd05bbd76"
+      },
+      {
+        "book": "69dab525443f8a2d1ca24046",
+        "category": "Science",
+        "views": 1,
+        "updatedAt": "2026-04-24T16:49:54.238Z",
+        "_id": "69eb9f32375b1ddd21f9c6fe"
+      },
+      {
+        "book": "69dab93a443f8a2d1ca24092",
+        "category": "Algebra",
+        "views": 1,
+        "updatedAt": "2026-04-26T15:55:37.757Z",
+        "_id": "69ee35791413028b2362aaab"
+      },
+      {
+        "book": "69da91c2e9b6c7ec3c76ef96",
+        "category": "Mathematics",
+        "views": 2,
+        "updatedAt": "2026-04-26T16:27:38.541Z",
+        "_id": "69ee3cec2971edd1139d48c5"
+      },
+      {
+        "book": "69dabb21443f8a2d1ca24098",
+        "category": "Physics",
+        "views": 1,
+        "updatedAt": "2026-04-26T17:03:34.838Z",
+        "_id": "69ee4566bd6922c88866cb1a"
+      }
+    ],
+    "finance": {
+      "completedOrdersRevenue": 480,
+      "monthlyEarnings": 480,
+      "totalEarnings": 480
+    },
+    "complaintCount": 2,
+    "isBlocked": false
+  },
+  {
+    "_id": "69dc932964d9c99c35f518ab",
+    "name": "Areej Fatima",
+    "email": "areej5@gmail.co",
+    "password": "$2a$10$YQm9LeunM/wRCso..26kyu03bX/zNe413bdvIFulfTQycG3hDKbTm",
+    "role": "customer",
+    "interests": [
+      "Programming"
+    ],
+    "__v": 0
+  },
+  {
+    "_id": "69e7a8f71c586ac8361a7caa",
+    "name": "Test 1776789751030",
+    "email": "test1776789751030@test.com",
+    "password": "$2a$10$H9yh50/kQcABaPLb3anSS.aUOpX9cmmn67xXUYpYXo6DmlF5EfCZ2",
+    "role": "customer",
+    "interests": [
+      "Notes"
+    ],
+    "finance": {
+      "totalEarnings": 0,
+      "monthlyEarnings": 0,
+      "completedOrdersRevenue": 0
+    },
+    "viewedBooks": [],
+    "__v": 0
+  },
+  {
+    "_id": "69f1bb6bb37e6fe6f2974bb9",
+    "name": "hafsa sarfaraz",
+    "email": "saha124fia@gmail.com",
+    "password": "$2a$10$YhwnMSqJcrfvrTRMIBz2tuuJVEJhJucDj9OJjPP7keMOS8qSVZdH2",
+    "role": "customer",
+    "interests": [
+      "Programming",
+      "Science",
+      "Novels"
+    ],
+    "finance": {
+      "totalEarnings": 0,
+      "monthlyEarnings": 0,
+      "completedOrdersRevenue": 0
+    },
+    "isBlocked": false,
+    "complaintCount": 1,
+    "viewedBooks": [
+      {
+        "book": "69dab525443f8a2d1ca24046",
+        "category": "Science",
+        "views": 1,
+        "updatedAt": "2026-04-29T08:29:48.686Z",
+        "_id": "69f1c17cb37e6fe6f2975204"
+      },
+      {
+        "book": "69dab75c443f8a2d1ca24080",
+        "category": "Self Development",
+        "views": 1,
+        "updatedAt": "2026-04-29T08:29:59.841Z",
+        "_id": "69f1c187b37e6fe6f297521c"
+      }
+    ],
+    "__v": 2
+  },
+  {
+    "_id": "69f304918b283b4c02c0762c",
+    "name": "Areej Fatima",
+    "email": "areejfyp@gmail.com",
+    "password": "$2a$10$b7t4dIvsJ7YfM26LiUn/ZOR.cdOIIVfgoC5bCFOKoRQCra8abKgwe",
+    "role": "customer",
+    "interests": [
+      "Programming",
+      "Novels"
+    ],
+    "finance": {
+      "totalEarnings": 0,
+      "monthlyEarnings": 0,
+      "completedOrdersRevenue": 0
+    },
+    "isBlocked": false,
+    "complaintCount": 0,
+    "viewedBooks": [],
+    "__v": 0
+  },
+  {
+    "_id": "69c58009024caa6095d3b0e5",
+    "name": "Fix Test",
+    "email": "forgotok2066615723@bookcycle.dev",
+    "password": "$2b$12$SVHGt/HM8VF9L0D2gew15ueUCM1orhQmUg3nuuau5H2ZJxU9i8sEi",
+    "phone": "",
+    "interest": "",
+    "role": "customer",
+    "createdAt": "2026-03-26T18:50:49.036Z",
+    "updatedAt": "2026-03-26T18:50:50.123Z",
+    "__v": 0
+  },
+  {
+    "_id": "69c580dcf23e702ddd76275d",
+    "name": "moon Zyi",
+    "email": "areej5849582@gmail.com",
+    "password": "$2a$10$Jx27QbQx.iRVEGprT/s9x.O39YN.4GQnbt4sOCaxezx/43XO..eAC",
+    "phone": "",
+    "interest": "Gaming",
+    "role": "customer",
+    "createdAt": "2026-03-26T18:54:20.213Z",
+    "updatedAt": "2026-03-26T18:54:20.213Z",
+    "__v": 1,
+    "finance": {
+      "completedOrdersRevenue": 5497,
+      "monthlyEarnings": 5497,
+      "totalEarnings": 5497
+    },
+    "complaintCount": 0,
+    "interests": [],
+    "isBlocked": false,
+    "viewedBooks": []
+  },
+  {
+    "_id": "69c7fda29767c9a84f15d080",
+    "name": "Order Test",
+    "email": "order_test_123@example.com",
+    "password": "$2a$10$mAAYRnqy7m0eKPVBZvbfEuUEjbKu4VQukP4uutKKpp0jjQp5qcQD6",
+    "__v": 0
+  },
+  {
+    "_id": "69e35fe9a1b98f3d5390a1a6",
+    "name": "hafsa sarfaraz",
+    "email": "51576@students.riphah.edu.pk",
+    "password": "$2a$10$pPhjYv.rhZs59Jj3SUEXT.V/RoRYF0qs9gW4fRec1fYTDr4efk/RC",
+    "role": "customer",
+    "interests": [
+      "Science",
+      "Mathematics",
+      "Notes"
+    ],
+    "finance": {
+      "totalEarnings": 396,
+      "monthlyEarnings": 396,
+      "completedOrdersRevenue": 396
+    },
+    "viewedBooks": [
+      {
+        "book": "69dea452b87d265fc3f2e64f",
+        "category": "Novels",
+        "views": 1,
+        "updatedAt": "2026-04-18T10:43:01.043Z",
+        "_id": "69e36035a1b98f3d5390a1c2"
+      },
+      {
+        "book": "69e204c89c18d8abe21408ae",
+        "category": "Science",
+        "views": 1,
+        "updatedAt": "2026-04-20T12:58:06.848Z",
+        "_id": "69e622de44c8758f123038b0"
+      },
+      {
+        "book": "69daba70443f8a2d1ca24096",
+        "category": "Mathematics",
+        "views": 1,
+        "updatedAt": "2026-04-24T17:15:04.572Z",
+        "_id": "69eba518880f00a2727b32fd"
+      }
+    ],
+    "__v": 3,
+    "complaintCount": 2,
+    "isBlocked": false
+  },
+  {
+    "_id": "69c57c7ff23e702ddd762746",
+    "name": "Auth Test",
+    "email": "authtest299464158@bookcycle.dev",
+    "password": "$2b$12$dsPy8y9v/V28T.V9gKyCFuh9.3rgC05MQJAuwn78GdBxNjqlKeJyG",
+    "phone": "",
+    "interest": "",
+    "role": "customer",
+    "createdAt": "2026-03-26T18:35:43.281Z",
+    "updatedAt": "2026-03-26T18:35:43.281Z",
+    "__v": 0
+  },
+  {
+    "_id": "69c7fd5c8f6f68d703fc67e3",
+    "name": "Test User",
+    "email": "testuser_unique_999@example.com",
+    "password": "$2a$10$jorupF2/RBKnQxrt./RqM.Ny85Pg/enSJe/KQEyi3gpPWgQ1r0HQq",
+    "__v": 0
+  },
+  {
+    "_id": "69c7fd798f6f68d703fc67e6",
+    "name": "Test User2",
+    "email": "testuser_unique_888@example.com",
+    "password": "$2a$10$loFcJpqxN6.aQdjAmdSbZuiyRSmpsA.ENUA2fNDjZLiPOldac10cm",
+    "__v": 0
+  },
+  {
+    "_id": "69e7adf81c586ac8361a7cc8",
+    "name": "Bob",
+    "email": "bob1776791031850@test.com",
+    "password": "$2a$10$Fav9.X4npWlYvHklSb7yI.o6liKN3uLXzogQjfLv4PZ23yTykDdqq",
+    "role": "customer",
+    "interests": [
+      "XYZ-Fake"
+    ],
+    "finance": {
+      "totalEarnings": 0,
+      "monthlyEarnings": 0,
+      "completedOrdersRevenue": 0
+    },
+    "viewedBooks": [],
+    "__v": 0
+  },
+  {
+    "_id": "69f2d8818b283b4c02c068c5",
+    "name": "Areeeeej Fatima",
+    "email": "49387@students.riphah.edu.pk",
+    "password": "$2a$10$RnYe/V1p9BF0F5y7Von6GeY0Q0LCPFWlO5Rqx7.gE5K4rfaK4wIdu",
+    "role": "customer",
+    "interests": [
+      "Algebra",
+      "Novels"
+    ],
+    "finance": {
+      "totalEarnings": 0,
+      "monthlyEarnings": 0,
+      "completedOrdersRevenue": 0
+    },
+    "isBlocked": false,
+    "complaintCount": 1,
+    "viewedBooks": [
+      {
+        "book": "69dab93a443f8a2d1ca24092",
+        "category": "Algebra",
+        "views": 1,
+        "updatedAt": "2026-04-30T04:25:19.286Z",
+        "_id": "69f2d9af8b283b4c02c06976"
+      },
+      {
+        "book": "69da92cde9b6c7ec3c76efa0",
+        "category": "Physics",
+        "views": 3,
+        "updatedAt": "2026-04-30T04:49:45.777Z",
+        "_id": "69f2df348b283b4c02c06b3f"
+      },
+      {
+        "book": "69de537da1e1cf208ed74dc3",
+        "category": "Physics",
+        "views": 1,
+        "updatedAt": "2026-04-30T04:49:15.023Z",
+        "_id": "69f2df4b8b283b4c02c06b5e"
+      }
+    ],
+    "__v": 3
+  },
+  {
+    "_id": "69c567b1b7a5f9c8615e97dd",
+    "clerkId": "user_3BRt5RZVvaWB6Gzwb8KOHWt3pm5",
+    "__v": 1,
+    "createdAt": "2026-03-26T17:06:54.263Z",
+    "email": "mono5849582@gmail.com",
+    "updatedAt": "2026-03-26T17:06:57.534Z",
+    "finance": {
+      "completedOrdersRevenue": 2499,
+      "monthlyEarnings": 2499,
+      "totalEarnings": 2499
+    },
+    "interests": [],
+    "password": "$2a$10$CaGKOmCP47tWxGdvJ2luHuFjG2.ZZ2qovnhtJegn2X740rhg66BCO",
+    "viewedBooks": [],
+    "complaintCount": 0,
+    "isBlocked": false
+  },
+  {
+    "_id": "69c57fb1f23e702ddd762758",
+    "name": "Fix Test",
+    "email": "fixsignup1171910786@bookcycle.dev",
+    "password": "$2b$12$TLOYbASeEaf95FEO0j6PuOd3NnCJDEPZaNtYqRodgOKRDDQOlFTtm",
+    "phone": "",
+    "interest": "",
+    "role": "customer",
+    "createdAt": "2026-03-26T18:49:21.118Z",
+    "updatedAt": "2026-03-26T18:49:21.118Z",
+    "__v": 0
+  },
+  {
+    "_id": "69c7e8d8b4578a045188a53a",
+    "name": "Areej",
+    "email": "areej@gmail.com",
+    "password": "$2a$10$qkPfX9hATC54RwrkSrM2uOrLxUG6Q1OERtlp78QL4RLNoS3gmsmjG",
+    "__v": 0
+  },
+  {
+    "_id": "69c7fdb20f7860b1c354c822",
+    "name": "Order Test2",
+    "email": "order_test_456@example.com",
+    "password": "$2a$10$ctQwH8JABlSVrlsLc4v5sOUIuSujpdV79RnJv0nCZM/x52ssA8yv6",
+    "__v": 0
+  },
+  {
+    "_id": "69d9d50eab85932f70604bbf",
+    "name": "Wajeeha Nadeem",
+    "email": "jiarajpoot71@gmail.com",
+    "password": "$2a$10$433MPAQutvt.n1u4RYewLOeCVf7vwvTaWB4z6WlyLbPlpEOBDj19i",
+    "role": "customer",
+    "interests": [
+      "Engineering",
+      "Programming"
+    ],
+    "__v": 1,
+    "complaintCount": 0,
+    "finance": {
+      "completedOrdersRevenue": 0,
+      "monthlyEarnings": 0,
+      "totalEarnings": 0
+    },
+    "isBlocked": false,
+    "viewedBooks": []
+  },
+  {
+    "_id": "69da413ef9052bbae43c522c",
+    "name": "Test User",
+    "email": "seller_test1@example.com",
+    "password": "$2a$10$zBq/ko81O9pSL.Nsl6m0QueYNUsZ76YXLPtQRCkoyDL5YbsgQM0zq",
+    "role": "customer",
+    "interests": [
+      "Novels",
+      "Programming"
+    ],
+    "__v": 0
+  },
+  {
+    "_id": "69dc92f264d9c99c35f518a8",
+    "name": "Nimra Waqar",
+    "email": "nimra123@gmail.co",
+    "password": "$2a$10$wx4h/1eG2S0pDZzbhBmKs.LcTzA0sHUuGumdPxS9Z2OhdDoIWnKnO",
+    "role": "customer",
+    "interests": [
+      "Programming"
+    ],
+    "__v": 0
+  },
+  {
+    "_id": "69e21be44021655c776a73f1",
+    "name": "hafsa saad",
+    "email": "hafsyysaad@gmail.com",
+    "password": "$2a$10$yRTaQ/jTAYDk7eLv7RinPeEpBHsasR7b7KxGwEqlNRfxevmbHCsc6",
+    "role": "customer",
+    "interests": [
+      "Science",
+      "Mathematics",
+      "Novels"
+    ],
+    "viewedBooks": [
+      {
+        "book": "69e204c89c18d8abe21408ae",
+        "category": "Science",
+        "views": 2,
+        "updatedAt": "2026-04-17T13:15:30.006Z",
+        "_id": "69e21c134021655c776a7418"
+      }
+    ],
+    "__v": 1,
+    "finance": {
+      "completedOrdersRevenue": 0,
+      "monthlyEarnings": 0,
+      "totalEarnings": 0
+    },
+    "complaintCount": 1
+  },
+  {
+    "_id": "69e7444828e4ca7a12a37b06",
+    "name": "Fatima b",
+    "email": "f16186282@gmail.com",
+    "password": "$2a$10$.M/HGKXv8nT9UQRjHWWupOY5bUqq4rKAvktvLrR6V2Gc/EmNovSyK",
+    "role": "customer",
+    "interests": [
+      "Novels",
+      "Self Development"
+    ],
+    "finance": {
+      "totalEarnings": 0,
+      "monthlyEarnings": 0,
+      "completedOrdersRevenue": 0
+    },
+    "viewedBooks": [
+      {
+        "book": "69de64faa1e1cf208ed74dce",
+        "category": "Notes",
+        "views": 6,
+        "updatedAt": "2026-04-25T17:59:40.986Z",
+        "_id": "69e7b3091c586ac8361a7e1d"
+      },
+      {
+        "book": "69de537da1e1cf208ed74dc3",
+        "category": "Physics",
+        "views": 4,
+        "updatedAt": "2026-04-25T18:12:27.404Z",
+        "_id": "69ecff6bc1744619ef55ed36"
+      },
+      {
+        "book": "69dabb21443f8a2d1ca24098",
+        "category": "Physics",
+        "views": 1,
+        "updatedAt": "2026-04-25T17:53:17.156Z",
+        "_id": "69ecff8dc1744619ef55ed6f"
+      },
+      {
+        "book": "69dab8a5443f8a2d1ca24090",
+        "category": "Algebra",
+        "views": 3,
+        "updatedAt": "2026-04-25T18:12:34.207Z",
+        "_id": "69ecff97c1744619ef55ed81"
+      },
+      {
+        "book": "69dab9c4443f8a2d1ca24094",
+        "category": "Algebra",
+        "views": 1,
+        "updatedAt": "2026-04-25T17:53:31.841Z",
+        "_id": "69ecff9bc1744619ef55ed8d"
+      },
+      {
+        "book": "69dab75c443f8a2d1ca24080",
+        "category": "Self Development",
+        "views": 1,
+        "updatedAt": "2026-04-25T17:54:46.493Z",
+        "_id": "69ecffe6c1744619ef55edce"
+      },
+      {
+        "book": "69da71465cb85f2b5eb9bbc1",
+        "category": "Novels",
+        "views": 1,
+        "updatedAt": "2026-04-25T17:55:06.081Z",
+        "_id": "69ecfffac1744619ef55ee01"
+      },
+      {
+        "book": "69dab0d26c71ef053d28bcda",
+        "category": "Notes",
+        "views": 2,
+        "updatedAt": "2026-04-25T17:59:07.697Z",
+        "_id": "69ed0064c1744619ef55ee74"
+      },
+      {
+        "book": "69dc99e4677afcd3468a243c",
+        "category": "Notes",
+        "views": 1,
+        "updatedAt": "2026-04-25T17:58:43.290Z",
+        "_id": "69ed00d3c1744619ef55ef13"
+      },
+      {
+        "book": "69dab487443f8a2d1ca24044",
+        "category": "Science",
+        "views": 1,
+        "updatedAt": "2026-04-25T17:58:46.614Z",
+        "_id": "69ed00d6c1744619ef55ef23"
+      }
+    ],
+    "__v": 10,
+    "complaintCount": 0,
+    "isBlocked": false
+  },
+  {
+    "_id": "69e7a8cd1c586ac8361a7ca0",
+    "name": "Test 1776789708106",
+    "email": "test1776789708106@test.com",
+    "password": "$2a$10$OR1ulwZQ3QmxDFCE7l/ZxeRfVG6k83C7mJWq/rgm/ZmkKzFaOXuCW",
+    "role": "customer",
+    "interests": [
+      "Programming"
+    ],
+    "finance": {
+      "totalEarnings": 0,
+      "monthlyEarnings": 0,
+      "completedOrdersRevenue": 0
+    },
+    "viewedBooks": [],
+    "__v": 0
+  },
+  {
+    "_id": "69f2d9708b283b4c02c0692a",
+    "name": "wajeeha nadeem",
+    "email": "wajeeha.contact@gmail.com",
+    "password": "$2a$10$nyXyLVvvlwGBg6K/KdBCq.ZtHBKtr6vgY0EfFGF1xiEfPFCd7YbC6",
+    "role": "customer",
+    "interests": [
+      "Physics",
+      "Programming"
+    ],
+    "finance": {
+      "totalEarnings": 0,
+      "monthlyEarnings": 0,
+      "completedOrdersRevenue": 0
+    },
+    "isBlocked": false,
+    "complaintCount": 0,
+    "viewedBooks": [],
+    "__v": 0
+  }
+]

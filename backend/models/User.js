@@ -1,69 +1,104 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
+const { DataTypes, Model } = require('sequelize');
+const { sequelize } = require('../db/connectPostgres');
+const bcrypt = require('bcryptjs');
 
-const UserSchema = new mongoose.Schema({
+class User extends Model {
+  async comparePassword(candidatePassword) {
+    return bcrypt.compare(candidatePassword, this.password);
+  }
+  toJSON() {
+    const values = { ...this.get() };
+    values._id = values.id;
+    return values;
+  }
+}
+
+User.init({
+  id: {
+    type: DataTypes.STRING(24),
+    primaryKey: true,
+    allowNull: false,
+    defaultValue: () => require('crypto').randomBytes(12).toString('hex')
+  },
   name: {
-    type: String,
-    required: [true, "Please provide name"],
-    minlength: 3,
-    maxlength: 50,
+    type: DataTypes.STRING(50),
+    allowNull: false,
+    validate: {
+      len: {
+        args: [3, 50],
+        msg: "Please provide name between 3 and 50 characters"
+      }
+    }
   },
   email: {
-    type: String,
-    required: [true, "Please provide email"],
-    minlength: 3,
-    maxlength: 50,
-    match: [
-      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-      "Please provide a valid email",
-    ],
-    unique: true,
+    type: DataTypes.STRING(50),
+    allowNull: false,
+    unique: {
+      msg: "Email already in use"
+    },
+    validate: {
+      isEmail: {
+        msg: "Please provide a valid email"
+      }
+    }
   },
   password: {
-    type: String,
-    required: [true, "Please provide password"],
-    minlength: 3,
+    type: DataTypes.STRING(255),
+    allowNull: false
   },
   role: {
-    type: String,
-    enum: {
-      values: ["customer", "shopkeeper"],
-      message: "{VALUE} is not supported as a role"
-    },
-    required: [true, "Please provide role"],
+    type: DataTypes.STRING(20),
+    allowNull: false,
+    validate: {
+      isIn: {
+        args: [['customer', 'shopkeeper']],
+        msg: "Role is not supported"
+      }
+    }
   },
   interests: {
-    type: [String],
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: false,
     validate: {
-      validator: function (v) {
-        return v && v.length > 0;
-      },
-      message: "Please select at least one interest",
-    },
+      notEmptyArray(value) {
+        if (!value || value.length === 0) {
+          throw new Error('Please select at least one interest');
+        }
+      }
+    }
   },
-  finance: {
-    totalEarnings: { type: Number, default: 0 },
-    monthlyEarnings: { type: Number, default: 0 },
-    completedOrdersRevenue: { type: Number, default: 0 }
+  finance_totalEarnings: {
+    type: DataTypes.DECIMAL(12, 2),
+    defaultValue: 0.00
   },
-  viewedBooks: [{
-    book: { type: mongoose.Schema.Types.ObjectId, ref: 'Book' },
-    category: { type: String },
-    views: { type: Number, default: 1 },
-    updatedAt: { type: Date, default: Date.now }
-  }],
-  isBlocked: { type: Boolean, default: false },
-  complaintCount: { type: Number, default: 0 }
+  finance_monthlyEarnings: {
+    type: DataTypes.DECIMAL(12, 2),
+    defaultValue: 0.00
+  },
+  finance_completedOrdersRevenue: {
+    type: DataTypes.DECIMAL(12, 2),
+    defaultValue: 0.00
+  },
+  isBlocked: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  complaintCount: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  }
+}, {
+  sequelize,
+  modelName: 'User',
+  tableName: 'users',
+  hooks: {
+    beforeSave: async (user) => {
+      if (user.changed('password')) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+    }
+  }
 });
 
-UserSchema.pre("save", async function () {
-  if (!this.isModified("password")) return;
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-});
-
-UserSchema.methods.comparePassword = async function (candidatePassword) {
-  return bcrypt.compare(candidatePassword, this.password);
-};
-
-module.exports = mongoose.model("User", UserSchema);
+module.exports = User;

@@ -9,7 +9,8 @@ if (!fs.existsSync(path.join(__dirname, 'uploads'))) {
 const express = require("express");
 require("express-async-errors");
 const cors = require("cors");
-const connectDB = require("./db/connect");
+const { connectPostgres, sequelize } = require("./db/connectPostgres");
+require("./models"); // Initialize models and associations
 const mainRouter = require("./routes/user");
 const booksRouter = require("./routes/books");
 const transactionsRouter = require("./routes/transactions");
@@ -50,7 +51,8 @@ const start = async () => {
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET is missing. Add it to backend/.env");
     }
-    await connectDB(process.env.MONGO_URI);
+    await connectPostgres();
+    await sequelize.sync();
     app.listen(port, () => {
       console.log(`Server is running on port ${port}`);
     });
