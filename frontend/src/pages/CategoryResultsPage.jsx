@@ -210,6 +210,7 @@ export default function CategoryResultsPage() {
           <div className="bc-img-wrap" style={{ position: 'relative' }}>
             <img src={getImageUrl(book)} alt={book.title} className="bc-img"/>
             {book.exchangeType === 'Sell' && <span className="tb tb-buy">Buy</span>}
+            {book.exchangeType === 'Rent' && <span className="tb tb-rent" style={{ background: 'var(--primary)', color: '#fff', padding: '4px 10px', borderRadius: '4px', fontSize: '.75rem', fontWeight: 'bold' }}>Rent</span>}
             {book.exchangeType === 'Share' && <span className="tb tb-free">Free</span>}
           </div>
           <div className="bc-body">
@@ -224,15 +225,22 @@ export default function CategoryResultsPage() {
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
                       Free Shelf
                     </span>
+                  ) : book.exchangeType === 'Rent' ? (
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>
+                        Rs. {book.rentDetails?.rentPrice || book.price}
+                      </span>
+                      <span style={{ fontSize: '.72rem', color: 'var(--muted)', fontWeight: 600 }}>
+                        For {book.rentDetails?.rentalDuration || book.duration || '3 Months'}
+                      </span>
+                    </div>
                   ) : (
                     <>
                     <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. {book.price}</span>
                     </>
                   )}
               </div>
-              {book.exchangeType === 'Rent' ? (
-                <span style={{ fontSize: '.8rem', color: 'var(--muted)', fontWeight: 600 }}>Currently unavailable</span>
-              ) : (
+              {(book.exchangeType === 'Sell' || book.exchangeType === 'Rent') ? (
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <button 
                       onClick={(e) => { e.stopPropagation(); toggleWishlist(book); }}
@@ -250,6 +258,8 @@ export default function CategoryResultsPage() {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                   </Link>
                 </div>
+              ) : (
+                <span style={{ fontSize: '.8rem', color: 'var(--muted)', fontWeight: 600 }}>Unavailable</span>
               )}
             </div>
           </div>

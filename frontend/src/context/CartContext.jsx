@@ -34,10 +34,7 @@ export const CartProvider = ({ children }) => {
     const [cart, setCart] = useState(() => {
         try {
             const localData = localStorage.getItem('bookcycle_cart');
-            const parsed = localData ? JSON.parse(localData) : [];
-            return Array.isArray(parsed)
-                ? parsed.filter((item) => String(item?.type || '').toLowerCase() !== 'rent')
-                : [];
+            return localData ? JSON.parse(localData) : [];
         } catch (error) {
             console.error('Failed to parse cart from localStorage:', error);
             return [];
@@ -91,6 +88,13 @@ export const CartProvider = ({ children }) => {
             ? (book.exchangeType === 'Sell' ? 'buy' : book.exchangeType === 'Rent' ? 'rent' : 'free')
             : (book.type || 'buy');
 
+        const rentPriceVal = isRaw 
+            ? (book.rentDetails?.rentPrice || book.price) 
+            : (book.rentPrice || book.price);
+        const rentDurationVal = isRaw
+            ? (book.rentDetails?.rentalDuration || book.duration)
+            : (book.rentalDuration || book.duration);
+
         const cartItem = {
             ...(isRaw ? {} : book),
             id: isRaw ? book._id : (book.id || book._id),
@@ -101,9 +105,10 @@ export const CartProvider = ({ children }) => {
             condition: book.condition,
             img: isRaw ? getImageUrl(book) : (book.img || getImageUrl(book)),
             type: String(resolvedType || 'buy').toLowerCase(),
-            price: toSafeNumber(book.price),
-            rentPerWeek: toSafeNumber(book.rentPerWeek ?? book.price),
-            duration: String(book.duration || '1'),
+            price: toSafeNumber(resolvedType === 'rent' ? rentPriceVal : book.price),
+            rentPerWeek: toSafeNumber(resolvedType === 'rent' ? rentPriceVal : book.price),
+            duration: String(resolvedType === 'rent' ? '1' : (book.duration || '1')),
+            rentalDuration: String(rentDurationVal || ''),
             quantity: Number(book.quantity || 1),
         };
 
@@ -111,9 +116,6 @@ export const CartProvider = ({ children }) => {
         const sellerId = cartItem.sellerId || book?.sellerId || book?.owner?._id || book?.owner || null;
         if (currentUserId && sellerId && String(currentUserId) === String(sellerId)) {
             setModalConfig({ isOpen: true, message: "The book is already in your listings" });
-            return false;
-        }
-        if (cartItem.type === 'rent') {
             return false;
         }
 

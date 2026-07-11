@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import { useOrders } from "../context/OrdersContext";
 import { useNotifications } from "../context/NotificationContext";
 import { DashboardApi } from "../services/api";
+import { api } from "../api/client";
 import StatCard from "../components/StatCard";
 import OrderCard from "../components/OrderCard";
 import NotificationItem from "../components/NotificationItem";
@@ -74,6 +75,168 @@ const SellerOrdersPanel = ({ orders, loading }) => {
   )
 };
 
+const BuyerRentalOrdersPanel = ({ orders, token }) => {
+  const handleCancelRequest = async (orderId) => {
+    if (!window.confirm("Are you sure you want to cancel this rental request?")) return;
+    try {
+      await DashboardApi.updateOrder({ token, orderId, payload: { status: 'cancelled' } });
+      window.location.reload();
+    } catch (err) {
+      alert("Failed to cancel rental request.");
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      {orders.length === 0 ? (
+        <div style={{ color: PALETTE.muted, fontSize: '.84rem' }}>No rental orders yet.</div>
+      ) : (
+        orders.map((o, idx) => {
+          const firstItem = o.items?.[0] || {};
+          const isPending = o.status === 'pending' || o.status === 'pending_seller' || o.status === 'payment_submitted';
+
+          return (
+            <div key={o._id || idx} style={{ padding: '12px', borderRadius: '12px', background: PALETTE.bg, border: `1px solid ${PALETTE.border}`, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontWeight: 700, fontSize: '.84rem', color: PALETTE.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '180px' }}>{firstItem.title}</div>
+                <span style={{ fontSize: '.68rem', fontWeight: 700, padding: '3px 8px', borderRadius: 50, background: o.status === 'completed' ? 'rgba(45,106,79,.1)' : 'rgba(188,108,37,.1)', color: o.status === 'completed' ? '#2d6a4f' : PALETTE.cta }}>
+                  {o.status === 'payment_submitted' ? 'Reserved (Verifying)' : o.status.toUpperCase()}
+                </span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '.72rem', color: PALETTE.muted }}>
+                <div><strong>Rent Price:</strong> Rs. {o.bookAmount != null ? o.bookAmount : o.totalAmount}</div>
+                <div><strong>Duration:</strong> {firstItem.rentalDuration || firstItem.duration || '3 Months'}</div>
+                <div><strong>Payment:</strong> {o.paymentData?.receiptUrl ? 'Receipt Uploaded' : 'Pending'}</div>
+                {o.status === 'completed' && (
+                  <>
+                    <div><strong>Start:</strong> {firstItem.rentalStartDate ? new Date(firstItem.rentalStartDate).toLocaleDateString() : 'Active'}</div>
+                    <div><strong>End:</strong> {firstItem.rentalEndDate ? new Date(firstItem.rentalEndDate).toLocaleDateString() : 'Active'}</div>
+                  </>
+                )}
+              </div>
+              {isPending && (
+                <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                  {!o.paymentData?.receiptUrl && (
+                    <a href={`/confirm-payment?orderId=${o._id}`} style={{ textDecoration: 'none', background: PALETTE.primary, color: '#fff', fontSize: '.68rem', padding: '4px 10px', borderRadius: '4px', fontWeight: 700 }}>
+                      Upload Receipt
+                    </a>
+                  )}
+                  <button onClick={() => handleCancelRequest(o._id)} style={{ background: 'transparent', border: `1px solid ${PALETTE.cta}`, color: PALETTE.cta, fontSize: '.68rem', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 700 }}>
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
+
+const ExchangeRequestsPanel = ({ requests, token, type = 'received' }) => {
+  const handleAcceptRequest = async (requestId) => {
+    if (!window.confirm("Are you sure you want to accept this exchange request? This will reserve both books.")) return;
+    try {
+      await api.put(`/exchange-requests/${requestId}/accept`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      window.location.reload();
+    } catch (err) {
+      alert("Failed to accept exchange request.");
+    }
+  };
+
+  const handleRejectRequest = async (requestId) => {
+    if (!window.confirm("Are you sure you want to reject this exchange request?")) return;
+    try {
+      await api.put(`/exchange-requests/${requestId}/reject`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      window.location.reload();
+    } catch (err) {
+      alert("Failed to reject exchange request.");
+    }
+  };
+
+  const handleCancelRequest = async (requestId) => {
+    if (!window.confirm("Are you sure you want to cancel this exchange request?")) return;
+    try {
+      await api.put(`/exchange-requests/${requestId}/cancel`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      window.location.reload();
+    } catch (err) {
+      alert("Failed to cancel exchange request.");
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      {requests.length === 0 ? (
+        <div style={{ color: PALETTE.muted, fontSize: '.84rem' }}>{type === 'received' ? 'No exchange requests received yet.' : 'No exchange requests sent yet.'}</div>
+      ) : (
+        requests.map((r, idx) => {
+          const requestedBook = r.requestedBook || {};
+          const offeredBook = r.offeredBook || {};
+          const requester = r.requester || {};
+          const owner = r.owner || {};
+          const isPending = r.status === 'Pending';
+          const statusColors = {
+            'Pending': 'rgba(188,108,37,.1)',
+            'Accepted': 'rgba(45,106,79,.1)',
+            'Rejected': 'rgba(200,0,0,.1)',
+            'Cancelled': 'rgba(96,108,56,.1)',
+            'InDelivery': 'rgba(221,161,94,.1)',
+            'Completed': 'rgba(45,106,79,.1)'
+          };
+          const statusTextColors = {
+            'Pending': PALETTE.cta,
+            'Accepted': '#2d6a4f',
+            'Rejected': '#a00',
+            'Cancelled': PALETTE.secondary,
+            'InDelivery': PALETTE.accent,
+            'Completed': '#2d6a4f'
+          };
+
+          return (
+            <div key={r._id || idx} style={{ padding: '12px', borderRadius: '12px', background: PALETTE.bg, border: `1px solid ${PALETTE.border}`, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontWeight: 700, fontSize: '.84rem', color: PALETTE.text }}>
+                  {type === 'received' ? `Request from ${requester.name}` : `Request to ${owner.name}`}
+                </div>
+                <span style={{ fontSize: '.68rem', fontWeight: 700, padding: '3px 8px', borderRadius: 50, background: statusColors[r.status] || 'rgba(96,108,56,.1)', color: statusTextColors[r.status] || PALETTE.secondary }}>
+                  {r.status}
+                </span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '.72rem', color: PALETTE.muted }}>
+                <div><strong>Requested:</strong> {requestedBook.title || 'N/A'}</div>
+                <div><strong>Offered:</strong> {offeredBook.title || 'N/A'}</div>
+                <div><strong>Condition:</strong> {requestedBook.exchangeDetails?.condition || 'N/A'}</div>
+                <div><strong>Date:</strong> {new Date(r.createdAt).toLocaleDateString()}</div>
+              </div>
+              {requestedBook.exchangeDetails?.lookingFor && (
+                <div style={{ fontSize: '.72rem', color: PALETTE.muted }}><strong>Looking For:</strong> {requestedBook.exchangeDetails.lookingFor}</div>
+              )}
+              {type === 'received' && isPending && (
+                <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                  <button onClick={() => handleAcceptRequest(r._id)} style={{ background: PALETTE.primary, color: '#fff', border: 'none', fontSize: '.68rem', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 700 }}>
+                    Accept
+                  </button>
+                  <button onClick={() => handleRejectRequest(r._id)} style={{ background: 'transparent', border: `1px solid ${PALETTE.cta}`, color: PALETTE.cta, fontSize: '.68rem', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 700 }}>
+                    Reject
+                  </button>
+                </div>
+              )}
+              {type === 'sent' && isPending && (
+                <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                  <button onClick={() => handleCancelRequest(r._id)} style={{ background: 'transparent', border: `1px solid ${PALETTE.cta}`, color: PALETTE.cta, fontSize: '.68rem', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 700 }}>
+                    Cancel Request
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
+
 const BuyerPurchasesPanel = ({ purchases, onTrack, emptyMessage, onReceiptClick }) => (
   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
     {purchases.length === 0 && <div style={{ color: PALETTE.muted, fontSize: ".84rem" }}>{emptyMessage || "No purchased books yet."}</div>}
@@ -125,7 +288,7 @@ const BuyerPurchasesPanel = ({ purchases, onTrack, emptyMessage, onReceiptClick 
   </div>
 ) 
 
-const BookListingsPanel = ({ books, loading, onEdit, onDelete, onResell, isOldListings }) => (
+const BookListingsPanel = ({ books, loading, onEdit, onDelete, onResell, onMarkReturned, isOldListings }) => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
     {loading && <div style={{ color: PALETTE.muted, fontSize: ".84rem" }}>Loading listings...</div>}
     {!loading && books.length === 0 && <div style={{ color: PALETTE.muted, fontSize: ".84rem" }}>No listings yet.</div>}
@@ -141,10 +304,18 @@ const BookListingsPanel = ({ books, loading, onEdit, onDelete, onResell, isOldLi
             : rawImage
         : "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=75";
       const normalizedType = String(b.exchangeType || b.type || "").toLowerCase();
-      const typeBadge =
-        normalizedType === "sell" || normalizedType === "buy"
-          ? "Buy"
-          : "Donate/Claim";
+      
+      const rentDetails = b.rentDetails || {};
+      const isRentType = normalizedType === "rent";
+      const isRented = isRentType && rentDetails.status === "Rented";
+      const isReserved = isRentType && rentDetails.status === "Reserved";
+      const isReturned = isRentType && rentDetails.status === "Returned";
+      const isExpired = isRented && rentDetails.rentalEndDate && (new Date() > new Date(rentDetails.rentalEndDate));
+
+      const typeBadge = isRentType
+        ? "Rent"
+        : (normalizedType === "sell" || normalizedType === "buy" ? "Buy" : "Donate/Claim");
+
       return (
         <div key={i}
           style={{
@@ -164,21 +335,50 @@ const BookListingsPanel = ({ books, loading, onEdit, onDelete, onResell, isOldLi
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
             }}>{b.title}</div>
             <div style={{ fontSize: '.72rem', color: PALETTE.muted, marginTop: 1 }}>{b.author}</div>
-            <div style={{ marginTop: 6 }}>
+            <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{
                 fontSize: '.68rem',
                 fontWeight: 700,
                 padding: '3px 9px',
                 borderRadius: 50,
-                background: 'rgba(19,73,60,.08)',
+                background: isRentType ? 'rgba(19,73,60,.08)' : 'rgba(19,73,60,.08)',
                 color: PALETTE.primary,
                 whiteSpace: 'nowrap'
               }}>
                 {typeBadge}
               </span>
+              {isRentType && (
+                <span style={{ fontSize: '.68rem', fontWeight: 700, color: PALETTE.cta }}>
+                  {rentDetails.rentalDuration || b.duration}
+                </span>
+              )}
             </div>
-            <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-              {isOldListings ? (
+            <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              {isRentType && isRented && (
+                <span style={{
+                  fontSize: '.75rem',
+                  fontWeight: 700,
+                  color: isExpired ? '#d90429' : PALETTE.primary,
+                  background: isExpired ? 'rgba(217,4,41,.1)' : 'rgba(19,73,60,.08)',
+                  padding: '4px 10px',
+                  borderRadius: 8,
+                  border: isExpired ? '1px solid #d90429' : 'none'
+                }}>
+                  {isExpired ? "Rental Expired ⚠️" : `Rented out until ${new Date(rentDetails.rentalEndDate).toLocaleDateString()}`}
+                </span>
+              )}
+              {isRentType && isReserved && (
+                <span style={{ fontSize: '.75rem', fontWeight: 700, color: 'var(--accent)', background: 'rgba(221,161,94,.1)', padding: '4px 10px', borderRadius: 8 }}>
+                  Reserved (Under Verification)
+                </span>
+              )}
+              {isRentType && isReturned && (
+                <span style={{ fontSize: '.75rem', fontWeight: 700, color: '#444', background: '#e0e0e0', padding: '4px 10px', borderRadius: 8 }}>
+                  Returned (Ready to Make Available)
+                </span>
+              )}
+
+              {isOldListings || isReturned ? (
                 <button
                   onClick={(e) => { e.stopPropagation(); onResell && onResell(b); }}
                   style={{
@@ -192,52 +392,71 @@ const BookListingsPanel = ({ books, loading, onEdit, onDelete, onResell, isOldLi
                     fontWeight: 700
                   }}
                 >
-                  Resell
+                  {isReturned ? "Make Available" : "Resell"}
                 </button>
               ) : (
                 <>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onEdit && onEdit(b); }}
-                    style={{
-                      border: `1px solid ${PALETTE.border}`,
-                      background: '#fff',
-                      color: PALETTE.primary,
-                      fontSize: '.75rem',
-                      cursor: 'pointer',
-                      borderRadius: 999,
-                      padding: '4px 10px'
-                    }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onDelete && onDelete(b); }}
-                    style={{
-                      border: `1px solid rgba(188,108,37,.35)`,
-                      background: 'rgba(188,108,37,.08)',
-                      color: PALETTE.cta,
-                      fontSize: '.75rem',
-                      cursor: 'pointer',
-                      borderRadius: 999,
-                      padding: '4px 10px'
-                    }}
-                  >
-                    Delete
-                  </button>
+                  {(!isRented && !isReserved) && (
+                    <>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onEdit && onEdit(b); }}
+                        style={{
+                          border: `1px solid ${PALETTE.border}`,
+                          background: '#fff',
+                          color: PALETTE.primary,
+                          fontSize: '.75rem',
+                          cursor: 'pointer',
+                          borderRadius: 999,
+                          padding: '4px 10px'
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onDelete && onDelete(b); }}
+                        style={{
+                          border: `1px solid rgba(188,108,37,.35)`,
+                          background: 'rgba(188,108,37,.08)',
+                          color: PALETTE.cta,
+                          fontSize: '.75rem',
+                          cursor: 'pointer',
+                          borderRadius: 999,
+                          padding: '4px 10px'
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
+                  {isRented && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onMarkReturned && onMarkReturned(b); }}
+                      style={{
+                        border: `1.5px solid ${PALETTE.cta}`,
+                        background: PALETTE.cta,
+                        color: '#fff',
+                        fontSize: '.75rem',
+                        cursor: 'pointer',
+                        borderRadius: 999,
+                        padding: '4px 12px',
+                        fontWeight: 700
+                      }}
+                    >
+                      Mark as Returned
+                    </button>
+                  )}
                 </>
               )}
             </div>
+            <div style={{ fontWeight: 800, fontSize: '.9rem', color: PALETTE.primary }}>
+              Rs. {isRentType ? (rentDetails.rentPrice || b.price) : b.price}
+            </div>
           </div>
-          <div style={{ fontWeight: 700, fontSize: '.82rem', color: PALETTE.cta }}>Rs. {b.price || 0}</div>
-          <span style={{
-            fontSize: '.68rem', fontWeight: 700, padding: '3px 9px',
-            borderRadius: 50, background: s.bg, color: s.c, whiteSpace: 'nowrap'
-          }}>{s.l}</span>
         </div>
-      )
+      );
     })}
   </div>
-)
+);
 
 export const FinancePanel = ({ finance }) => (
   <div>
@@ -309,6 +528,9 @@ const DashboardPage = () => {
   const [editingForm, setEditingForm] = useState({ title: "", price: "", exchangeType: "Sell" });
   const [savingEdit, setSavingEdit] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const [receivedExchangeRequests, setReceivedExchangeRequests] = useState([]);
+  const [sentExchangeRequests, setSentExchangeRequests] = useState([]);
+  const [loadingExchangeRequests, setLoadingExchangeRequests] = useState(false);
   const hasLoadedBooksRef = useRef(false);
 
   useEffect(() => {
@@ -325,19 +547,25 @@ const DashboardPage = () => {
 
     (async () => {
       setLoadingBooks(true);
+      setLoadingExchangeRequests(true);
       try {
-        const [booksRes, usersRes, buyerOrdersRes] = await Promise.all([
+        const [booksRes, usersRes, buyerOrdersRes, receivedRequestsRes, sentRequestsRes] = await Promise.all([
           DashboardApi.getBooks({ token, sellerId: user.id }),
           DashboardApi.getUsers({ token }),
           DashboardApi.getOrders({ token, buyerId: user.id }),
+          api.get('/exchange-requests?type=received', { headers: { Authorization: `Bearer ${token}` } }),
+          api.get('/exchange-requests?type=sent', { headers: { Authorization: `Bearer ${token}` } }),
         ]);
         setBooks(booksRes.books || []);
         setUsers(usersRes.users || []);
         setBuyerOrders(buyerOrdersRes.orders || []);
+        setReceivedExchangeRequests(receivedRequestsRes.data.requests || []);
+        setSentExchangeRequests(sentRequestsRes.data.requests || []);
       } catch {
         showToast("Failed to load dashboard data");
       } finally {
         setLoadingBooks(false);
+        setLoadingExchangeRequests(false);
       }
     })();
   }, [token, user?.id, fetchOrders, fetchNotifications, showToast]);
@@ -356,14 +584,32 @@ const DashboardPage = () => {
   );
   
   const activeSellerOrders = useMemo(
-    () => sellerOrders.filter((o) => !["completed", "rejected", "cancelled", "complain"].includes(o.status)),
+    () => sellerOrders.filter((o) => o.orderType !== 'RENT' && !["completed", "rejected", "cancelled", "complain"].includes(o.status)),
     [sellerOrders]
   );
   
   const historySellerOrders = useMemo(
-    () => sellerOrders.filter((o) => ["completed", "rejected", "cancelled", "complain"].includes(o.status)),
+    () => sellerOrders.filter((o) => o.orderType !== 'RENT' && ["completed", "rejected", "cancelled", "complain"].includes(o.status)),
     [sellerOrders]
   );
+
+  const rentStats = useMemo(() => {
+    const rentBooks = books.filter(b => String(b.exchangeType || b.type || "").toLowerCase() === "rent");
+    return {
+      total: rentBooks.length,
+      available: rentBooks.filter(b => !b.rentDetails || b.rentDetails.status === 'Available').length,
+      rented: rentBooks.filter(b => b.rentDetails?.status === 'Rented').length,
+      returned: rentBooks.filter(b => b.rentDetails?.status === 'Returned').length
+    };
+  }, [books]);
+
+  const rentalOrders = useMemo(() => {
+    return buyerOrders.filter(o => o.orderType === 'RENT');
+  }, [buyerOrders]);
+  
+  const activeRentalRequests = useMemo(() => {
+    return sellerOrders.filter(o => o.orderType === 'RENT' && o.status !== 'completed' && o.status !== 'rejected' && o.status !== 'cancelled');
+  }, [sellerOrders]);
 
   const activeListingsBooks = useMemo(() => {
     return books.filter(b => String(b.status || "").toLowerCase() !== "unavailable").map(b => ({ ...b, status: b.status === "Available" ? "live" : b.status === "Pending" ? "pending" : "sold", price: b.price || 0 }));
@@ -376,7 +622,7 @@ const DashboardPage = () => {
   const purchasedBooks = useMemo(
     () =>
       buyerOrders
-        .filter((o) => o.status !== "rejected" && o.status !== "cancelled" && o.status !== "complain")
+        .filter((o) => o.orderType !== 'RENT' && o.status !== "rejected" && o.status !== "cancelled" && o.status !== "complain")
         .map((order) => {
           const item = order.items?.[0] || {};
           return {
@@ -399,7 +645,7 @@ const DashboardPage = () => {
   const rejectedBooks = useMemo(
     () =>
       buyerOrders
-        .filter((o) => o.status === "rejected" || o.status === "cancelled")
+        .filter((o) => o.orderType !== 'RENT' && (o.status === "rejected" || o.status === "cancelled"))
         .map((order) => {
           const item = order.items?.[0] || {};
           return {
@@ -422,7 +668,7 @@ const DashboardPage = () => {
   const complaintBooks = useMemo(
     () =>
       buyerOrders
-        .filter((o) => o.status === "complain")
+        .filter((o) => o.orderType !== 'RENT' && o.status === "complain")
         .map((order) => {
           const item = order.items?.[0] || {};
           return {
@@ -517,8 +763,9 @@ const DashboardPage = () => {
     setEditingBook(book);
     setEditingForm({
       title: book.title || "",
-      price: book.price != null ? String(book.price) : "",
-      exchangeType: book.exchangeType === "Share" ? "Share" : "Sell",
+      price: book.exchangeType === "Rent" ? String(book.rentDetails?.rentPrice || book.price) : (book.price != null ? String(book.price) : ""),
+      exchangeType: book.exchangeType || "Sell",
+      duration: book.rentDetails?.rentalDuration || book.duration || "3 Months"
     });
   };
 
@@ -529,6 +776,10 @@ const DashboardPage = () => {
       showToast("Please enter a valid price for Sale listing", true);
       return;
     }
+    if (editingForm.exchangeType === 'Rent' && (!editingForm.price || Number(editingForm.price) <= 0)) {
+      showToast("Please enter a valid price for Rent listing", true);
+      return;
+    }
 
     setSavingEdit(true);
     try {
@@ -537,13 +788,40 @@ const DashboardPage = () => {
         price: editingForm.exchangeType === 'Share' ? 0 : (Number(editingForm.price) || 0),
         exchangeType: editingForm.exchangeType,
       };
+      if (editingForm.exchangeType === 'Rent') {
+        payload.duration = editingForm.duration || '3 Months';
+      }
       const { book } = await DashboardApi.updateBook({ token, id: editingBook._id, payload });
       setBooks((prev) => prev.map((b) => (b._id === editingBook._id ? { ...b, ...book } : b)));
       setEditingBook(null);
+      showToast("Book updated successfully!");
     } catch {
       showToast("Failed to update book");
     } finally {
       setSavingEdit(false);
+    }
+  };
+
+  const handleMarkReturned = async (book) => {
+    if (!token || !book?._id || !book.rentDetails?.id) return;
+    if (!window.confirm("Are you sure you want to mark this rental as returned? This will make the book available for rent again.")) return;
+    try {
+      await api.put(`/rent/${book.rentDetails.id}`, { status: "Returned" });
+      setBooks((prev) =>
+        prev.map((b) =>
+          b._id === book._id
+            ? {
+                ...b,
+                rentDetails: { ...b.rentDetails, status: "Returned" },
+                status: "Available"
+              }
+            : b
+        )
+      );
+      showToast("Book marked as Returned and is now Available!");
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to mark book as returned", true);
     }
   };
 
@@ -598,7 +876,7 @@ const DashboardPage = () => {
         .stats-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 20px; margin-bottom: 32px; }
         .content-grid { display: grid; grid-template-columns: 2fr 1.4fr 1.4fr; gap: 20px; margin-bottom: 32px; }
         .finance-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.2fr; gap: 20px; }
-        .buyer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 32px; }
+        .buyer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-bottom: 32px; }
         .orders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; align-items: start; }
         .quick-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         
@@ -654,49 +932,96 @@ const DashboardPage = () => {
           {/* Stat Cards */}
           <SectionLabel>Overview</SectionLabel>
           <div className="stats-grid" style={{ animation: 'fadeUp .45s ease .05s both' }}>
-                {statsCards.map((c) => <StatCard key={c.label} card={c} />)}
+            {statsCards.map((c) => <StatCard key={c.label} card={c} />)}
+          </div>
+
+          {books.some(b => String(b.exchangeType || b.type || "").toLowerCase() === "rent") && (
+            <div style={{ marginBottom: '32px' }}>
+              <SectionLabel>Rental Overview</SectionLabel>
+              <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', animation: 'fadeUp .45s ease .05s both' }}>
+                <StatCard card={{ bg: `linear-gradient(135deg, ${PALETTE.primary}, #1a4335)`, icon: "📚", label: "Total Rental Listings", val: String(rentStats.total) }} />
+                <StatCard card={{ bg: `linear-gradient(135deg, ${PALETTE.accent}, #a3723a)`, icon: "✅", label: "Available Rentals", val: String(rentStats.available) }} />
+                <StatCard card={{ bg: `linear-gradient(135deg, ${PALETTE.cta}, #a65c19)`, icon: "⏳", label: "Currently Rented", val: String(rentStats.rented) }} />
+                <StatCard card={{ bg: "linear-gradient(135deg, #6c757d, #495057)", icon: "↩️", label: "Returned Rentals", val: String(rentStats.returned) }} />
               </div>
+            </div>
+          )}
 
-              <SectionLabel>Active Orders</SectionLabel>
-              <SellerOrdersPanel orders={activeSellerOrders} loading={ordersLoading} />
+          <SectionLabel>Active Orders</SectionLabel>
+          <SellerOrdersPanel orders={activeSellerOrders} loading={ordersLoading} />
 
-              {/* BUYER ACTIVITY SECTION */}
-              <SectionLabel>Buyer Activity</SectionLabel>
-              <div className="buyer-grid" style={{ animation: 'fadeUp .45s ease .1s both' }}>
-                <Card title="Purchased Books" action="See All" onAction={() => setActiveDashboardView("allPurchases")}>
-                  <BuyerPurchasesPanel purchases={purchasedBooks.slice(0, 5)} onTrack={handleTrackPurchase} onReceiptClick={setSelectedReceipt} />
-                </Card>
-                <Card title="Complaint Orders" action="See All" onAction={() => setActiveDashboardView("allComplaints")}>
-                  <BuyerPurchasesPanel purchases={complaintBooks.slice(0, 5)} emptyMessage="No Complaint Orders" onReceiptClick={setSelectedReceipt} />
-                </Card>
-                <Card title="Rejected Books" action="See All" onAction={() => setActiveDashboardView("allRejected")}>
-                  <BuyerPurchasesPanel purchases={rejectedBooks.slice(0, 5)} emptyMessage="No Rejected Books Yet" onReceiptClick={setSelectedReceipt} />
-                </Card>
-                <Card title="Notifications" action="See All" onAction={() => setActiveDashboardView("allNotifications")}>
-                  <div style={{ maxHeight: 260, overflowY: "auto" }}>
-                    {notifications.slice(0, 5).map((n) => (
-                      <NotificationItem key={n._id} notification={n} onClick={() => handleNotificationClick(n)} />
-                    ))}
-                    {notifications.length === 0 && <div style={{ color: PALETTE.muted, fontSize: ".84rem" }}>No notifications yet</div>}
-                  </div>
-                </Card>
+          {activeRentalRequests.length > 0 && (
+            <>
+              <SectionLabel>Rental Requests</SectionLabel>
+              <div className="orders-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+                {activeRentalRequests.map((order) => (
+                  <OrderCard key={order._id} order={order} />
+                ))}
               </div>
+            </>
+          )}
 
-              {activeDashboardView === "allPurchases" && (
-                <Card title="All Purchased Books">
-                  {purchasedBooks.length === 0 ? <div style={{ color: PALETTE.muted, fontSize: ".84rem" }}>No books yet</div> : <BuyerPurchasesPanel purchases={purchasedBooks} onTrack={handleTrackPurchase} onReceiptClick={setSelectedReceipt} />}
-                </Card>
-              )}
-              {activeDashboardView === "allComplaints" && (
-                <Card title="All Complaint Orders">
-                  <BuyerPurchasesPanel purchases={complaintBooks} emptyMessage="No Complaint Orders" onReceiptClick={setSelectedReceipt} />
-                </Card>
-              )}
-              {activeDashboardView === "allRejected" && (
-                <Card title="All Rejected Books">
-                  <BuyerPurchasesPanel purchases={rejectedBooks} emptyMessage="No Rejected Books Yet" onReceiptClick={setSelectedReceipt} />
-                </Card>
-              )}
+          {/* BUYER ACTIVITY SECTION */}
+          <SectionLabel>Buyer Activity</SectionLabel>
+          <div className="buyer-grid" style={{ animation: 'fadeUp .45s ease .1s both' }}>
+            <Card title="Purchased Books" action="See All" onAction={() => setActiveDashboardView("allPurchases")}>
+              <BuyerPurchasesPanel purchases={purchasedBooks.slice(0, 5)} onTrack={handleTrackPurchase} onReceiptClick={setSelectedReceipt} />
+            </Card>
+            <Card title="My Rental Orders" action="See All" onAction={() => setActiveDashboardView("allRentals")}>
+              <BuyerRentalOrdersPanel orders={rentalOrders.slice(0, 5)} token={token} />
+            </Card>
+            <Card title="Received Exchange Requests" action="See All" onAction={() => setActiveDashboardView("allExchangeRequestsReceived")}>
+              <ExchangeRequestsPanel requests={receivedExchangeRequests.slice(0, 5)} token={token} type="received" />
+            </Card>
+            <Card title="Sent Exchange Requests" action="See All" onAction={() => setActiveDashboardView("allExchangeRequestsSent")}>
+              <ExchangeRequestsPanel requests={sentExchangeRequests.slice(0, 5)} token={token} type="sent" />
+            </Card>
+            <Card title="Complaint Orders" action="See All" onAction={() => setActiveDashboardView("allComplaints")}>
+              <BuyerPurchasesPanel purchases={complaintBooks.slice(0, 5)} emptyMessage="No Complaint Orders" onReceiptClick={setSelectedReceipt} />
+            </Card>
+            <Card title="Rejected Books" action="See All" onAction={() => setActiveDashboardView("allRejected")}>
+              <BuyerPurchasesPanel purchases={rejectedBooks.slice(0, 5)} emptyMessage="No Rejected Books Yet" onReceiptClick={setSelectedReceipt} />
+            </Card>
+            <Card title="Notifications" action="See All" onAction={() => setActiveDashboardView("allNotifications")}>
+              <div style={{ maxHeight: 260, overflowY: "auto" }}>
+                {notifications.slice(0, 5).map((n) => (
+                  <NotificationItem key={n._id} notification={n} onClick={() => handleNotificationClick(n)} />
+                ))}
+                {notifications.length === 0 && <div style={{ color: PALETTE.muted, fontSize: ".84rem" }}>No notifications yet</div>}
+              </div>
+            </Card>
+          </div>
+
+          {activeDashboardView === "allPurchases" && (
+            <Card title="All Purchased Books">
+              {purchasedBooks.length === 0 ? <div style={{ color: PALETTE.muted, fontSize: ".84rem" }}>No books yet</div> : <BuyerPurchasesPanel purchases={purchasedBooks} onTrack={handleTrackPurchase} onReceiptClick={setSelectedReceipt} />}
+            </Card>
+          )}
+          {activeDashboardView === "allRentals" && (
+            <Card title="All My Rental Orders">
+              <BuyerRentalOrdersPanel orders={rentalOrders} token={token} />
+            </Card>
+          )}
+          {activeDashboardView === "allComplaints" && (
+            <Card title="All Complaint Orders">
+              <BuyerPurchasesPanel purchases={complaintBooks} emptyMessage="No Complaint Orders" onReceiptClick={setSelectedReceipt} />
+            </Card>
+          )}
+          {activeDashboardView === "allRejected" && (
+            <Card title="All Rejected Books">
+              <BuyerPurchasesPanel purchases={rejectedBooks} emptyMessage="No Rejected Books Yet" onReceiptClick={setSelectedReceipt} />
+            </Card>
+          )}
+          {activeDashboardView === "allExchangeRequestsReceived" && (
+            <Card title="All Received Exchange Requests">
+              <ExchangeRequestsPanel requests={receivedExchangeRequests} token={token} type="received" />
+            </Card>
+          )}
+          {activeDashboardView === "allExchangeRequestsSent" && (
+            <Card title="All Sent Exchange Requests">
+              <ExchangeRequestsPanel requests={sentExchangeRequests} token={token} type="sent" />
+            </Card>
+          )}
               {activeDashboardView === "allListings" && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                   <Card title="Active Listings">
@@ -705,6 +1030,7 @@ const DashboardPage = () => {
                       loading={loadingBooks}
                       onEdit={handleStartEditBook}
                       onDelete={handleDeleteBook}
+                      onMarkReturned={handleMarkReturned}
                     />
                   </Card>
                   <Card title="Old Listings">
@@ -713,6 +1039,7 @@ const DashboardPage = () => {
                       loading={loadingBooks}
                       isOldListings={true}
                       onResell={handleResellBook}
+                      onMarkReturned={handleMarkReturned}
                     />
                   </Card>
                 </div>
@@ -736,6 +1063,7 @@ const DashboardPage = () => {
                     loading={loadingBooks}
                     onEdit={handleStartEditBook}
                     onDelete={handleDeleteBook}
+                    onMarkReturned={handleMarkReturned}
                   />
                 </Card>
                 <Card title="Old Listings" action="See All" onAction={() => setActiveDashboardView("allListings")}>
@@ -744,6 +1072,7 @@ const DashboardPage = () => {
                     loading={loadingBooks}
                     isOldListings={true}
                     onResell={handleResellBook}
+                    onMarkReturned={handleMarkReturned}
                   />
                 </Card>
               </div>
@@ -803,6 +1132,15 @@ const DashboardPage = () => {
                   <input 
                     type="radio" 
                     name="editExchangeType" 
+                    checked={editingForm.exchangeType === 'Rent'} 
+                    onChange={() => setEditingForm(f => ({ ...f, exchangeType: 'Rent' }))} 
+                  />
+                  Rent
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '.85rem', cursor: 'pointer' }}>
+                  <input 
+                    type="radio" 
+                    name="editExchangeType" 
                     checked={editingForm.exchangeType === 'Share'} 
                     onChange={() => setEditingForm(f => ({ ...f, exchangeType: 'Share', price: '' }))} 
                   />
@@ -820,6 +1158,31 @@ const DashboardPage = () => {
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: `1px solid ${PALETTE.border}`, fontSize: '.85rem' }}
                 />
               </div>
+            )}
+            {editingForm.exchangeType === 'Rent' && (
+              <>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', fontSize: '.8rem', fontWeight: 600, color: PALETTE.text, marginBottom: 4 }}>Rent Price (Rs.)</label>
+                  <input
+                    type="number"
+                    value={editingForm.price}
+                    onChange={(e) => setEditingForm((f) => ({ ...f, price: e.target.value }))}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: `1px solid ${PALETTE.border}`, fontSize: '.85rem' }}
+                  />
+                </div>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', fontSize: '.8rem', fontWeight: 600, color: PALETTE.text, marginBottom: 4 }}>Rental Duration</label>
+                  <select
+                    value={editingForm.duration || '3 Months'}
+                    onChange={(e) => setEditingForm((f) => ({ ...f, duration: e.target.value }))}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: `1px solid ${PALETTE.border}`, fontSize: '.85rem', background: '#fff' }}
+                  >
+                    <option value="3 Months">3 Months</option>
+                    <option value="6 Months">6 Months</option>
+                    <option value="1 Year">1 Year</option>
+                  </select>
+                </div>
+              </>
             )}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
               <button

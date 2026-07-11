@@ -5,12 +5,36 @@ const OrderItem = require('./OrderItem');
 const Transaction = require('./Transaction');
 const Notification = require('./Notification');
 const UserViewedBook = require('./UserViewedBook');
+const Rent = require('./Rent');
+const Exchange = require('./Exchange');
+const ExchangeRequest = require('./ExchangeRequest');
 
 // Define Associations
 
 // User <-> Book
 User.hasMany(Book, { foreignKey: 'ownerId', as: 'books' });
 Book.belongsTo(User, { foreignKey: 'ownerId', as: 'owner' });
+
+// Book <-> Rent
+Book.hasOne(Rent, { foreignKey: 'bookId', as: 'rentDetails' });
+Rent.belongsTo(Book, { foreignKey: 'bookId', as: 'book' });
+
+// Book <-> Exchange
+Book.hasOne(Exchange, { foreignKey: 'bookId', as: 'exchangeDetails' });
+Exchange.belongsTo(Book, { foreignKey: 'bookId', as: 'book' });
+
+// User <-> Exchange
+User.hasMany(Exchange, { foreignKey: 'ownerId', as: 'exchanges' });
+Exchange.belongsTo(User, { foreignKey: 'ownerId', as: 'owner' });
+
+// ExchangeRequest associations
+ExchangeRequest.belongsTo(User, { foreignKey: 'requesterId', as: 'requester' });
+ExchangeRequest.belongsTo(User, { foreignKey: 'ownerId', as: 'owner' });
+ExchangeRequest.belongsTo(Book, { foreignKey: 'requestedBookId', as: 'requestedBook' });
+ExchangeRequest.belongsTo(Book, { foreignKey: 'offeredBookId', as: 'offeredBook' });
+
+User.hasMany(ExchangeRequest, { foreignKey: 'requesterId', as: 'sentExchangeRequests' });
+User.hasMany(ExchangeRequest, { foreignKey: 'ownerId', as: 'receivedExchangeRequests' });
 
 // User <-> Notification
 User.hasMany(Notification, { foreignKey: 'userId', as: 'notifications' });
@@ -46,5 +70,8 @@ module.exports = {
   OrderItem,
   Transaction,
   Notification,
-  UserViewedBook
+  UserViewedBook,
+  Rent,
+  Exchange,
+  ExchangeRequest
 };

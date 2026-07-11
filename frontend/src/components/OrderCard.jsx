@@ -164,32 +164,62 @@ const OrderCard = ({ order }) => {
             Book Ride
           </button>
         ) : order.status === "out_for_delivery" ? (
-          <div style={{ background: "rgba(221,161,94,.1)", color: PALETTE.cta, fontWeight: 800, fontSize: ".75rem", padding: "8px 16px", borderRadius: 50 }}>
-            Out for delivery
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+            <div style={{ background: "rgba(221,161,94,.1)", color: PALETTE.cta, fontWeight: 800, fontSize: ".75rem", padding: "8px 16px", borderRadius: 50 }}>
+              Out for delivery
+            </div>
+            {order.orderType === "RENT" && (
+              <button
+                onClick={() => handleAction("completed")}
+                disabled={loading}
+                style={{ background: PALETTE.cta, color: "#fff", border: "none", padding: "6px 14px", borderRadius: 50, fontWeight: 700, fontSize: ".75rem", cursor: "pointer" }}
+              >
+                Confirm Delivered
+              </button>
+            )}
           </div>
         ) : order.status === "payment_submitted" ? (
           <div style={{ display: "flex", gap: "8px", flexDirection: "column", alignItems: "flex-end" }}>
             <div style={{ background: "rgba(45,106,79,.08)", color: "#2d6a4f", fontWeight: 800, fontSize: ".75rem", padding: "8px 16px", borderRadius: 50 }}>
               Payment Submitted
             </div>
-            <div style={{ display: 'flex', gap: '6px' }}>
-              <button
-                onClick={() => setIsComplainModalOpen(true)}
-                disabled={loading}
-                style={{ background: "transparent", color: "#a00", border: "1.5px solid #a00", padding: "6px 12px", borderRadius: 50, fontWeight: 700, fontSize: ".75rem", cursor: "pointer", transition: "opacity 0.2s" }}
-                onMouseEnter={e => e.currentTarget.style.opacity = .8} onMouseLeave={e => e.currentTarget.style.opacity = 1}
-              >
-                Complain
-              </button>
-              <button
-                onClick={() => handleAction("completed")}
-                disabled={loading}
-                style={{ background: PALETTE.cta, color: "#fff", border: "none", padding: "6px 14px", borderRadius: 50, fontWeight: 700, fontSize: ".75rem", cursor: "pointer", transition: "opacity 0.2s" }}
-                onMouseEnter={e => e.currentTarget.style.opacity = .8} onMouseLeave={e => e.currentTarget.style.opacity = 1}
-              >
-                Complete Order
-              </button>
-            </div>
+            {order.orderType === "RENT" ? (
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button
+                  onClick={() => handleAction("rejected")}
+                  disabled={loading}
+                  style={{ background: "transparent", color: PALETTE.cta, border: `1.5px solid ${PALETTE.cta}`, padding: "6px 12px", borderRadius: 50, fontWeight: 700, fontSize: ".75rem", cursor: "pointer" }}
+                >
+                  Reject Rental
+                </button>
+                <button
+                  onClick={() => handleAction("accepted")}
+                  disabled={loading}
+                  style={{ background: PALETTE.cta, color: "#fff", border: "none", padding: "6px 14px", borderRadius: 50, fontWeight: 700, fontSize: ".75rem", cursor: "pointer" }}
+                >
+                  Approve Rental
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button
+                  onClick={() => setIsComplainModalOpen(true)}
+                  disabled={loading}
+                  style={{ background: "transparent", color: "#a00", border: "1.5px solid #a00", padding: "6px 12px", borderRadius: 50, fontWeight: 700, fontSize: ".75rem", cursor: "pointer", transition: "opacity 0.2s" }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = .8} onMouseLeave={e => e.currentTarget.style.opacity = 1}
+                >
+                  Complain
+                </button>
+                <button
+                  onClick={() => handleAction("completed")}
+                  disabled={loading}
+                  style={{ background: PALETTE.cta, color: "#fff", border: "none", padding: "6px 14px", borderRadius: 50, fontWeight: 700, fontSize: ".75rem", cursor: "pointer", transition: "opacity 0.2s" }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = .8} onMouseLeave={e => e.currentTarget.style.opacity = 1}
+                >
+                  Complete Order
+                </button>
+              </div>
+            )}
           </div>
         ) : order.status === "rejected" ? (
           <div style={{ background: "rgba(200,0,0,.08)", color: "#a00", fontWeight: 800, fontSize: ".75rem", padding: "8px 16px", borderRadius: 50 }}>
@@ -200,8 +230,19 @@ const OrderCard = ({ order }) => {
             Complaint Submitted: {order.complainReason}
           </div>
         ) : (
-          <div style={{ background: "rgba(45,106,79,.08)", border: `1.5px solid ${PALETTE.primary}`, color: PALETTE.primary, fontWeight: 800, fontSize: ".75rem", padding: "8px 16px", borderRadius: 50 }}>
-            Ride Assigned
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+            <div style={{ background: "rgba(45,106,79,.08)", border: `1.5px solid ${PALETTE.primary}`, color: PALETTE.primary, fontWeight: 800, fontSize: ".75rem", padding: "8px 16px", borderRadius: 50 }}>
+              Ride Assigned
+            </div>
+            {(order.orderType === "RENT" && (order.status === "ride_assigned" || order.status === "accepted")) && (
+              <button
+                onClick={() => handleAction("completed")}
+                disabled={loading}
+                style={{ background: PALETTE.cta, color: "#fff", border: "none", padding: "6px 14px", borderRadius: 50, fontWeight: 700, fontSize: ".75rem", cursor: "pointer" }}
+              >
+                Confirm Delivered
+              </button>
+            )}
           </div>
         )}
       </div>

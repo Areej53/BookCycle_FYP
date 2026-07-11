@@ -23,6 +23,7 @@ import {
   RideDetailsPage,
   ConfirmPaymentPage,
   OrderTrackingPage,
+  ExchangeCategoriesPage,
 } from "./pages";
 import DashboardPage from "./pages/DashboardPage";
 import { ToastContainer } from "react-toastify";
@@ -65,6 +66,14 @@ const router = createBrowserRouter([
       {
         path: "explore",
         element: <ExploreBooksPage />,
+      },
+      {
+        path: "rent/categories",
+        element: <SellerCategoriesPage />,
+      },
+      {
+        path: "exchange/categories",
+        element: <ExchangeCategoriesPage />,
       },
       {
         path: "explore/category/:category",

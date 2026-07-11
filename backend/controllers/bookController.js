@@ -1,5 +1,6 @@
-const { Book, User, UserViewedBook } = require('../models');
+const { Book, User, UserViewedBook, Rent, Exchange } = require('../models');
 const { Op } = require('sequelize');
+const { sequelize } = require('../db/connectPostgres');
 const fs = require('fs');
 const path = require('path');
 
@@ -20,13 +21,13 @@ const saveBase64Image = (base64String) => {
 
 const exactCategoryEnums = ['Programming', 'Science', 'Novels', 'Self Development', 'Algebra', 'Mathematics', 'Physics', 'Notes', 'Other'];
 const exactCondEnums = ['New', 'Used/Good'];
-const exactTypeEnums = ['Sell', 'Rent', 'Share'];
+const exactTypeEnums = ['Sell', 'Rent', 'Exchange'];
 
 const matchEnum = (arr, val) => {
   let lowerVal = val.toLowerCase().trim();
   if (lowerVal === 'self-development') lowerVal = 'self development';
   if (lowerVal === 'buy') lowerVal = 'sell';
-  if (lowerVal === 'free') lowerVal = 'share';
+  if (lowerVal === 'free') lowerVal = 'exchange';
   
   return arr.find(e => e.toLowerCase() === lowerVal) || val;
 };
@@ -75,6 +76,38 @@ const getAllBooks = async (req, res) => {
     }
   }
 
+  if (req.query.duration) {
+    const durationList = req.query.duration.split(',');
+    whereClause.duration = { [Op.in]: durationList };
+  }
+
+  if (!sellerId) {
+    // For Rent books, only show if they have an Available rent record
+    // For Exchange books, only show if they have an Available exchange record
+    // For Sell books, show normally
+    if (!whereClause[Op.and]) whereClause[Op.and] = [];
+    whereClause[Op.and].push(
+      sequelize.where(
+        sequelize.literal(`(
+          "Book"."exchangeType" != 'Rent' OR 
+          EXISTS (
+            SELECT 1 FROM rents 
+            WHERE rents."bookId" = "Book"."id" 
+            AND rents.status = 'Available'
+          )
+        ) AND (
+          "Book"."exchangeType" != 'Exchange' OR 
+          EXISTS (
+            SELECT 1 FROM exchanges 
+            WHERE exchanges."bookId" = "Book"."id" 
+            AND exchanges.status = 'Available'
+          )
+        )`),
+        true
+      )
+    );
+  }
+
   // Parse Sorting
   let sequelizeOrder = [['createdAt', 'DESC']];
   if (sort === 'price-asc') {
@@ -97,7 +130,11 @@ const getAllBooks = async (req, res) => {
     const allBooks = await Book.findAll({
       where: whereClause,
       attributes: { exclude: ['pdf'] },
-      include: [{ model: User, as: 'owner', attributes: ['name'] }]
+      include: [
+        { model: User, as: 'owner', attributes: ['name'] },
+        { model: Rent, as: 'rentDetails' },
+        { model: Exchange, as: 'exchangeDetails' }
+      ]
     });
     const shuffled = allBooks.sort(() => 0.5 - Math.random());
     const books = limitNum ? shuffled.slice(0, limitNum) : shuffled;
@@ -107,7 +144,11 @@ const getAllBooks = async (req, res) => {
   const books = await Book.findAll({
     where: whereClause,
     attributes: { exclude: ['pdf'] },
-    include: [{ model: User, as: 'owner', attributes: ['name'] }],
+    include: [
+      { model: User, as: 'owner', attributes: ['name'] },
+      { model: Rent, as: 'rentDetails' },
+      { model: Exchange, as: 'exchangeDetails' }
+    ],
     order: sequelizeOrder,
     limit: limitNum
   });
@@ -119,7 +160,11 @@ const getBook = async (req, res) => {
   const { id } = req.params;
   const book = await Book.findByPk(id, {
     attributes: { exclude: ['pdf'] },
-    include: [{ model: User, as: 'owner', attributes: ['name', 'email'] }]
+    include: [
+      { model: User, as: 'owner', attributes: ['name', 'email'] },
+      { model: Rent, as: 'rentDetails' },
+      { model: Exchange, as: 'exchangeDetails' }
+    ]
   });
   if (!book) return res.status(404).json({ msg: `No book with id ${id}` });
 
@@ -193,6 +238,73 @@ const updateBook = async (req, res) => {
   }
 
   await book.update(req.body);
+
+  // Sync with Rent details
+  let rent = await Rent.findOne({ where: { bookId: book.id } });
+  if (book.exchangeType === 'Rent') {
+    const rentPriceVal = req.body.price !== undefined ? Number(req.body.price) : book.price;
+    const rentDurationVal = req.body.duration || book.duration || '3 Months';
+    if (!rent) {
+      await Rent.create({
+        bookId: book.id,
+        rentalDuration: rentDurationVal,
+        rentPrice: rentPriceVal,
+        status: 'Available'
+      });
+    } else {
+      const rentPayload = {};
+      if (req.body.duration) rentPayload.rentalDuration = req.body.duration;
+      if (req.body.price !== undefined) rentPayload.rentPrice = Number(req.body.price);
+      if (req.body.status) {
+        const bookStatusToRentStatus = {
+          'Available': 'Available',
+          'Unavailable': 'Rented'
+        };
+        rentPayload.status = bookStatusToRentStatus[req.body.status] || rent.status;
+      }
+      await rent.update(rentPayload);
+    }
+  } else {
+    if (rent) {
+      await rent.destroy();
+    }
+  }
+
+  // Sync with Exchange details
+  let exchange = await Exchange.findOne({ where: { bookId: book.id } });
+  if (book.exchangeType === 'Exchange') {
+    if (!exchange) {
+      await Exchange.create({
+        bookId: book.id,
+        ownerId: book.ownerId,
+        title: book.title,
+        author: book.author,
+        category: book.category,
+        condition: book.condition,
+        description: book.description,
+        images: book.images,
+        lookingFor: req.body.lookingFor || null,
+        listingType: 'Exchange',
+        status: book.status === 'Available' ? 'Available' : 'Reserved'
+      });
+    } else {
+      const exchangePayload = {};
+      if (req.body.lookingFor !== undefined) exchangePayload.lookingFor = req.body.lookingFor;
+      if (req.body.status) {
+        const bookStatusToExchangeStatus = {
+          'Available': 'Available',
+          'Unavailable': 'Reserved'
+        };
+        exchangePayload.status = bookStatusToExchangeStatus[req.body.status] || exchange.status;
+      }
+      await exchange.update(exchangePayload);
+    }
+  } else {
+    if (exchange) {
+      await exchange.destroy();
+    }
+  }
+
   res.status(200).json({ book });
 };
 
@@ -231,11 +343,35 @@ const getRecommendedBooks = async (req, res) => {
         where: {
           [Op.or]: categoryOrConditions,
           status: 'Available',
-          ownerId: { [Op.ne]: req.user.id }
+          ownerId: { [Op.ne]: req.user.id },
+          [Op.and]: [
+            sequelize.where(
+              sequelize.literal(`(
+                "Book"."exchangeType" != 'Rent' OR 
+                EXISTS (
+                  SELECT 1 FROM rents 
+                  WHERE rents."bookId" = "Book"."id" 
+                  AND rents.status = 'Available'
+                )
+              ) AND (
+                "Book"."exchangeType" != 'Exchange' OR 
+                EXISTS (
+                  SELECT 1 FROM exchanges 
+                  WHERE exchanges."bookId" = "Book"."id" 
+                  AND exchanges.status = 'Available'
+                )
+              )`),
+              true
+            )
+          ]
         },
         order: [['createdAt', 'DESC']],
         limit: 50,
-        include: [{ model: User, as: 'owner', attributes: ['name'] }]
+        include: [
+          { model: User, as: 'owner', attributes: ['name'] },
+          { model: Rent, as: 'rentDetails' },
+          { model: Exchange, as: 'exchangeDetails' }
+        ]
       });
     }
 
@@ -255,14 +391,38 @@ const getRecommendedBooks = async (req, res) => {
       const fallbackBooks = await Book.findAll({
         where: {
           status: 'Available',
-          ownerId: { [Op.ne]: req.user.id }
+          ownerId: { [Op.ne]: req.user.id },
+          [Op.and]: [
+            sequelize.where(
+              sequelize.literal(`(
+                "Book"."exchangeType" != 'Rent' OR 
+                EXISTS (
+                  SELECT 1 FROM rents 
+                  WHERE rents."bookId" = "Book"."id" 
+                  AND rents.status = 'Available'
+                )
+              ) AND (
+                "Book"."exchangeType" != 'Exchange' OR 
+                EXISTS (
+                  SELECT 1 FROM exchanges 
+                  WHERE exchanges."bookId" = "Book"."id" 
+                  AND exchanges.status = 'Available'
+                )
+              )`),
+              true
+            )
+          ]
         },
         order: [
           ['views', 'DESC'],
           ['createdAt', 'DESC']
         ],
         limit: 8,
-        include: [{ model: User, as: 'owner', attributes: ['name'] }]
+        include: [
+          { model: User, as: 'owner', attributes: ['name'] },
+          { model: Rent, as: 'rentDetails' },
+          { model: Exchange, as: 'exchangeDetails' }
+        ]
       });
       
       return res.status(200).json({ books: fallbackBooks });

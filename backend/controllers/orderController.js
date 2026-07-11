@@ -1,4 +1,4 @@
-const { Order, OrderItem, Notification, User, Book, sequelize } = require("../models");
+const { Order, OrderItem, Notification, User, Book, Rent, sequelize } = require("../models");
 
 const sendEmailMock = (to, subject, text) => {
   console.log(`\n================= EMAIL =================`);
@@ -39,6 +39,9 @@ const createOrder = async (req, res) => {
   const payload = normalizeOrderPayload(req.body);
   payload.buyerId = payload.buyerId || req.user.id;
 
+  const hasRentItem = payload.items.some(item => String(item.type).toLowerCase() === 'rent');
+  payload.orderType = hasRentItem ? 'RENT' : 'BUY';
+
   if (!payload.sellerId || !payload.items.length) {
     return res.status(400).json({ msg: "sellerId and items are required." });
   }
@@ -66,19 +69,38 @@ const createOrder = async (req, res) => {
 
     await t.commit();
 
-    await Notification.create({
-      userId: payload.sellerId,
-      message: `New order received from ${payload.shippingName || "Buyer"}`,
-      type: "order",
-      isRead: false,
-    });
+    const buyerUser = await User.findByPk(payload.buyerId);
+    const buyerName = buyerUser ? buyerUser.name : "Buyer";
 
-    await Notification.create({
-      userId: payload.buyerId,
-      message: "Order placed successfully",
-      type: "order",
-      isRead: false,
-    });
+    if (payload.orderType === 'RENT') {
+      await Notification.create({
+        userId: payload.sellerId,
+        message: `You have received a new rental request for "${payload.items[0]?.title || "Book"}" from ${buyerName}.`,
+        type: "order",
+        isRead: false,
+      });
+
+      await Notification.create({
+        userId: payload.buyerId,
+        message: `Your rental request for "${payload.items[0]?.title || "Book"}" has been placed successfully.`,
+        type: "order",
+        isRead: false,
+      });
+    } else {
+      await Notification.create({
+        userId: payload.sellerId,
+        message: `New order received from ${payload.shippingName || "Buyer"}`,
+        type: "order",
+        isRead: false,
+      });
+
+      await Notification.create({
+        userId: payload.buyerId,
+        message: "Order placed successfully",
+        type: "order",
+        isRead: false,
+      });
+    }
 
     const completeOrder = await Order.findByPk(order.id, {
       include: [{ model: OrderItem, as: 'items' }]
@@ -146,37 +168,171 @@ const updateOrderStatus = async (req, res) => {
     
     await order.save();
 
-    // Notification Logic
+    const firstItem = order.items?.[0] || {};
+    const bookTitle = firstItem.title || "Book";
+
+    // Notification & Rent status flow logic
     if (status === "accepted") {
       for (const item of order.items) {
         if (item.bookId) {
           const book = await Book.findByPk(item.bookId);
           if (book) {
             await book.update({ status: "Unavailable" });
+            if (order.orderType === "RENT") {
+              const rent = await Rent.findOne({ where: { bookId: book.id } });
+              if (rent) {
+                await rent.update({ status: "Reserved" }); // Paid and reserved (pending delivery)
+              }
+            }
           }
         }
       }
-      await Notification.create({ userId: order.buyerId, message: "Your order has been accepted", type: "order_update", orderId: order.id });
+      
+      if (order.orderType === "RENT") {
+        await Notification.create({
+          userId: order.buyerId,
+          message: `Your rental request for "${bookTitle}" has been approved by the seller.`,
+          type: "order_update",
+          orderId: order.id
+        });
+      } else {
+        await Notification.create({ userId: order.buyerId, message: "Your order has been accepted", type: "order_update", orderId: order.id });
+      }
     } else if (status === "rejected") {
-      await Notification.create({ userId: order.buyerId, message: "Your order has been rejected", type: "order_update", orderId: order.id });
+      if (order.orderType === "RENT") {
+        for (const item of order.items) {
+          if (item.bookId) {
+            const rent = await Rent.findOne({ where: { bookId: item.bookId } });
+            if (rent) {
+              await rent.update({ status: "Available" });
+              const book = await Book.findByPk(item.bookId);
+              if (book) {
+                await book.update({ status: "Available" });
+              }
+            }
+          }
+        }
+        await Notification.create({
+          userId: order.buyerId,
+          message: `Your rental request for "${bookTitle}" has been rejected.`,
+          type: "order_update",
+          orderId: order.id
+        });
+      } else {
+        await Notification.create({ userId: order.buyerId, message: "Your order has been rejected", type: "order_update", orderId: order.id });
+      }
+    } else if (status === "cancelled") {
+      if (order.orderType === "RENT") {
+        for (const item of order.items) {
+          if (item.bookId) {
+            const rent = await Rent.findOne({ where: { bookId: item.bookId } });
+            if (rent) {
+              await rent.update({ status: "Available" });
+              const book = await Book.findByPk(item.bookId);
+              if (book) {
+                await book.update({ status: "Available" });
+              }
+            }
+          }
+        }
+      }
+      await Notification.create({
+        userId: order.sellerId,
+        message: `Rental request for "${bookTitle}" was cancelled.`,
+        type: "order_update",
+        orderId: order.id
+      });
+      await Notification.create({
+        userId: order.buyerId,
+        message: `Your rental request for "${bookTitle}" has been cancelled.`,
+        type: "order_update",
+        orderId: order.id
+      });
     } else if (status === "out_for_delivery") {
       const trackNo = order.trackingData?.trackingNumber || 'N/A';
       await Notification.create({ userId: order.buyerId, message: `Your order is out for delivery. Tracking number: ${trackNo}`, type: "order_update", orderId: order.id });
     } else if (status === "payment_submitted") {
-      await Notification.create({ userId: order.buyerId, message: "Your payment has been submitted", type: "order_update", orderId: order.id });
-      await Notification.create({ userId: order.sellerId, message: `${order.shippingName || (order.buyer && order.buyer.name) || "Buyer"} has submitted the payment`, type: "order_update", orderId: order.id });
+      if (order.orderType === "RENT") {
+        for (const item of order.items) {
+          if (item.bookId) {
+            const rent = await Rent.findOne({ where: { bookId: item.bookId } });
+            if (rent) {
+              await rent.update({ status: "Reserved" }); // Uploaded receipt, waiting approval
+            }
+          }
+        }
+        await Notification.create({
+          userId: order.buyerId,
+          message: `Your payment receipt for rental "${bookTitle}" has been submitted.`,
+          type: "order_update",
+          orderId: order.id
+        });
+        await Notification.create({
+          userId: order.sellerId,
+          message: `Payment receipt uploaded by ${order.shippingName || "Buyer"} for rental "${bookTitle}".`,
+          type: "order_update",
+          orderId: order.id
+        });
+      } else {
+        await Notification.create({ userId: order.buyerId, message: "Your payment has been submitted", type: "order_update", orderId: order.id });
+        await Notification.create({ userId: order.sellerId, message: `${order.shippingName || (order.buyer && order.buyer.name) || "Buyer"} has submitted the payment`, type: "order_update", orderId: order.id });
+      }
     } else if (status === "completed") {
-      await Notification.create({ userId: order.buyerId, message: "Your order is completed", type: "order_update", orderId: order.id });
-      await Notification.create({ userId: order.sellerId, message: "Order completed. Earnings added.", type: "order_update", orderId: order.id });
-      
-      const earning = order.bookAmount != null ? Number(order.bookAmount) : Number(order.totalAmount);
-      
-      const seller = await User.findByPk(order.sellerId);
-      if (seller) {
-        seller.finance_totalEarnings = Number(seller.finance_totalEarnings || 0) + earning;
-        seller.finance_monthlyEarnings = Number(seller.finance_monthlyEarnings || 0) + earning;
-        seller.finance_completedOrdersRevenue = Number(seller.finance_completedOrdersRevenue || 0) + earning;
-        await seller.save();
+      if (order.orderType === "RENT") {
+        for (const item of order.items) {
+          if (item.bookId) {
+            const rent = await Rent.findOne({ where: { bookId: item.bookId } });
+            if (rent) {
+              const startDate = new Date();
+              const endDate = new Date();
+              if (rent.rentalDuration === "3 Months") {
+                endDate.setMonth(endDate.getMonth() + 3);
+              } else if (rent.rentalDuration === "6 Months") {
+                endDate.setMonth(endDate.getMonth() + 6);
+              } else if (rent.rentalDuration === "1 Year") {
+                endDate.setFullYear(endDate.getFullYear() + 1);
+              } else {
+                endDate.setMonth(endDate.getMonth() + 3);
+              }
+
+              await rent.update({
+                status: "Rented",
+                rentalStartDate: startDate,
+                rentalEndDate: endDate
+              });
+
+              const book = await Book.findByPk(item.bookId);
+              if (book) {
+                await book.update({ status: "Unavailable" });
+              }
+
+              await Notification.create({
+                userId: order.buyerId,
+                message: `Your rental for "${item.title}" has started! Active until ${endDate.toLocaleDateString()}.`,
+                type: "general"
+              });
+
+              await Notification.create({
+                userId: order.sellerId,
+                message: `Rental has started for "${item.title}". Active until ${endDate.toLocaleDateString()}.`,
+                type: "general"
+              });
+            }
+          }
+        }
+      } else {
+        await Notification.create({ userId: order.buyerId, message: "Your order is completed", type: "order_update", orderId: order.id });
+        await Notification.create({ userId: order.sellerId, message: "Order completed. Earnings added.", type: "order_update", orderId: order.id });
+        
+        const earning = order.bookAmount != null ? Number(order.bookAmount) : Number(order.totalAmount);
+        
+        const seller = await User.findByPk(order.sellerId);
+        if (seller) {
+          seller.finance_totalEarnings = Number(seller.finance_totalEarnings || 0) + earning;
+          seller.finance_monthlyEarnings = Number(seller.finance_monthlyEarnings || 0) + earning;
+          seller.finance_completedOrdersRevenue = Number(seller.finance_completedOrdersRevenue || 0) + earning;
+          await seller.save();
+        }
       }
     } else if (status === "complain") {
       const buyer = await User.findByPk(order.buyerId);

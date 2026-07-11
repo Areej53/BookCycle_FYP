@@ -65,4 +65,27 @@ export const DashboardApi = {
     const { data } = await api.patch(`/notifications/${id}/read`, {}, authHeaders(token));
     return data;
   },
+
+  getRents: async ({ token, sellerId }) => {
+    const { data } = await api.get("/rent", {
+      ...authHeaders(token),
+      params: { sellerId },
+    });
+    return data;
+  },
+
+  createRent: async ({ token, payload }) => {
+    const { data } = await api.post("/rent", payload, authHeaders(token));
+    return data;
+  },
+
+  updateRent: async ({ token, id, payload }) => {
+    const { data } = await api.put(`/rent/${id}`, payload, authHeaders(token));
+    return data;
+  },
+
+  deleteRent: async ({ token, id }) => {
+    const { data } = await api.delete(`/rent/${id}`, authHeaders(token));
+    return data;
+  },
 };

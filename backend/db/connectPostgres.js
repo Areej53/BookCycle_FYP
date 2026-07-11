@@ -22,6 +22,9 @@ const connectPostgres = async () => {
   try {
     await sequelize.authenticate();
     console.log('PostgreSQL connected successfully.');
+    // Check and add orderType column to orders if it does not exist
+    await sequelize.query('ALTER TABLE orders ADD COLUMN IF NOT EXISTS "orderType" VARCHAR(20) DEFAULT \'BUY\';');
+    console.log('PostgreSQL database column checks passed.');
   } catch (error) {
     console.error('PostgreSQL connection failed:', error.message);
     throw error;

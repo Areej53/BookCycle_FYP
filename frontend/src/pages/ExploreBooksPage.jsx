@@ -38,7 +38,8 @@ export default function ExploreBooksPage() {
     const [localQuery, setLocalQuery] = useState('');
     const [localCats, setLocalCats] = useState(initCats);
     const [localConds, setLocalConds] = useState([]);
-    const [localType, setLocalType] = useState(initialTab === 'all' ? [] : [initialTab === 'free' ? 'share' : initialTab]);
+    const [localType, setLocalType] = useState(initialTab === 'all' ? [] : [initialTab === 'exchange' ? 'exchange' : initialTab]);
+    const [localDuration, setLocalDuration] = useState([]);
     const [minPrice, setMinPrice] = useState('');
     const [maxPrice, setMaxPrice] = useState('');
     const [priceError, setPriceError] = useState('');
@@ -56,8 +57,13 @@ export default function ExploreBooksPage() {
 
     useEffect(() => {
         const tab = searchParams.get('tab') || 'all';
-        if (tab === 'free') {
-            setLocalType(['share']);
+        const typeParam = searchParams.get('type');
+        if (typeParam) {
+            setLocalType(typeParam.split(','));
+        } else if (tab === 'exchange') {
+            setLocalType(['exchange']);
+        } else if (tab === 'rent') {
+            setLocalType(['rent']);
         } else if (tab === 'all') {
             setLocalType([]);
         } else {
@@ -80,6 +86,7 @@ export default function ExploreBooksPage() {
                  if (localCats.length) params.cats = localCats.join(',');
                  if (localConds.length) params.conds = localConds.join(',');
                  if (localType.length && !localType.includes('all')) params.type = localType.join(',');
+                 if (localDuration.length) params.duration = localDuration.join(',');
                  if (minPrice) params.minPrice = minPrice;
                  if (maxPrice) params.maxPrice = maxPrice;
                  if (sort) params.sort = sort;
@@ -93,7 +100,7 @@ export default function ExploreBooksPage() {
              }
         };
         fetchBooks();
-    }, [localCats, localConds, localType, minPrice, maxPrice, sort]); // refetch on filter change
+    }, [localCats, localConds, localType, localDuration, minPrice, maxPrice, sort]); // refetch on filter change
 
     const handleSearch = () => {
         const params = new URLSearchParams();
@@ -101,13 +108,11 @@ export default function ExploreBooksPage() {
         if (localCats.length) params.set('cats', localCats.join(','));
         if (localConds.length) params.set('conds', localConds.join(','));
         if (localType.length && !localType.includes('all')) params.set('type', localType.join(','));
+        if (localDuration.length) params.set('duration', localDuration.join(','));
         if (minPrice) params.set('minPrice', minPrice);
         if (maxPrice) params.set('maxPrice', maxPrice);
         if (sort) params.set('sort', sort);
         
-        // Only navigate if there's actually a search query, or keep the original behavior 
-        // to navigate when search button is clicked. We navigate to search results page
-        // so it acts as the global search page.
         navigate(`/explore/search?${params.toString()}`);
     };
 
@@ -136,7 +141,8 @@ export default function ExploreBooksPage() {
       <div className="tab-row" id="tab-row">
         <button className={`tab ${localType.length === 0 ? 'active' : ''}`} onClick={() => setLocalType([])}>All Books</button>
         <button className={`tab ${localType.includes('sell') ? 'active' : ''}`} onClick={() => setLocalType(["sell"])}>For Sale</button>
-        <button className={`tab ${localType.includes('share') ? 'active' : ''}`} onClick={() => setLocalType(["share"])}>Free Shelf</button>
+        <button className={`tab ${localType.includes('rent') ? 'active' : ''}`} onClick={() => setLocalType(["rent"])}>For Rent</button>
+        <button className={`tab ${localType.includes('exchange') ? 'active' : ''}`} onClick={() => setLocalType(["exchange"])}>Exchange</button>
       </div>
     </div>
   </div>
@@ -148,7 +154,7 @@ export default function ExploreBooksPage() {
     <div className="filter-sidebar">
   <div className="filter-head">
     <span className="filter-title">Filters</span>
-    <button className="filter-reset" onClick={() => { setLocalQuery(''); setLocalCats([]); setLocalConds([]); setLocalType([]); setMaxPrice(''); setSort('recent')}}>Reset All</button>
+    <button className="filter-reset" onClick={() => { setLocalQuery(''); setLocalCats([]); setLocalConds([]); setLocalType([]); setLocalDuration([]); setMinPrice(''); setMaxPrice(''); setSort('recent')}}>Reset All</button>
   </div>
   <div className="filter-section">
     <div className="filter-label">Category</div>
@@ -176,7 +182,16 @@ export default function ExploreBooksPage() {
     <div className="filter-label">Type</div>
     <div className="filter-opts">
       <label className="filter-opt"><input type="checkbox" value="sell" checked={localType.includes('sell')} onChange={() => setLocalType(toggleArray(localType, 'sell'))}/> For Sale</label>
-      <label className="filter-opt"><input type="checkbox" value="share" checked={localType.includes('share')} onChange={() => setLocalType(toggleArray(localType, 'share'))}/> Free Shelf</label>
+      <label className="filter-opt"><input type="checkbox" value="rent" checked={localType.includes('rent')} onChange={() => setLocalType(toggleArray(localType, 'rent'))}/> For Rent</label>
+      <label className="filter-opt"><input type="checkbox" value="exchange" checked={localType.includes('exchange')} onChange={() => setLocalType(toggleArray(localType, 'exchange'))}/> Exchange</label>
+    </div>
+  </div>
+  <div className="filter-section">
+    <div className="filter-label">Rental Duration</div>
+    <div className="filter-opts">
+      <label className="filter-opt"><input type="checkbox" value="3 Months" checked={localDuration.includes('3 Months')} onChange={() => setLocalDuration(toggleArray(localDuration, '3 Months'))}/> 3 Months</label>
+      <label className="filter-opt"><input type="checkbox" value="6 Months" checked={localDuration.includes('6 Months')} onChange={() => setLocalDuration(toggleArray(localDuration, '6 Months'))}/> 6 Months</label>
+      <label className="filter-opt"><input type="checkbox" value="1 Year" checked={localDuration.includes('1 Year')} onChange={() => setLocalDuration(toggleArray(localDuration, '1 Year'))}/> 1 Year</label>
     </div>
   </div>
   <div className="filter-section">
@@ -208,6 +223,7 @@ export default function ExploreBooksPage() {
           <div className="bc-img-wrap" style={{ position: 'relative' }}>
             <img src={getImageUrl(book)} alt={book.title} className="bc-img"/>
             {book.exchangeType === 'Sell' && <span className="tb tb-buy">Buy</span>}
+            {book.exchangeType === 'Rent' && <span className="tb tb-rent" style={{ background: 'var(--primary)', color: '#fff', padding: '4px 10px', borderRadius: '4px', fontSize: '.75rem', fontWeight: 'bold' }}>Rent</span>}
             {book.exchangeType === 'Share' && <span className="tb tb-free">Free</span>}
           </div>
           <div className="bc-body">
@@ -217,15 +233,17 @@ export default function ExploreBooksPage() {
             <div className="bc-cond">Condition: <strong>{book.condition}</strong></div>
             <div className="price-line" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
                 <div className="price-label">
-                  {book.exchangeType === 'Share' ? (
-                    <span className="free-tag" style={{ display: 'flex', alignItems: 'center', fontSize: '.85rem', fontWeight: '700', color: 'var(--secondary)' }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
-                      Free Shelf
-                    </span>
+                  {book.exchangeType === 'Share' ? null : book.exchangeType === 'Rent' ? (
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>
+                        Rs. {book.rentDetails?.rentPrice || book.price}
+                      </span>
+                      <span style={{ fontSize: '.72rem', color: 'var(--muted)', fontWeight: 600 }}>
+                        For {book.rentDetails?.rentalDuration || book.duration || '3 Months'}
+                      </span>
+                    </div>
                   ) : (
-                    <>
                     <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>Rs. {book.price}</span>
-                    </>
                   )}
                 </div>
                 {book.category === 'Notes' ? (
@@ -272,9 +290,7 @@ export default function ExploreBooksPage() {
                     </button>
                   </div>
                 ) : (
-                    book.exchangeType === 'Rent' ? (
-                      <span style={{ fontSize: '.8rem', color: 'var(--muted)', fontWeight: 600 }}>Currently unavailable</span>
-                    ) : (
+                    (book.exchangeType === 'Sell' || book.exchangeType === 'Rent') ? (
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                         <button 
                             onClick={(e) => { 
@@ -298,6 +314,8 @@ export default function ExploreBooksPage() {
                             if (added) showToast(`"${book.title}" added to cart!`);
                         }} className="btn-mini-cart" style={{ color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--primary)', border: 'none', width: '30px', height: '30px', borderRadius: '50%', cursor: 'pointer' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></button>
                       </div>
+                    ) : (
+                      <span style={{ fontSize: '.8rem', color: 'var(--muted)', fontWeight: 600 }}>Unavailable</span>
                     )
                 )}
             </div>

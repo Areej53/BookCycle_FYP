@@ -1,4 +1,4 @@
-﻿import React, { useContext, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { SellerContext } from '../context/SellerContext';
@@ -38,20 +38,53 @@ export default function SellerReviewPage() {
         setError('');
         
         try {
-            const payload = {
-                title: sellerData.title || 'Untitled',
-                author: sellerData.author || 'Unknown',
-                description: sellerData.description || 'No description provided.',
-                condition: sellerData.condition || 'New',
-                category: sellerData.category || 'Programming',
-                exchangeType: sellerData.exchangeType || 'Sell',
-                price: sellerData.exchangeType === 'Sell' ? Number(sellerData.price) : (sellerData.exchangeType === 'Rent' ? Number(sellerData.rentWeek) : 0),
-                images: sellerData.images ? sellerData.images.map(img => img.base64 || img.preview) : [],
-                image: sellerData.images && sellerData.images.length > 0 ? (sellerData.images[0].base64 || sellerData.images[0].preview) : ''
-            };
+            const isRent = sellerData.exchangeType === 'Rent';
+            const isExchange = sellerData.exchangeType === 'Exchange';
+            let payload;
+            let url;
+
+            if (isRent) {
+                payload = {
+                    title: sellerData.title || 'Untitled',
+                    author: sellerData.author || 'Unknown',
+                    description: sellerData.description || 'No description provided.',
+                    condition: sellerData.condition || 'New',
+                    category: sellerData.category || 'Programming',
+                    rentPrice: Number(sellerData.price),
+                    rentalDuration: sellerData.duration || '3 Months',
+                    images: sellerData.images ? sellerData.images.map(img => img.base64 || img.preview) : [],
+                    image: sellerData.images && sellerData.images.length > 0 ? (sellerData.images[0].base64 || sellerData.images[0].preview) : ''
+                };
+                url = '/rent';
+            } else if (isExchange) {
+                payload = {
+                    title: sellerData.title || 'Untitled',
+                    author: sellerData.author || 'Unknown',
+                    description: sellerData.description || 'No description provided.',
+                    condition: sellerData.condition || 'New',
+                    category: sellerData.category || 'Programming',
+                    lookingFor: sellerData.lookingFor || null,
+                    images: sellerData.images ? sellerData.images.map(img => img.base64 || img.preview) : [],
+                    image: sellerData.images && sellerData.images.length > 0 ? (sellerData.images[0].base64 || sellerData.images[0].preview) : ''
+                };
+                url = '/exchange';
+            } else {
+                payload = {
+                    title: sellerData.title || 'Untitled',
+                    author: sellerData.author || 'Unknown',
+                    description: sellerData.description || 'No description provided.',
+                    condition: sellerData.condition || 'New',
+                    category: sellerData.category || 'Programming',
+                    exchangeType: sellerData.exchangeType || 'Sell',
+                    price: sellerData.exchangeType === 'Sell' ? Number(sellerData.price) : 0,
+                    images: sellerData.images ? sellerData.images.map(img => img.base64 || img.preview) : [],
+                    image: sellerData.images && sellerData.images.length > 0 ? (sellerData.images[0].base64 || sellerData.images[0].preview) : ''
+                };
+                url = '/books';
+            }
 
             const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
-            const response = await api.post('/books', payload, axiosConfig);
+            const response = await api.post(url, payload, axiosConfig);
 
             setModalMessage("Successfully listed your book!");
             setIsSuccessModal(true);
@@ -118,7 +151,13 @@ export default function SellerReviewPage() {
         <div className="field-row"><div className="field-lbl">Sale Price</div><div className="field-val">Rs. {sellerData.price}</div></div>
     )}
     {sellerData.exchangeType === 'Rent' && (
-        <div className="field-row"><div className="field-lbl">Rent / Week</div><div className="field-val">Rs. {sellerData.rentWeek}/wk</div></div>
+        <>
+            <div className="field-row"><div className="field-lbl">Rent Price</div><div className="field-val">Rs. {sellerData.price}</div></div>
+            <div className="field-row"><div className="field-lbl">Rental Duration</div><div className="field-val">{sellerData.duration || '3 Months'}</div></div>
+        </>
+    )}
+    {sellerData.exchangeType === 'Exchange' && (
+        <div className="field-row"><div className="field-lbl">Looking For</div><div className="field-val">{sellerData.lookingFor || 'Not specified'}</div></div>
     )}
     <div className="field-row"><div className="field-lbl">Condition</div><div className="field-val">{sellerData.condition}</div></div>
     <div className="field-row"><div className="field-lbl">Language</div><div className="field-val">{sellerData.language}</div></div>
@@ -143,7 +182,7 @@ export default function SellerReviewPage() {
   <div className="checklist-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FiCheckCircle style={{ color: 'var(--primary)' }} /> Listing Checklist</div>
   <div className="check-item"><div className={`check-circle ${sellerData.title && sellerData.author ? 'ok' : 'warn'}`}>{sellerData.title && sellerData.author ? <FiCheckCircle /> : <FiAlertCircle />}</div><div><div className="check-text">Book title & author added</div><div className="check-sub">{sellerData.title} by {sellerData.author}</div></div></div>
   <div className="check-item"><div className={`check-circle ${sellerData.category ? 'ok' : 'warn'}`}>{sellerData.category ? <FiCheckCircle /> : <FiAlertCircle />}</div><div><div className="check-text">Category selected</div><div className="check-sub">{sellerData.category}</div></div></div>
-  <div className="check-item"><div className={`check-circle ${sellerData.exchangeType ? 'ok' : 'warn'}`}>{sellerData.exchangeType ? <FiCheckCircle /> : <FiAlertCircle />}</div><div><div className="check-text">Listing type & price set</div><div className="check-sub">{sellerData.exchangeType} {sellerData.price ? `Rs.${sellerData.price}` : ''}</div></div></div>
+  <div className="check-item"><div className={`check-circle ${sellerData.exchangeType ? 'ok' : 'warn'}`}>{sellerData.exchangeType ? <FiCheckCircle /> : <FiAlertCircle />}</div><div><div className="check-text">Listing type & price set</div><div className="check-sub">{sellerData.exchangeType} {sellerData.price ? `Rs.${sellerData.price}` : ''} {sellerData.exchangeType === 'Rent' ? `(${sellerData.duration || '3 Months'})` : ''}</div></div></div>
   <div className="check-item"><div className={`check-circle ${sellerData.description && sellerData.description.length >= 50 ? 'ok' : 'warn'}`}>{sellerData.description && sellerData.description.length >= 50 ? <FiCheckCircle /> : <FiAlertCircle />}</div><div><div className="check-text">Description added</div><div className="check-sub">{(sellerData.description || '').length} characters</div></div></div>
 </div>
 
