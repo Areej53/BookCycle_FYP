@@ -69,7 +69,7 @@ Book.init({
     allowNull: false,
     validate: {
       isIn: {
-        args: [['Sell', 'Rent', 'Share']],
+        args: [['Sell', 'Rent', 'Exchange']],
         msg: "Please specify exchange type"
       }
     }

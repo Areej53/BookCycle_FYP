@@ -1,4 +1,4 @@
-﻿import React, { useContext, useState, useRef } from 'react';
+import React, { useContext, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { SellerContext } from '../context/SellerContext';
@@ -19,11 +19,7 @@ export default function SellerAddBookPage() {
         }
     }, [sellerData.category, navigate]);
 
-    React.useEffect(() => {
-        if (sellerData.exchangeType === 'Rent') {
-            updateSellerData({ exchangeType: 'Sell' });
-        }
-    }, [sellerData.exchangeType, updateSellerData]);
+
 
     const handleChange = (e) => {
         updateSellerData({ [e.target.name]: e.target.value });
@@ -72,6 +68,18 @@ export default function SellerAddBookPage() {
         if (!sellerData.description?.trim() || sellerData.description.length < 50) newErrors.description = 'Minimum 50 characters required.';
         
         if (sellerData.exchangeType === 'Sell' && (!sellerData.price || sellerData.price <= 0)) newErrors.price = 'Sale price is required.';
+        
+        if (sellerData.exchangeType === 'Rent') {
+            if (!sellerData.price || isNaN(Number(sellerData.price)) || Number(sellerData.price) <= 0) {
+                newErrors.price = 'Rent price must be a numeric value greater than zero.';
+            }
+            if (!sellerData.duration || !['3 Months', '6 Months', '1 Year'].includes(sellerData.duration)) {
+                newErrors.duration = 'Rental duration is required.';
+            }
+            if (!sellerData.images || sellerData.images.length === 0) {
+                newErrors.images = 'At least one image is required for Rent listings.';
+            }
+        }
         
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -144,12 +152,15 @@ export default function SellerAddBookPage() {
     </div>
 
     <div className="section-title" style={{ marginTop: '30px' }}><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiList /></div>Listing Type</div>
-    <div className="listing-grid">
+    <div className="listing-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
       <div className={`listing-opt ${sellerData.exchangeType === 'Sell' ? 'active' : ''}`} onClick={() => handleListingType('Sell')}>
         <div className="lo-icon"><FiDollarSign /></div><div className="lo-name">Sell</div><div className="lo-sub">Fixed price for buyers.</div>
       </div>
-      <div className={`listing-opt ${sellerData.exchangeType === 'Share' ? 'active' : ''}`} onClick={() => handleListingType('Share')}>
-        <div className="lo-icon"><FiGift /></div><div className="lo-name">Free Shelf</div><div className="lo-sub">Donate your book free.</div>
+      <div className={`listing-opt ${sellerData.exchangeType === 'Rent' ? 'active' : ''}`} onClick={() => handleListingType('Rent')}>
+        <div className="lo-icon"><FiDollarSign /></div><div className="lo-name">Rent</div><div className="lo-sub">Set rental price & duration.</div>
+      </div>
+      <div className={`listing-opt ${sellerData.exchangeType === 'Exchange' ? 'active' : ''}`} onClick={() => handleListingType('Exchange')}>
+        <div className="lo-icon"><FiGift /></div><div className="lo-name">Exchange</div><div className="lo-sub">Trade books with others.</div>
       </div>
     </div>
 
@@ -164,7 +175,7 @@ export default function SellerAddBookPage() {
       </div>
     </div>
 
-    <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiDollarSign /></div>Pricing</div>
+    <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiDollarSign /></div>Pricing &amp; Duration</div>
     {sellerData.exchangeType === 'Sell' && (
         <div className="pricing-section show" style={{display:'block'}}>
         <div className="form-grid" style={{ marginBottom: '24px' }}>
@@ -180,10 +191,43 @@ export default function SellerAddBookPage() {
         </div>
     )}
 
-    {sellerData.exchangeType === 'Share' && (
-        <div className="pricing-section show free-info" style={{ marginBottom: '24px', display:'flex', alignItems: 'center', gap: '8px' }}>
+    {sellerData.exchangeType === 'Rent' && (
+        <div className="pricing-section show" style={{display:'block'}}>
+        <div className="form-grid" style={{ marginBottom: '24px', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div className="field">
+            <label>Rent Price (PKR) <span className="req">*</span></label>
+            <div className="price-with-prefix">
+                <span className="price-prefix">Rs.</span>
+                <input type="number" name="price" value={sellerData.price} onChange={handleChange} placeholder="0" min="1"/>
+            </div>
+            {errors.price && <span className="err-msg" style={{ display: 'block' }}>{errors.price}</span>}
+            </div>
+            <div className="field">
+            <label>Rental Duration <span className="req">*</span></label>
+            <select name="duration" value={sellerData.duration || '3 Months'} onChange={handleChange}>
+              <option value="3 Months">3 Months</option>
+              <option value="6 Months">6 Months</option>
+              <option value="1 Year">1 Year</option>
+            </select>
+            {errors.duration && <span className="err-msg" style={{ display: 'block' }}>{errors.duration}</span>}
+            </div>
+        </div>
+        </div>
+    )}
+
+    {sellerData.exchangeType === 'Exchange' && (
+        <div className="pricing-section show" style={{display:'block'}}>
+        <div className="form-grid" style={{ marginBottom: '24px' }}>
+            <div className="field span2">
+            <label>Looking For (Optional)</label>
+            <input type="text" name="lookingFor" value={sellerData.lookingFor || ''} onChange={handleChange} placeholder="e.g. 6th Class Bundle, Computer Science Books, Any Novel"/>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px' }}>What books would you like in exchange? This helps other users know what you're interested in.</div>
+            </div>
+        </div>
+        <div className="pricing-section show exchange-info" style={{ marginBottom: '24px', display:'flex', alignItems: 'center', gap: '8px' }}>
           <FiGift style={{ fontSize: '1.2rem', color: 'var(--cta)' }} />
-          This book will be listed FREE on the Knowledge Shelf. No price needed.
+          This book will be listed for Exchange. Users can request to trade their books with yours.
+        </div>
         </div>
     )}
 
@@ -204,6 +248,7 @@ export default function SellerAddBookPage() {
       <div className="dz-title">Click to explore images here</div>
       <div className="dz-sub">JPG, PNG up to 5MB · Max 6</div>
     </div>
+    {errors.images && <span className="err-msg" style={{ display: 'block', marginTop: '6px' }}>{errors.images}</span>}
     
     {(sellerData.images && sellerData.images.length > 0) && (
       <div style={{ display: 'flex', gap: '10px', marginTop: '10px', flexWrap: 'wrap' }}>

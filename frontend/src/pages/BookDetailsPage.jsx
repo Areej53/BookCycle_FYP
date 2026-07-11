@@ -11,6 +11,7 @@ import { useCart } from '../context/CartContext';
 import { FiHeart } from 'react-icons/fi';
 import RecommendationWidget from '../components/RecommendationWidget';
 import ActionModal from '../components/ActionModal';
+import ExchangeRequestModal from '../components/ExchangeRequestModal';
 
 export default function BookDetailsPage() {
     const { id } = useParams();
@@ -22,6 +23,7 @@ export default function BookDetailsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [modalMessage, setModalMessage] = useState('');
     const [selectedPdf, setSelectedPdf] = useState(null);
+    const [showExchangeModal, setShowExchangeModal] = useState(false);
 
     const getImageUrl = (book) => {
         const imagePath = book.image || (book.images && book.images[0]);
@@ -120,7 +122,7 @@ export default function BookDetailsPage() {
                     <div className="book-info-block">
                         <div className="bi-badge-row" style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
                             <span style={{ background: 'rgba(19,73,60,0.1)', color: 'var(--primary)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>{book.category}</span>
-                            <span style={{ background: book.exchangeType === 'Share' ? 'rgba(96,108,56,0.1)' : 'rgba(221,161,94,0.1)', color: book.exchangeType === 'Share' ? 'var(--secondary)' : 'var(--accent)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>{book.exchangeType}</span>
+                            <span style={{ background: book.exchangeType === 'Exchange' ? 'rgba(126,200,164,0.1)' : (book.exchangeType === 'Share' ? 'rgba(96,108,56,0.1)' : 'rgba(221,161,94,0.1)'), color: book.exchangeType === 'Exchange' ? '#7ec8a4' : (book.exchangeType === 'Share' ? 'var(--secondary)' : 'var(--accent)'), padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>{book.exchangeType}</span>
                         </div>
 
                         <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '3rem', color: 'var(--primary)', marginBottom: '10px', lineHeight: 1.1 }}>{book.title}</h1>
@@ -130,8 +132,18 @@ export default function BookDetailsPage() {
                             <div>
                                 <div style={{ fontSize: '0.9rem', color: 'var(--primary)', opacity: 0.7, marginBottom: '5px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>Listing Price</div>
                                 <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.5rem', fontWeight: 900, color: 'var(--primary)' }}>
-                                    {book.exchangeType === 'Share' ? 'Free Gift' : `Rs. ${book.price}`}
+                                    {book.exchangeType === 'Exchange' ? 'Exchange Only' : (book.exchangeType === 'Share' ? 'Free Gift' : (book.exchangeType === 'Rent' ? `Rs. ${book.rentDetails?.rentPrice || book.price}` : `Rs. ${book.price}`))}
                                 </div>
+                                {book.exchangeType === 'Rent' && (
+                                    <div style={{ fontSize: '0.9rem', color: 'var(--muted)', marginTop: '4px', fontWeight: 600 }}>
+                                        For {book.rentDetails?.rentalDuration || book.duration || '3 Months'} duration
+                                    </div>
+                                )}
+                                {book.exchangeType === 'Exchange' && book.exchangeDetails?.lookingFor && (
+                                    <div style={{ fontSize: '0.9rem', color: 'var(--muted)', marginTop: '4px', fontWeight: 600 }}>
+                                        Looking for: {book.exchangeDetails.lookingFor}
+                                    </div>
+                                )}
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                                 <button 
@@ -174,17 +186,42 @@ export default function BookDetailsPage() {
                                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                                     </button>
                                     </>
-                                ) : book.exchangeType !== 'Rent' ? (
+                                ) : book.exchangeType === 'Sell' ? (
                                     <button onClick={handleAddToCart} className="btn-mini-cart" style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--primary)', color: '#fff', boxShadow: '0 12px 30px rgba(19,73,60,0.35)', transition: 'all 0.2s', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                                     </button>
+                                ) : book.exchangeType === 'Rent' ? (
+                                    (!book.rentDetails || book.rentDetails.status === 'Available' || book.rentDetails.status === 'Returned') ? (
+                                        <button onClick={handleAddToCart} style={{ background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '30px', padding: '14px 28px', fontSize: '1.05rem', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(19,73,60,0.25)' }}>
+                                            Rent Book
+                                        </button>
+                                    ) : (
+                                        <div style={{ background: 'rgba(188,108,37,.08)', color: 'var(--cta)', padding: '12px 20px', borderRadius: '12px', fontWeight: 700, fontSize: '.9rem' }}>
+                                            {book.rentDetails.status === 'Rented'
+                                                ? `Rented · Active until ${new Date(book.rentDetails.rentalEndDate).toLocaleDateString()}`
+                                                : `Reserved · Payment Pending Verification`}
+                                        </div>
+                                    )
+                                ) : book.exchangeType === 'Exchange' ? (
+                                    (!book.exchangeDetails || book.exchangeDetails.status === 'Available') ? (
+                                        <button onClick={() => {
+                                            if (!user) { navigate('/login'); return; }
+                                            setShowExchangeModal(true);
+                                        }} style={{ background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '30px', padding: '14px 28px', fontSize: '1.05rem', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(19,73,60,0.25)' }}>
+                                            Request Exchange
+                                        </button>
+                                    ) : (
+                                        <div style={{ background: 'rgba(188,108,37,.08)', color: 'var(--cta)', padding: '12px 20px', borderRadius: '12px', fontWeight: 700, fontSize: '.9rem' }}>
+                                            {book.exchangeDetails.status === 'Reserved' ? 'Reserved' : 'Currently unavailable'}
+                                        </div>
+                                    )
                                 ) : (
                                     <span style={{ fontSize: '.85rem', color: 'var(--muted)', fontWeight: 600 }}>Currently unavailable</span>
                                 )}
                             </div>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '40px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '40px' }}>
                             <div style={{ padding: '15px 20px', background: 'white', border: '1.5px solid var(--border)', borderRadius: '16px' }}>
                                 <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '4px' }}>Condition</div>
                                 <div style={{ fontWeight: 700, color: 'var(--primary)' }}>{book.condition}</div>
@@ -192,6 +229,10 @@ export default function BookDetailsPage() {
                             <div style={{ padding: '15px 20px', background: 'white', border: '1.5px solid var(--border)', borderRadius: '16px' }}>
                                 <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '4px' }}>Category</div>
                                 <div style={{ fontWeight: 700, color: 'var(--primary)' }}>{book.category}</div>
+                            </div>
+                            <div style={{ padding: '15px 20px', background: 'white', border: '1.5px solid var(--border)', borderRadius: '16px' }}>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '4px' }}>Listing Type</div>
+                                <div style={{ fontWeight: 700, color: 'var(--primary)' }}>{book.exchangeType === 'Share' ? 'Free Gift' : book.exchangeType}</div>
                             </div>
                         </div>
 
@@ -208,6 +249,11 @@ export default function BookDetailsPage() {
             {/* SAME FOOTER AS HOME PAGE */}
             {/* Removed upper footer */}
             <ActionModal isOpen={!!modalMessage} message={modalMessage} onClose={() => setModalMessage("")} />
+            <ExchangeRequestModal 
+                isOpen={showExchangeModal} 
+                onClose={() => setShowExchangeModal(false)} 
+                requestedBook={book}
+            />
             
             {selectedPdf && (
                 <div className="pdf-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', zIndex: 999999, display: 'flex', flexDirection: 'column' }} onClick={() => setSelectedPdf(null)} onContextMenu={(e) => e.preventDefault()}>

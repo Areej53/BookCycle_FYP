@@ -13,6 +13,9 @@ const { connectPostgres, sequelize } = require("./db/connectPostgres");
 require("./models"); // Initialize models and associations
 const mainRouter = require("./routes/user");
 const booksRouter = require("./routes/books");
+const rentRouter = require("./routes/rent");
+const exchangeRouter = require("./routes/exchange");
+const exchangeRequestsRouter = require("./routes/exchangeRequests");
 const transactionsRouter = require("./routes/transactions");
 const statsRouter = require("./routes/stats");
 const ordersRouter = require("./routes/orders");
@@ -38,6 +41,10 @@ app.use(
 );
 app.use("/api/v1", mainRouter);
 app.use("/api/v1/books", booksRouter);
+app.use("/api/v1/rent", rentRouter);
+app.use("/api/rent", rentRouter);
+app.use("/api/v1/exchange", exchangeRouter);
+app.use("/api/v1/exchange-requests", exchangeRequestsRouter);
 app.use("/api/v1/transactions", transactionsRouter);
 app.use("/api/v1/stats", statsRouter);
 app.use("/api/v1/orders", ordersRouter);

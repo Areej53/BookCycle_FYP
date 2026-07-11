@@ -22,7 +22,8 @@ export default function Navbar() {
   const currentTab = searchParams.get('tab');
   const isHome = location.pathname === '/' || location.pathname === '/home';
   const isExplore = location.pathname === '/explore' && !currentTab;
-  const isFreeShelf = location.pathname === '/explore' && currentTab === 'free';
+  const isExchange = location.pathname === '/exchange/categories' || (location.pathname === '/explore' && currentTab === 'exchange');
+  const isRent = location.pathname === '/rent/categories' || (location.pathname === '/explore' && currentTab === 'rent');
   const isSell = location.pathname.startsWith('/seller');
   const isWishlist = location.pathname === '/wishlist';
 
@@ -54,11 +55,12 @@ export default function Navbar() {
         <div className="hamburger" onClick={toggleMenu} style={{ cursor: 'pointer', color: 'var(--bg)' }}>
           {isMenuOpen ? <FiX size={28} /> : <FiMenu size={28} />}
         </div>
-
+ 
         <ul className={`nav-links ${isMenuOpen ? 'open' : ''}`}>
           {!isHome && <li><Link to="/home" style={getLinkStyle(false)} onClick={closeMenu}>Home</Link></li>}
-          <li><Link to="/explore" style={getLinkStyle(isExplore)} onClick={closeMenu}>Explore</Link></li>
-          <li><Link to="/explore?tab=free" style={getLinkStyle(isFreeShelf)} onClick={closeMenu}>Free Shelf</Link></li>
+          <li><Link to="/explore" style={getLinkStyle(isExplore)} onClick={closeMenu}>Buy</Link></li>
+          <li><Link to="/rent/categories" style={getLinkStyle(isRent)} onClick={closeMenu}>Rent</Link></li>
+          <li><Link to="/exchange/categories" style={getLinkStyle(isExchange)} onClick={closeMenu}>Exchange</Link></li>
           <li><Link to="/seller" style={getLinkStyle(isSell)} onClick={closeMenu}>Sell</Link></li>
 
           {/* Wishlist Icon */}

@@ -56,6 +56,16 @@ Order.init({
     type: DataTypes.JSONB,
     defaultValue: {}
   },
+  orderType: {
+    type: DataTypes.STRING(20),
+    defaultValue: 'BUY',
+    validate: {
+      isIn: {
+        args: [['BUY', 'RENT']],
+        msg: "Order type is not supported"
+      }
+    }
+  },
   status: {
     type: DataTypes.STRING(30),
     defaultValue: 'pending',

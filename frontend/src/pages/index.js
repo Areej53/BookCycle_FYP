@@ -22,4 +22,5 @@ export { default as CheckoutPage } from "./CheckoutPage";
 export { default as WishlistPage } from "./WishlistPage";
 export { default as RideDetailsPage } from "./RideDetailsPage";
 export { default as ConfirmPaymentPage } from "./ConfirmPaymentPage";
-export { default as OrderTrackingPage } from "./OrderTrackingPage";
+export { default as OrderTrackingPage } from "./OrderTrackingPage";
+export { default as ExchangeCategoriesPage } from "./ExchangeCategoriesPage";
