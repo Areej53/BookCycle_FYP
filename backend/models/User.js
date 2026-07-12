@@ -86,6 +86,14 @@ User.init({
   complaintCount: {
     type: DataTypes.INTEGER,
     defaultValue: 0
+  },
+  reviewsCount: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  },
+  ratingsSum: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
   }
 }, {
   sequelize,

@@ -161,7 +161,7 @@ const getBook = async (req, res) => {
   const book = await Book.findByPk(id, {
     attributes: { exclude: ['pdf'] },
     include: [
-      { model: User, as: 'owner', attributes: ['name', 'email'] },
+      { model: User, as: 'owner', attributes: ['id', 'name', 'email'] },
       { model: Rent, as: 'rentDetails' },
       { model: Exchange, as: 'exchangeDetails' }
     ]
