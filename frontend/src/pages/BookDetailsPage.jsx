@@ -12,6 +12,7 @@ import { FiHeart } from 'react-icons/fi';
 import RecommendationWidget from '../components/RecommendationWidget';
 import ActionModal from '../components/ActionModal';
 import ExchangeRequestModal from '../components/ExchangeRequestModal';
+import SellerRatingCard from '../components/SellerRatingCard';
 
 export default function BookDetailsPage() {
     const { id } = useParams();
@@ -127,6 +128,12 @@ export default function BookDetailsPage() {
 
                         <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '3rem', color: 'var(--primary)', marginBottom: '10px', lineHeight: 1.1 }}>{book.title}</h1>
                         <div style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginBottom: '25px' }}>by <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{book.author}</span></div>
+
+                        {book.owner?._id && (
+                          <div style={{ marginTop: '20px' }}>
+                            <SellerRatingCard sellerId={book.owner._id} />
+                          </div>
+                        )}
                         
                         <div className="price-card" style={{ background: '#f5f0d0', padding: '30px', borderRadius: '24px', marginBottom: '35px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>

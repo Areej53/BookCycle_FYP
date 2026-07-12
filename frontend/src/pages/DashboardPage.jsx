@@ -11,6 +11,7 @@ import { api } from "../api/client";
 import StatCard from "../components/StatCard";
 import OrderCard from "../components/OrderCard";
 import NotificationItem from "../components/NotificationItem";
+import SellerRatingCard from "../components/SellerRatingCard";
 
 export const STATUS = {
   live: { bg: 'rgba(45,106,79,.12)', c: '#2d6a4f', l: 'Live' },
@@ -930,9 +931,17 @@ const DashboardPage = () => {
         <div style={{ flex: 1, padding: '32px 32px 40px' }}>
 
           {/* Stat Cards */}
-          <SectionLabel>Overview</SectionLabel>
-          <div className="stats-grid" style={{ animation: 'fadeUp .45s ease .05s both' }}>
-            {statsCards.map((c) => <StatCard key={c.label} card={c} />)}
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px', marginBottom: '32px', animation: 'fadeUp .45s ease .05s both' }}>
+            <div>
+              <SectionLabel>Overview</SectionLabel>
+              <div className="stats-grid">
+                {statsCards.map((c) => <StatCard key={c.label} card={c} />)}
+              </div>
+            </div>
+            <div>
+              <SectionLabel>My Rating</SectionLabel>
+              <SellerRatingCard sellerId={user?.id} />
+            </div>
           </div>
 
           {books.some(b => String(b.exchangeType || b.type || "").toLowerCase() === "rent") && (
