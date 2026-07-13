@@ -1,4 +1,4 @@
-const { Order, OrderItem, Notification, User, Book, Rent, sequelize } = require("../models");
+const { Order, OrderItem, Notification, User, Book, Rent, Review, sequelize } = require("../models");
 
 const sendEmailMock = (to, subject, text) => {
   console.log(`\n================= EMAIL =================`);
@@ -132,10 +132,17 @@ const getOrders = async (req, res) => {
     ]
   });
 
+  let reviewedOrderIds = new Set();
+  if (buyerId && isValidId(buyerId)) {
+    const reviews = await Review.findAll({ where: { buyerId }, attributes: ["orderId"] });
+    reviewedOrderIds = new Set(reviews.map(r => r.orderId));
+  }
+
   const formattedOrders = orders.map(o => {
     const json = o.toJSON();
     if (json.buyer) json.buyerId = json.buyer;
     if (json.seller) json.sellerId = json.seller;
+    json.hasReview = reviewedOrderIds.has(json.id);
     return json;
   });
 
