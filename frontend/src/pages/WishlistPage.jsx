@@ -77,7 +77,7 @@ export default function WishlistPage() {
                                     
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', borderTop: '1px solid var(--bg)', paddingTop: '16px' }}>
                                         <div style={{ fontWeight: 900, color: 'var(--cta)', fontSize: '1.2rem' }}>
-                                            {book.badge === 'free' ? 'Free' : `Rs. ${String(book.price).replace(/^Rs\.?\s*/i, '')}`}
+                                            {book.badge === 'exchange' ? 'Exchange' : `Rs. ${String(book.price).replace(/^Rs\.?\s*/i, '')}`}
                                             {book.badge === 'rent' && <span style={{ fontSize: '.75rem', fontWeight: 500, color: 'var(--text-muted)' }}>/wk</span>}
                                         </div>
                                         <div style={{ display: 'flex', gap: '8px' }}>

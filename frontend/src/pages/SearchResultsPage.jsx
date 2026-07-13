@@ -153,7 +153,7 @@ export default function SearchResultsPage() {
     <div className="filter-label">Type</div>
     <div className="filter-opts">
       <label className="filter-opt"><input type="checkbox" value="sell" checked={localType.includes('sell')} onChange={() => setLocalType(toggleArray(localType, 'sell'))}/> For Sale</label>
-      <label className="filter-opt"><input type="checkbox" value="share" checked={localType.includes('share')} onChange={() => setLocalType(toggleArray(localType, 'share'))}/> Free Shelf</label>
+      <label className="filter-opt"><input type="checkbox" value="exchange" checked={localType.includes('exchange')} onChange={() => setLocalType(toggleArray(localType, 'exchange'))}/> Exchange</label>
     </div>
   </div>
   <div className="filter-section">
@@ -186,7 +186,7 @@ export default function SearchResultsPage() {
             <img src={book.images?.[0] ? 'http://localhost:5000' + book.images[0] : (book.image ? 'http://localhost:5000' + book.image : 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80')} alt={book.title} className="bc-img"/>
             {book.exchangeType === 'Sell' && <span className="tb tb-buy">Buy</span>}
             {book.exchangeType === 'Rent' && <span className="tb tb-rent" style={{ background: 'var(--primary)', color: '#fff', padding: '4px 10px', borderRadius: '4px', fontSize: '.75rem', fontWeight: 'bold' }}>Rent</span>}
-            {book.exchangeType === 'Share' && <span className="tb tb-free">Free</span>}
+            {book.exchangeType === 'Exchange' && <span className="tb tb-exchange">Exchange</span>}
           </div>
           <div className="bc-body">
             <div className="bc-cat">{book.category}</div>
@@ -195,10 +195,10 @@ export default function SearchResultsPage() {
             <div className="bc-cond">Condition: <strong>{book.condition}</strong></div>
             <div className="bc-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
               <div className="price-line">
-                  {book.exchangeType === 'Share' ? (
-                    <span className="free-tag">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
-                      Free Shelf
+                  {book.exchangeType === 'Exchange' ? (
+                    <span className="exchange-tag">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><path d="M7 16V4M7 4L3 8M7 4L11 8M17 8V20M17 20L21 16M17 20L13 16"></path></svg>
+                      Exchange
                     </span>
                   ) : book.exchangeType === 'Rent' ? (
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -318,8 +318,8 @@ export default function SearchResultsPage() {
                     <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bk.title}</div>
                     <div style={{ fontSize: '.74rem', color: 'var(--muted)', margin: '2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>by {bk.author}</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
-                        <div style={{ fontSize: '.78rem', fontWeight: '700', color: bk.exchangeType === 'Share' ? 'var(--secondary)' : 'var(--cta)' }}>
-                            {bk.exchangeType === 'Share' ? 'Free' : `Rs. ${bk.price}`}
+                        <div style={{ fontSize: '.78rem', fontWeight: '700', color: bk.exchangeType === 'Exchange' ? 'var(--secondary)' : 'var(--cta)' }}>
+                            {bk.exchangeType === 'Exchange' ? 'Exchange' : `Rs. ${bk.price}`}
                         </div>
                         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                             <button

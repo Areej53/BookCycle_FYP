@@ -107,8 +107,8 @@ export const CartProvider = ({ children }) => {
             type: String(resolvedType || 'buy').toLowerCase(),
             price: toSafeNumber(resolvedType === 'rent' ? rentPriceVal : book.price),
             rentPerWeek: toSafeNumber(resolvedType === 'rent' ? rentPriceVal : book.price),
-            duration: String(resolvedType === 'rent' ? '1' : (book.duration || '1')),
-            rentalDuration: String(rentDurationVal || ''),
+            duration: String(rentDurationVal || '3 Months'),
+            rentalDuration: String(rentDurationVal || '3 Months'),
             quantity: Number(book.quantity || 1),
         };
 

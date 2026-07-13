@@ -802,7 +802,7 @@ const DashboardPage = () => {
     try {
       const payload = {
         title: editingForm.title,
-        price: editingForm.exchangeType === 'Share' ? 0 : (Number(editingForm.price) || 0),
+        price: editingForm.exchangeType === 'Exchange' ? 0 : (Number(editingForm.price) || 0),
         exchangeType: editingForm.exchangeType,
       };
       if (editingForm.exchangeType === 'Rent') {
@@ -862,7 +862,7 @@ const DashboardPage = () => {
     const uniqueBuyers = new Set(sellerOrders.map((o) => o.buyerId?._id).filter(Boolean)).size;
     const activeListings = books.filter((b) => String(b.status || "").toLowerCase() !== "unavailable").length;
     const totalPurchasedBooks = purchasedBooks.length;
-    const totalSharedBooks = books.filter((b) => String(b.exchangeType || "").toLowerCase() === "share").length;
+    const totalExchangeBooks = books.filter((b) => String(b.exchangeType || "").toLowerCase() === "exchange").length;
 
     return [
       { bg: `linear-gradient(135deg,${PALETTE.cta},#8B4513)`, icon: "💰", label: "Total Sales", val: `Rs. ${totalSales}` },
@@ -870,7 +870,7 @@ const DashboardPage = () => {
       { bg: `linear-gradient(135deg,${PALETTE.secondary},#3d4e22)`, icon: "👥", label: "Total Buyers", val: String(uniqueBuyers || 0), badge: "users" },
       { bg: `linear-gradient(135deg,${PALETTE.accent},#c8883e)`, icon: "📋", label: "Active Listings", val: String(activeListings), badge: "active" },
       { bg: `linear-gradient(135deg,#2d6a4f,#13493c)`, icon: "🛍️", label: "Books Purchased", val: String(totalPurchasedBooks), badge: "history" },
-      { bg: `linear-gradient(135deg,#bc6c25,#8a4c14)`, icon: "🎁", label: "Books Shared", val: String(totalSharedBooks), badge: "shared" },
+      { bg: `linear-gradient(135deg,#bc6c25,#8a4c14)`, icon: "🔄", label: "Exchange Listings", val: String(totalExchangeBooks), badge: "exchange" },
     ];
   }, [sellerOrders, books, purchasedBooks, users]);
 
@@ -1154,22 +1154,22 @@ const DashboardPage = () => {
                   For Sale
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '.85rem', cursor: 'pointer' }}>
-                  <input 
-                    type="radio" 
-                    name="editExchangeType" 
-                    checked={editingForm.exchangeType === 'Rent'} 
-                    onChange={() => setEditingForm(f => ({ ...f, exchangeType: 'Rent' }))} 
+                  <input
+                    type="radio"
+                    name="editExchangeType"
+                    checked={editingForm.exchangeType === 'Rent'}
+                    onChange={() => setEditingForm(f => ({ ...f, exchangeType: 'Rent' }))}
                   />
                   Rent
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '.85rem', cursor: 'pointer' }}>
-                  <input 
-                    type="radio" 
-                    name="editExchangeType" 
-                    checked={editingForm.exchangeType === 'Share'} 
-                    onChange={() => setEditingForm(f => ({ ...f, exchangeType: 'Share', price: '' }))} 
+                  <input
+                    type="radio"
+                    name="editExchangeType"
+                    checked={editingForm.exchangeType === 'Exchange'}
+                    onChange={() => setEditingForm(f => ({ ...f, exchangeType: 'Exchange', price: '' }))}
                   />
-                  Free Shelf
+                  Exchange
                 </label>
               </div>
             </div>

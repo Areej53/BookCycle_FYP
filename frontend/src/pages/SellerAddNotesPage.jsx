@@ -197,8 +197,8 @@ export default function SellerAddNotesPage() {
       <div className={`listing-opt ${sellerData.exchangeType === 'Rent' ? 'active' : ''}`} onClick={() => handleListingType('Rent')}>
         <div className="lo-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiRepeat /></div><div className="lo-name">Rent</div><div className="lo-sub">Weekly or monthly rental.</div>
       </div>
-      <div className={`listing-opt ${sellerData.exchangeType === 'Share' ? 'active' : ''}`} onClick={() => handleListingType('Share')}>
-        <div className="lo-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiGift /></div><div className="lo-name">Free Shelf</div><div className="lo-sub">Donate your book free.</div>
+      <div className={`listing-opt ${sellerData.exchangeType === 'Exchange' ? 'active' : ''}`} onClick={() => handleListingType('Exchange')}>
+        <div className="lo-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiRefreshCw /></div><div className="lo-name">Exchange</div><div className="lo-sub">Exchange with other books.</div>
       </div>
     </div>
 
@@ -265,10 +265,10 @@ export default function SellerAddNotesPage() {
         </div>
     )}
 
-    {sellerData.exchangeType === 'Share' && (
-        <div className="pricing-section show free-info" style={{ marginBottom: '24px', display:'flex', alignItems: 'center', gap: '8px' }}>
-          <FiGift style={{ fontSize: '1.2rem', color: 'var(--cta)' }} />
-          These notes will be listed FREE on the Knowledge Shelf. No price needed.
+    {sellerData.exchangeType === 'Exchange' && (
+        <div className="pricing-section show exchange-info" style={{ marginBottom: '24px', display:'flex', alignItems: 'center', gap: '8px' }}>
+          <FiRefreshCw style={{ fontSize: '1.2rem', color: 'var(--cta)' }} />
+          These notes will be listed for Exchange. Specify what you're looking for in exchange.
         </div>
     )}
 

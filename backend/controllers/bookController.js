@@ -28,7 +28,8 @@ const matchEnum = (arr, val) => {
   if (lowerVal === 'self-development') lowerVal = 'self development';
   if (lowerVal === 'buy') lowerVal = 'sell';
   if (lowerVal === 'free') lowerVal = 'exchange';
-  
+  if (lowerVal === 'share') lowerVal = 'exchange';
+
   return arr.find(e => e.toLowerCase() === lowerVal) || val;
 };
 
