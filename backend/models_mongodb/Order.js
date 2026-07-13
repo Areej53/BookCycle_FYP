@@ -4,7 +4,7 @@ const OrderItemSchema = new mongoose.Schema(
   {
     bookId: { type: mongoose.Schema.Types.ObjectId, ref: "Book" },
     title: { type: String, trim: true },
-    type: { type: String, enum: ["buy", "rent", "free"], default: "buy" },
+    type: { type: String, enum: ["buy", "rent", "exchange"], default: "buy" },
     price: { type: Number, default: 0 },
     quantity: { type: Number, default: 1 },
   },

@@ -26,8 +26,8 @@ const DELIVERY_CHARGE = 120
 
 const getItemCost = (item) => {
   if (item.type === 'buy') return Number(item.price) || 0
-  if (item.type === 'rent') return (Number(item.rentPerWeek) || 0) * parseInt(item.duration || 1, 10)
-  if (item.type === 'free') return 0
+  if (item.type === 'rent') return Number(item.rentPerWeek) || 0
+  if (item.type === 'exchange') return 0
   return 0
 }
 
@@ -414,12 +414,12 @@ const CheckoutPage = () => {
                         <div style={{ fontSize: '.72rem', color: PALETTE.muted, marginTop: 2 }}>
                           {item.type === 'buy' && `Purchase · ${item.author}`}
                           {item.type === 'rent' && `Rent ${item.duration}wk · ${item.author}`}
-                          {item.type === 'free' && `Free Shelf · ${item.author}`}
+                          {item.type === 'exchange' && `Exchange · ${item.author}`}
                         </div>
                       </div>
                       <div style={{ fontWeight: 700, fontSize: '.85rem', flexShrink: 0,
-                        color: item.type === 'free' ? '#2d6a4f' : PALETTE.cta }}>
-                        {item.type === 'free' ? 'Rs. 120 (Delivery Charges)' : `Rs. ${getItemCost(item)}`}
+                        color: item.type === 'exchange' ? '#2d6a4f' : PALETTE.cta }}>
+                        {item.type === 'exchange' ? 'Rs. 120 (Delivery Charges)' : `Rs. ${getItemCost(item)}`}
                       </div>
                     </div>
                   ))

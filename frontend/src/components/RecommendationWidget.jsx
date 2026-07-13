@@ -47,11 +47,11 @@ export default function RecommendationWidget() {
               <div className="rec-author" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{book.author}</div>
               <div className="rec-stars">★★★★★</div>
               <div className="rec-bottom">
-                <span className={`rec-price ${book.exchangeType === 'Share' ? 'free-price' : ''}`}>
-                  {book.exchangeType === 'Share' ? 'Free' : `Rs. ${book.price}${book.exchangeType === 'Rent' ? '/wk' : ''}`}
+                <span className={`rec-price ${book.exchangeType === 'Exchange' ? 'exchange-price' : ''}`}>
+                  {book.exchangeType === 'Exchange' ? 'Exchange' : `Rs. ${book.price}${book.exchangeType === 'Rent' ? '/wk' : ''}`}
                 </span>
-                <Link to={`/book/${book._id}`} className="rec-action" style={{ background: book.exchangeType === 'Share' ? 'var(--secondary)' : 'var(--cta)' }}>
-                  {book.exchangeType === 'Share' ? 'Claim' : (book.exchangeType === 'Rent' ? 'Rent' : 'Buy')}
+                <Link to={`/book/${book._id}`} className="rec-action" style={{ background: book.exchangeType === 'Exchange' ? 'var(--secondary)' : 'var(--cta)' }}>
+                  {book.exchangeType === 'Exchange' ? 'Exchange' : (book.exchangeType === 'Rent' ? 'Rent' : 'Buy')}
                 </Link>
               </div>
             </div>

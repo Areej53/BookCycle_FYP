@@ -12,7 +12,7 @@ export const STEPS = ['Categories', 'Book Details', 'Review', 'Published!']
 export const REC_BOOKS = [
   {id:1,title:'Atomic Habits',author:'James Clear',price:'Rs. 50/wk',type:'rent',stars:5,img:'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=120&q=80'},
   {id:2,title:'Deep Work',author:'Cal Newport',price:'Rs. 350',type:'buy',stars:5,img:'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=120&q=80'},
-  {id:3,title:'Sapiens',author:'Yuval Noah Harari',price:'Free',type:'free',stars:4,img:'https://images.unsplash.com/photo-1589998059171-988d887df646?w=120&q=80'},
+  {id:3,title:'Sapiens',author:'Yuval Noah Harari',price:'Exchange',type:'exchange',stars:4,img:'https://images.unsplash.com/photo-1589998059171-988d887df646?w=120&q=80'},
   {id:4,title:'Rich Dad Poor Dad',author:'Robert Kiyosaki',price:'Rs. 40/wk',type:'rent',stars:4,img:'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=120&q=80'},
   {id:5,title:'The Alchemist',author:'Paulo Coelho',price:'Rs. 30/wk',type:'rent',stars:5,img:'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=120&q=80'},
 ]
