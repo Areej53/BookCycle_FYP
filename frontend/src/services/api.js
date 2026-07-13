@@ -88,4 +88,9 @@ export const DashboardApi = {
     const { data } = await api.delete(`/rent/${id}`, authHeaders(token));
     return data;
   },
+
+  createReview: async ({ token, payload }) => {
+    const { data } = await api.post("/reviews", payload, authHeaders(token));
+    return data;
+  },
 };

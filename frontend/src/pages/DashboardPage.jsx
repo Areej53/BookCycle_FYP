@@ -12,6 +12,7 @@ import StatCard from "../components/StatCard";
 import OrderCard from "../components/OrderCard";
 import NotificationItem from "../components/NotificationItem";
 import SellerRatingCard from "../components/SellerRatingCard";
+import ReviewModal from "../components/ReviewModal";
 
 export const STATUS = {
   live: { bg: 'rgba(45,106,79,.12)', c: '#2d6a4f', l: 'Live' },
@@ -238,7 +239,7 @@ const ExchangeRequestsPanel = ({ requests, token, type = 'received' }) => {
   );
 };
 
-const BuyerPurchasesPanel = ({ purchases, onTrack, emptyMessage, onReceiptClick }) => (
+const BuyerPurchasesPanel = ({ purchases, onTrack, onReview, emptyMessage, onReceiptClick }) => (
   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
     {purchases.length === 0 && <div style={{ color: PALETTE.muted, fontSize: ".84rem" }}>{emptyMessage || "No purchased books yet."}</div>}
     {purchases.map((b, i) => {
@@ -276,6 +277,18 @@ const BuyerPurchasesPanel = ({ purchases, onTrack, emptyMessage, onReceiptClick 
                 style={{ marginTop: 6, background: 'rgba(188,108,37,.1)', border: `1px solid ${PALETTE.cta}`, color: PALETTE.cta, fontSize: '.7rem', padding: '2px 8px', borderRadius: 50, cursor: 'pointer', fontWeight: 600 }}>
                 Track Order
               </button>
+            )}
+            {b.status === "completed" && !b.hasReview && onReview && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onReview(b); }}
+                style={{ marginTop: 6, background: 'rgba(19,73,60,.08)', border: `1px solid ${PALETTE.primary}`, color: PALETTE.primary, fontSize: '.7rem', padding: '2px 8px', borderRadius: 50, cursor: 'pointer', fontWeight: 600 }}>
+                Leave a Review
+              </button>
+            )}
+            {b.status === "completed" && b.hasReview && (
+              <span style={{ marginTop: 6, display: 'inline-block', fontSize: '.7rem', color: PALETTE.secondary, fontWeight: 600 }}>
+                ✓ Reviewed
+              </span>
             )}
           </div>
           <div style={{ fontWeight: 700, fontSize: '.82rem', color: PALETTE.cta }}>{b.price}</div>
@@ -529,6 +542,7 @@ const DashboardPage = () => {
   const [editingForm, setEditingForm] = useState({ title: "", price: "", exchangeType: "Sell" });
   const [savingEdit, setSavingEdit] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const [reviewModalOrder, setReviewModalOrder] = useState(null);
   const [receivedExchangeRequests, setReceivedExchangeRequests] = useState([]);
   const [sentExchangeRequests, setSentExchangeRequests] = useState([]);
   const [loadingExchangeRequests, setLoadingExchangeRequests] = useState(false);
@@ -637,7 +651,9 @@ const DashboardPage = () => {
             normalizedStatus: order.status === "completed" ? "Delivered" : "Pending",
             img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&q=75",
             itemsCount: order.items?.length || 1,
-            receiptUrl: order.paymentData?.receiptUrl
+            receiptUrl: order.paymentData?.receiptUrl,
+            hasReview: !!order.hasReview,
+            sellerName: order.sellerId?.name
           };
         }),
     [buyerOrders]
@@ -974,7 +990,7 @@ const DashboardPage = () => {
           <SectionLabel>Buyer Activity</SectionLabel>
           <div className="buyer-grid" style={{ animation: 'fadeUp .45s ease .1s both' }}>
             <Card title="Purchased Books" action="See All" onAction={() => setActiveDashboardView("allPurchases")}>
-              <BuyerPurchasesPanel purchases={purchasedBooks.slice(0, 5)} onTrack={handleTrackPurchase} onReceiptClick={setSelectedReceipt} />
+              <BuyerPurchasesPanel purchases={purchasedBooks.slice(0, 5)} onTrack={handleTrackPurchase} onReview={setReviewModalOrder} onReceiptClick={setSelectedReceipt} />
             </Card>
             <Card title="My Rental Orders" action="See All" onAction={() => setActiveDashboardView("allRentals")}>
               <BuyerRentalOrdersPanel orders={rentalOrders.slice(0, 5)} token={token} />
@@ -1003,7 +1019,7 @@ const DashboardPage = () => {
 
           {activeDashboardView === "allPurchases" && (
             <Card title="All Purchased Books">
-              {purchasedBooks.length === 0 ? <div style={{ color: PALETTE.muted, fontSize: ".84rem" }}>No books yet</div> : <BuyerPurchasesPanel purchases={purchasedBooks} onTrack={handleTrackPurchase} onReceiptClick={setSelectedReceipt} />}
+              {purchasedBooks.length === 0 ? <div style={{ color: PALETTE.muted, fontSize: ".84rem" }}>No books yet</div> : <BuyerPurchasesPanel purchases={purchasedBooks} onTrack={handleTrackPurchase} onReview={setReviewModalOrder} onReceiptClick={setSelectedReceipt} />}
             </Card>
           )}
           {activeDashboardView === "allRentals" && (
@@ -1219,6 +1235,19 @@ const DashboardPage = () => {
             <img src={selectedReceipt} alt="Receipt" style={{ maxWidth: '100%', maxHeight: 'calc(90vh - 16px)', objectFit: 'contain', borderRadius: 8 }} />
           </div>
         </div>
+      )}
+
+      {reviewModalOrder && (
+        <ReviewModal
+          orderId={reviewModalOrder._id}
+          sellerName={reviewModalOrder.sellerName}
+          onClose={() => setReviewModalOrder(null)}
+          onSubmitted={() => {
+            const reviewedId = reviewModalOrder._id;
+            setBuyerOrders(prev => prev.map(o => String(o.id ?? o._id) === String(reviewedId) ? { ...o, hasReview: true } : o));
+            showToast("Review submitted");
+          }}
+        />
       )}
     </>
   )
