@@ -85,11 +85,17 @@ export const CartProvider = ({ children }) => {
     const addToCart = (book) => {
         const isRaw = book._id !== undefined;
         const resolvedType = isRaw
-            ? (book.exchangeType === 'Sell' ? 'buy' : book.exchangeType === 'Rent' ? 'rent' : 'free')
+            ? (book.exchangeType === 'Sell' ? 'buy' : book.exchangeType === 'Rent' ? 'rent' : book.exchangeType === 'Exchange' ? 'exchange' : 'free')
             : (book.type || 'buy');
 
-        const rentPriceVal = isRaw 
-            ? (book.rentDetails?.rentPrice || book.price) 
+        // Prevent exchange books from being added to cart
+        if (resolvedType === 'exchange') {
+            setModalConfig({ isOpen: true, message: "Exchange books cannot be added to cart. Please use the Request Exchange button." });
+            return false;
+        }
+
+        const rentPriceVal = isRaw
+            ? (book.rentDetails?.rentPrice || book.price)
             : (book.rentPrice || book.price);
         const rentDurationVal = isRaw
             ? (book.rentDetails?.rentalDuration || book.duration)

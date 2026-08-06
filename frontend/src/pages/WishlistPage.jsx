@@ -76,26 +76,43 @@ export default function WishlistPage() {
                                     <div style={{ fontSize: '.85rem', color: 'var(--text-muted)', marginBottom: '16px' }}>by {book.author}</div>
                                     
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', borderTop: '1px solid var(--bg)', paddingTop: '16px' }}>
-                                        <div style={{ fontWeight: 900, color: 'var(--cta)', fontSize: '1.2rem' }}>
-                                            {book.badge === 'exchange' ? 'Exchange' : `Rs. ${String(book.price).replace(/^Rs\.?\s*/i, '')}`}
-                                            {book.badge === 'rent' && <span style={{ fontSize: '.75rem', fontWeight: 500, color: 'var(--text-muted)' }}>/wk</span>}
-                                        </div>
+                                        {book.badge === 'exchange' ? (
+                                            <div style={{ fontWeight: 900, color: 'var(--secondary)', fontSize: '1.1rem' }}>
+                                                Exchange
+                                            </div>
+                                        ) : (
+                                            <div style={{ fontWeight: 900, color: 'var(--cta)', fontSize: '1.2rem' }}>
+                                                {`Rs. ${String(book.price).replace(/^Rs\.?\s*/i, '')}`}
+                                                {book.badge === 'rent' && <span style={{ fontSize: '.75rem', fontWeight: 500, color: 'var(--text-muted)' }}>/wk</span>}
+                                            </div>
+                                        )}
                                         <div style={{ display: 'flex', gap: '8px' }}>
-                                            <button 
+                                            <button
                                                 onClick={(e) => { e.stopPropagation(); navigate(`/book/${book.id || book._id}`); }}
                                                 style={{ background: 'var(--bg)', border: 'none', borderRadius: '50%', width: '38px', height: '38px', display: 'grid', placeItems: 'center', cursor: 'pointer', transition: 'background .2s', color: 'var(--primary)' }}
                                                 title="View Details"
                                             >
                                                 <FiBookOpen />
                                             </button>
-                                            <button 
-                                                onClick={() => handleMoveToCart(book)}
-                                                style={{ background: 'var(--primary)', border: 'none', borderRadius: '50%', width: '38px', height: '38px', display: 'grid', placeItems: 'center', cursor: 'pointer', transition: 'transform .2s', color: '#fff' }}
-                                                className="hover-pop"
-                                                title="Add to Cart"
-                                            >
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                                            </button>
+                                            {book.badge === 'exchange' ? (
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); navigate(`/book/${book.id || book._id}`); }}
+                                                    style={{ background: 'var(--secondary)', border: 'none', borderRadius: '8px', padding: '0 16px', height: '38px', display: 'flex', alignItems: 'center', cursor: 'pointer', transition: 'transform .2s', color: '#fff', fontSize: '.75rem', fontWeight: '700' }}
+                                                    className="hover-pop"
+                                                    title="Request Exchange"
+                                                >
+                                                    Request Exchange
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleMoveToCart(book)}
+                                                    style={{ background: 'var(--primary)', border: 'none', borderRadius: '50%', width: '38px', height: '38px', display: 'grid', placeItems: 'center', cursor: 'pointer', transition: 'transform .2s', color: '#fff' }}
+                                                    className="hover-pop"
+                                                    title="Add to Cart"
+                                                >
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

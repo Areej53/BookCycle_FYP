@@ -45,7 +45,13 @@ const Login = () => {
     try {
       const response = await api.post("/login", formData);
       login(response.data.token);
-      navigate("/home");
+      
+      // Redirect based on role
+      if (response.data.role === 'admin') {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/home");
+      }
     } catch (err) {
       console.log(err);
       setInlineError(getApiErrorMessage(err));

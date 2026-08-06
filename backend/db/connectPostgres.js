@@ -2,7 +2,7 @@ const { Sequelize } = require('sequelize');
 
 const databaseUrl = process.env.DATABASE_URL || 'postgres://postgres:password@localhost:5432/bookcycleDB';
 
-const useSSL = process.env.DB_SSL === 'true' || databaseUrl.includes('supabase.co');
+const useSSL = process.env.DB_SSL === 'true' || databaseUrl.includes('supabase.co') || databaseUrl.includes('supabase.com');
 
 const sequelize = new Sequelize(databaseUrl, {
   dialect: 'postgres',

@@ -240,14 +240,45 @@ export default function CategoryResultsPage() {
                     </>
                   )}
               </div>
-              {(book.exchangeType === 'Sell' || book.exchangeType === 'Rent') ? (
+              {book.exchangeType === 'Exchange' ? (
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <button 
+                  <button
                       onClick={(e) => { e.stopPropagation(); toggleWishlist(book); }}
-                      style={{ 
-                          background: 'none', border: '1.5px solid var(--border)', 
-                          borderRadius: '50%', width: '30px', height: '30px', 
-                          display: 'grid', placeItems: 'center', cursor: 'pointer', 
+                      style={{
+                          background: 'none', border: '1.5px solid var(--border)',
+                          borderRadius: '50%', width: '30px', height: '30px',
+                          display: 'grid', placeItems: 'center', cursor: 'pointer',
+                          color: isInWishlist(book._id) ? 'var(--cta)' : 'var(--text-muted)',
+                          transition: 'all .2s'
+                      }}
+                  >
+                      <FiHeart size={14} fill={isInWishlist(book._id) ? "var(--cta)" : "none"} />
+                  </button>
+                  <button
+                      onClick={(e) => {
+                          e.stopPropagation();
+                          if (!user) { navigate('/login'); return; }
+                          navigate(`/book/${book._id}`);
+                      }}
+                      style={{
+                          background: 'var(--secondary)', color: '#fff',
+                          border: 'none', borderRadius: '6px',
+                          padding: '6px 12px', fontSize: '.75rem',
+                          fontWeight: '700', cursor: 'pointer',
+                          transition: 'all .2s'
+                      }}
+                  >
+                      Request Exchange
+                  </button>
+                </div>
+              ) : (book.exchangeType === 'Sell' || book.exchangeType === 'Rent') ? (
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button
+                      onClick={(e) => { e.stopPropagation(); toggleWishlist(book); }}
+                      style={{
+                          background: 'none', border: '1.5px solid var(--border)',
+                          borderRadius: '50%', width: '30px', height: '30px',
+                          display: 'grid', placeItems: 'center', cursor: 'pointer',
                           color: isInWishlist(book._id) ? 'var(--cta)' : 'var(--text-muted)',
                           transition: 'all .2s'
                       }}
