@@ -14,6 +14,29 @@ const login = async (req, res) => {
     });
   }
 
+  // Check if it's the admin login
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
+  
+  if (adminEmail && adminPasswordHash && email === adminEmail) {
+    const bcrypt = require('bcryptjs');
+    const isAdminMatch = await bcrypt.compare(password, adminPasswordHash);
+    
+    if (isAdminMatch) {
+      const token = jwt.sign(
+        { id: 'admin', name: 'Administrator', role: 'admin' },
+        process.env.JWT_SECRET,
+        { expiresIn: "30d" }
+      );
+
+      return res.status(200).json({ 
+        msg: "admin logged in", 
+        token,
+        role: 'admin'
+      });
+    }
+  }
+
   const foundUser = await User.findOne({ where: { email } });
   if (foundUser) {
     if (foundUser.isBlocked) {
@@ -24,12 +47,16 @@ const login = async (req, res) => {
 
     if (isMatch) {
       const token = jwt.sign(
-        { id: String(foundUser.id), name: foundUser.name },
+        { id: String(foundUser.id), name: foundUser.name, role: foundUser.role },
         process.env.JWT_SECRET,
         { expiresIn: "30d" }
       );
 
-      return res.status(200).json({ msg: "user logged in", token });
+      return res.status(200).json({ 
+        msg: "user logged in", 
+        token,
+        role: foundUser.role
+      });
     }
     return res.status(400).json({ msg: "Wrong password" });
   }

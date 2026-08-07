@@ -201,6 +201,19 @@ const getBook = async (req, res) => {
 };
 
 const createBook = async (req, res) => {
+  // Check if seller is approved
+  const user = await User.findByPk(req.user.id);
+  if (!user) {
+    return res.status(404).json({ msg: 'User not found' });
+  }
+
+  if (user.role === 'shopkeeper' && user.sellerStatus !== 'approved') {
+    return res.status(403).json({ 
+      msg: 'Your seller account is not approved for listing books. Please wait for administrator approval or contact support.',
+      sellerStatus: user.sellerStatus
+    });
+  }
+
   req.body.ownerId = req.body.sellerId || req.user.id;
   if (req.body.type) {
     req.body.exchangeType = matchEnum(exactTypeEnums, req.body.type);

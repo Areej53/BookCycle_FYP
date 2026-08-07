@@ -106,8 +106,7 @@ export default function HomePage() {
                         unit: b.exchangeType === 'Rent' ? '/wk' : '',
                         timeAgo: getTimeAgo(b.createdAt),
                         exchangeType: b.exchangeType,
-                        sellerId: b.owner?._id || b.owner || null,
-                        category: b.category
+                        sellerId: b.owner?._id || b.owner || null
                     }));
                 };
 
@@ -744,11 +743,22 @@ export default function HomePage() {
                     </button>
                     </>
                 ) : b.badge === 'exchange' ? (
-                  <Link to={`/book/${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)', color: '#fff', padding: '4px 12px', borderRadius: '6px', fontSize: '.75rem', fontWeight: '700' }}>Exchange</Link>
+                  <>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (!user) { navigate('/login'); return; }
+                            navigate(`/book/${b.id}`);
+                        }}
+                        style={{ background: 'var(--secondary)', color: '#fff', padding: '4px 12px', borderRadius: '6px', fontSize: '.75rem', fontWeight: '700', border: 'none', cursor: 'pointer' }}
+                    >
+                        Request Exchange
+                    </button>
+                  </>
                 ) : b.type === 'rent' ? (
                   <span style={{ fontSize: '.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Currently unavailable</span>
                 ) : (
-                  <button 
+                  <button
                     onClick={(e) => { e.stopPropagation(); handleAddToCart(b); }}
                     className="btn-mini-cart"
                   >

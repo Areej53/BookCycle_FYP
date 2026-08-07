@@ -1,8 +1,9 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { SellerContext } from '../context/SellerContext';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../api/client';
 import RecommendationWidget from '../components/RecommendationWidget';
 import Navbar from '../components/Navbar';
 
@@ -11,8 +12,44 @@ export default function SellerCategoriesPage() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [showErr, setShowErr] = useState(false);
+    const [sellerStatus, setSellerStatus] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const isRentMode = window.location.pathname.includes('/rent');
+
+    useEffect(() => {
+        checkSellerStatus();
+    }, []);
+
+    const checkSellerStatus = async () => {
+        try {
+            const response = await api.get('/seller-requests/status');
+            setSellerStatus(response.data.sellerStatus);
+            
+            // If not approved, redirect to seller request page
+            if (response.data.sellerStatus !== 'approved') {
+                navigate('/seller/add');
+            }
+        } catch (error) {
+            console.error('Failed to check seller status:', error);
+            // If error checking status, redirect to seller request page
+            navigate('/seller/add');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                <div style={{ fontSize: '1.2rem', color: '#666' }}>Loading...</div>
+            </div>
+        );
+    }
+
+    if (sellerStatus !== 'approved') {
+        return null; // Will redirect in useEffect
+    }
 
     const handleCategoryClick = (cat) => {
         if (isRentMode) {

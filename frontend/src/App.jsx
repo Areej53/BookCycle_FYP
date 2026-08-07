@@ -29,6 +29,23 @@ import DashboardPage from "./pages/DashboardPage";
 import { ToastContainer } from "react-toastify";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { SellerProvider } from "./context/SellerContext";
+import AdminLayout from "./components/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import SellerRequestPage from "./pages/SellerRequestPage";
+import AdminProtectedRoute from "./components/AdminProtectedRoute";
+import AdminSellerRequests from "./pages/admin/AdminSellerRequests";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminSellers from "./pages/admin/AdminSellers";
+import AdminSellerListings from "./pages/admin/AdminSellerListings";
+import AdminBooks from "./pages/admin/AdminBooks";
+import AdminOrders from "./pages/admin/AdminOrders";
+import AdminExchange from "./pages/admin/AdminExchange";
+import AdminRent from "./pages/admin/AdminRent";
+import AdminPayments from "./pages/admin/AdminPayments";
+import AdminDeliveries from "./pages/admin/AdminDeliveries";
+import AdminNotifications from "./pages/admin/AdminNotifications";
+import AdminReports from "./pages/admin/AdminReports";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 const router = createBrowserRouter([
   {
@@ -108,7 +125,7 @@ const router = createBrowserRouter([
           },
           {
             path: "seller/add",
-            element: <SellerAddBookPage />,
+            element: <SellerRequestPage />,
           },
           {
             path: "seller/categories",
@@ -143,6 +160,68 @@ const router = createBrowserRouter([
             element: <OrderTrackingPage />,
           },
         ],
+      },
+    ],
+  },
+  {
+    path: "/admin",
+    element: <AdminProtectedRoute><AdminLayout /></AdminProtectedRoute>,
+    children: [
+      {
+        path: "dashboard",
+        element: <AdminDashboard />,
+      },
+      {
+        path: "seller-requests",
+        element: <AdminSellerRequests />,
+      },
+      {
+        path: "users",
+        element: <AdminUsers />,
+      },
+      {
+        path: "sellers",
+        element: <AdminSellers />,
+      },
+      {
+        path: "sellers/:sellerId/listings",
+        element: <AdminSellerListings />,
+      },
+      {
+        path: "books",
+        element: <AdminBooks />,
+      },
+      {
+        path: "orders",
+        element: <AdminOrders />,
+      },
+      {
+        path: "rent",
+        element: <AdminRent />,
+      },
+      {
+        path: "exchange",
+        element: <AdminExchange />,
+      },
+      {
+        path: "payments",
+        element: <AdminPayments />,
+      },
+      {
+        path: "deliveries",
+        element: <AdminDeliveries />,
+      },
+      {
+        path: "notifications",
+        element: <AdminNotifications />,
+      },
+      {
+        path: "reports",
+        element: <AdminReports />,
+      },
+      {
+        path: "settings",
+        element: <AdminSettings />,
       },
     ],
   },
