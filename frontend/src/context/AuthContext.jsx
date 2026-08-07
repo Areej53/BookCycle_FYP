@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getStoredAuthToken } from '../utils/authStorage';
-import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext(null);
 
@@ -31,6 +30,11 @@ export const AuthProvider = ({ children }) => {
             setUser(null);
           } else {
             setUser(decodedUser);
+            // Redirect admin to admin dashboard if on user pages
+            if (decodedUser.role === 'admin' && 
+                (window.location.pathname === '/home' || window.location.pathname === '/')) {
+              window.location.href = '/admin/dashboard';
+            }
           }
         } else {
           setUser(null);

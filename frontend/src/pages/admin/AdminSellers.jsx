@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import { 
   Store, 
@@ -14,10 +15,12 @@ import {
   X,
   Lock,
   Unlock,
-  AlertTriangle
+  AlertTriangle,
+  Eye
 } from 'lucide-react';
 
 const AdminSellers = () => {
+  const navigate = useNavigate();
   const [sellers, setSellers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -91,6 +94,7 @@ const AdminSellers = () => {
       ...(seller.books?.rent || []),
       ...(seller.books?.exchange || [])
     ];
+    console.log('Opening seller profile:', seller.name, 'with', allBooks.length, 'books');
     setSellerBooks(allBooks);
     setSelectedSeller(seller);
   };
@@ -593,6 +597,27 @@ const AdminSellers = () => {
                         {/* Action buttons (Active/Block and Profile View) */}
                         <td style={{ padding: '16px 24px', textAlign: 'right' }}>
                           <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                            <button
+                              onClick={() => navigate(`/admin/sellers/${seller.id}/listings`)}
+                              style={{
+                                padding: '6px 12px',
+                                backgroundColor: 'rgba(96, 108, 56, 0.1)',
+                                color: '#606C38',
+                                border: '1px solid rgba(96, 108, 56, 0.2)',
+                                borderRadius: '6px',
+                                fontWeight: '700',
+                                fontSize: '0.8rem',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                transition: 'background 0.2s'
+                              }}
+                              onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(96, 108, 56, 0.2)'}
+                              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(96, 108, 56, 0.1)'}
+                            >
+                              <Eye size={13} /> See Listings
+                            </button>
                             <button
                               onClick={() => openSellerProfile(seller)}
                               style={{

@@ -38,10 +38,16 @@ const AdminSellerRequests = () => {
   const handleApprove = async (userId) => {
     try {
       setActionLoading(userId);
-      await api.put(`/admin/seller-requests/${userId}/approve`);
+      console.log('Approving seller with userId:', userId);
+      const response = await api.put(`/admin/seller-requests/${userId}/approve`);
+      console.log('Approve response:', response.data);
+      console.log('Response status:', response.status);
       setSellers(sellers.filter(s => s.id !== userId));
     } catch (error) {
       console.error('Failed to approve seller:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      console.error('Error message:', error.message);
       alert('Failed to approve seller.');
     } finally {
       setActionLoading(null);

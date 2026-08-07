@@ -48,7 +48,7 @@ const Login = () => {
       
       // Redirect based on role
       if (response.data.role === 'admin') {
-        navigate("/admin/dashboard");
+        window.location.href = "/admin/dashboard";
       } else {
         navigate("/home");
       }

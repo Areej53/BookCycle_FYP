@@ -17,9 +17,16 @@ const SellerRequestPage = () => {
   const fetchSellerStatus = async () => {
     try {
       const response = await api.get('/seller-requests/status');
+      console.log('Seller status response:', response.data);
       setSellerStatus(response.data.sellerStatus);
     } catch (error) {
       console.error('Failed to fetch seller status:', error);
+      console.error('Error status:', error.response?.status);
+      if (error.response?.status === 401) {
+        // User not authenticated, redirect to login
+        navigate('/login');
+      }
+      setSellerStatus(null);
     } finally {
       setLoading(false);
     }
@@ -28,12 +35,30 @@ const SellerRequestPage = () => {
   const handleSubmitRequest = async () => {
     try {
       setSubmitting(true);
+      console.log('Submitting seller request...');
       const response = await api.post('/seller-requests/request');
+      console.log('Seller request response:', response.data);
+      console.log('Response status:', response.status);
+      console.log('Full response:', response);
+      
+      // Success - update status and show success message
       setSellerStatus('pending');
       setMessage('Your seller approval request has been submitted successfully!');
     } catch (error) {
       console.error('Failed to submit request:', error);
-      setMessage(error.response?.data?.msg || 'Failed to submit request. Please try again.');
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      console.error('Error message:', error.message);
+      console.error('Full error object:', error);
+      
+      // Check if it's a network error or server error
+      if (error.response) {
+        setMessage(error.response.data?.msg || 'Failed to submit request. Please try again.');
+      } else if (error.request) {
+        setMessage('Network error. Please check your connection and try again.');
+      } else {
+        setMessage('Failed to submit request. Please try again.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -66,7 +91,7 @@ const SellerRequestPage = () => {
           title: 'Account Approved',
           description: 'Congratulations! Your seller account has been approved. You can now start listing books.',
           showButton: true,
-          buttonText: 'Go to Dashboard',
+          buttonText: 'Start Listing Books',
           buttonAction: () => navigate('/seller')
         };
       case 'rejected':

@@ -80,27 +80,40 @@ const getSellerRequests = async (req, res) => {
 const approveSellerRequest = async (req, res) => {
   try {
     const { userId } = req.params;
+    console.log('Approving seller with userId:', userId);
     
     const seller = await User.findByPk(userId);
     if (!seller) {
+      console.log('Seller not found with userId:', userId);
       return res.status(404).json({ msg: 'Seller not found' });
     }
+
+    console.log('Found seller:', seller.name, 'current status:', seller.sellerStatus, 'current role:', seller.role);
 
     seller.sellerStatus = 'approved';
     seller.role = 'shopkeeper';
     await seller.save();
 
+    console.log('Seller updated successfully');
+
     // Create notification
-    await Notification.create({
-      userId: seller.id,
-      type: 'seller_approved',
-      message: 'Your seller account has been approved. You can now start listing books.',
-      isRead: false
-    });
+    try {
+      await Notification.create({
+        userId: seller.id,
+        type: 'seller_approved',
+        message: 'Your seller account has been approved. You can now start listing books.',
+        isRead: false
+      });
+      console.log('Notification created successfully');
+    } catch (notificationError) {
+      console.error('Failed to create notification:', notificationError);
+      // Continue even if notification fails
+    }
 
     res.status(200).json({ msg: 'Seller approved successfully' });
   } catch (error) {
     console.error('Approve seller error:', error);
+    console.error('Error details:', error.message);
     res.status(500).json({ msg: 'Failed to approve seller' });
   }
 };
@@ -135,10 +148,16 @@ const rejectSellerRequest = async (req, res) => {
 // Users Management
 const getAllUsers = async (req, res) => {
   try {
+    console.log('Fetching all users...');
     const users = await User.findAll({
       where: { role: 'customer' },
       order: [['createdAt', 'DESC']]
     });
+    console.log(`Found ${users.length} users with role: customer`);
+    
+    // Also check total users count for debugging
+    const totalUsers = await User.count();
+    console.log(`Total users in database: ${totalUsers}`);
 
     res.status(200).json({ users });
   } catch (error) {
@@ -206,10 +225,45 @@ const deleteUser = async (req, res) => {
 // Sellers Management
 const getAllSellers = async (req, res) => {
   try {
-    const sellers = await User.findAll({
-      where: { role: 'shopkeeper' },
-      order: [['createdAt', 'DESC']]
+    console.log('Fetching all sellers...');
+    
+    // Get all users who are shopkeepers OR have books listed
+    const [shopkeepers, usersWithBooks] = await Promise.all([
+      User.findAll({
+        where: { role: 'shopkeeper' },
+        order: [['createdAt', 'DESC']]
+      }),
+      Book.findAll({
+        attributes: ['ownerId'],
+        group: ['ownerId']
+      })
+    ]);
+
+    console.log(`Found ${shopkeepers.length} shopkeepers`);
+    console.log(`Found ${usersWithBooks.length} unique book owners`);
+
+    // Get unique user IDs from books
+    const bookOwnerIds = [...new Set(usersWithBooks.map(b => b.ownerId))];
+    console.log(`Unique book owner IDs: ${bookOwnerIds.length}`);
+
+    // Fetch users who own books but might not be shopkeepers
+    const bookOwners = await User.findAll({
+      where: { 
+        id: { [Op.in]: bookOwnerIds },
+        role: { [Op.ne]: 'admin' } // Exclude admin users
+      }
     });
+
+    console.log(`Found ${bookOwners.length} book owners who are not admin`);
+
+    // Combine and deduplicate sellers
+    const allSellersMap = new Map();
+    [...shopkeepers, ...bookOwners].forEach(seller => {
+      allSellersMap.set(seller.id, seller);
+    });
+    const sellers = Array.from(allSellersMap.values());
+
+    console.log(`Total unique sellers: ${sellers.length} (shopkeepers: ${shopkeepers.length}, book owners: ${bookOwners.length})`);
 
     const sellersWithStats = await Promise.all(sellers.map(async (seller) => {
       const [bookCount, sellCount, rentCount, exchangeCount, orderCount, books] = await Promise.all([
@@ -330,6 +384,7 @@ const suspendSeller = async (req, res) => {
 // Books Management
 const getAllBooks = async (req, res) => {
   try {
+    console.log('Fetching all books...');
     const books = await Book.findAll({
       include: [
         {
@@ -340,6 +395,13 @@ const getAllBooks = async (req, res) => {
       ],
       order: [['createdAt', 'DESC']]
     });
+    console.log(`Found ${books.length} books`);
+    
+    // Count books by type
+    const sellCount = await Book.count({ where: { exchangeType: 'Sell' } });
+    const rentCount = await Book.count({ where: { exchangeType: 'Rent' } });
+    const exchangeCount = await Book.count({ where: { exchangeType: 'Exchange' } });
+    console.log(`Book counts - Sell: ${sellCount}, Rent: ${rentCount}, Exchange: ${exchangeCount}`);
 
     res.status(200).json({ books });
   } catch (error) {
@@ -494,6 +556,54 @@ const getRecentActivities = async (req, res) => {
   }
 };
 
+const getSellerListings = async (req, res) => {
+  try {
+    const { sellerId } = req.params;
+    
+    const seller = await User.findByPk(sellerId);
+    if (!seller) {
+      return res.status(404).json({ msg: 'Seller not found' });
+    }
+
+    const books = await Book.findAll({
+      where: { ownerId: sellerId },
+      order: [['createdAt', 'DESC']]
+    });
+
+    // Group books by exchange type
+    const sellBooks = books.filter(b => b.exchangeType === 'Sell');
+    const rentBooks = books.filter(b => b.exchangeType === 'Rent');
+    const exchangeBooks = books.filter(b => b.exchangeType === 'Exchange');
+
+    res.status(200).json({
+      seller: {
+        id: seller.id,
+        name: seller.name,
+        email: seller.email,
+        phone: seller.phone,
+        location: seller.location,
+        createdAt: seller.createdAt,
+        sellerStatus: seller.sellerStatus
+      },
+      books: {
+        all: books,
+        sell: sellBooks,
+        rent: rentBooks,
+        exchange: exchangeBooks
+      },
+      counts: {
+        total: books.length,
+        sell: sellBooks.length,
+        rent: rentBooks.length,
+        exchange: exchangeBooks.length
+      }
+    });
+  } catch (error) {
+    console.error('Get seller listings error:', error);
+    res.status(500).json({ msg: 'Failed to fetch seller listings' });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getSellerRequests,
@@ -504,6 +614,7 @@ module.exports = {
   activateUser,
   deleteUser,
   getAllSellers,
+  getSellerListings,
   activateSeller,
   deactivateSeller,
   suspendSeller,

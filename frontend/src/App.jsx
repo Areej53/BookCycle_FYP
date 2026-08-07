@@ -36,6 +36,7 @@ import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import AdminSellerRequests from "./pages/admin/AdminSellerRequests";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminSellers from "./pages/admin/AdminSellers";
+import AdminSellerListings from "./pages/admin/AdminSellerListings";
 import AdminBooks from "./pages/admin/AdminBooks";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminExchange from "./pages/admin/AdminExchange";
@@ -181,6 +182,10 @@ const router = createBrowserRouter([
       {
         path: "sellers",
         element: <AdminSellers />,
+      },
+      {
+        path: "sellers/:sellerId/listings",
+        element: <AdminSellerListings />,
       },
       {
         path: "books",

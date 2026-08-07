@@ -61,7 +61,7 @@ export default function Navbar() {
           <li><Link to="/explore" style={getLinkStyle(isExplore)} onClick={closeMenu}>Buy</Link></li>
           <li><Link to="/explore?tab=rent" style={getLinkStyle(isRent)} onClick={closeMenu}>Rent</Link></li>
           <li><Link to="/explore?tab=exchange" style={getLinkStyle(isExchange)} onClick={closeMenu}>Exchange</Link></li>
-          <li><Link to="/seller" style={getLinkStyle(isSell)} onClick={closeMenu}>Sell</Link></li>
+          <li><Link to="/seller/add" style={getLinkStyle(isSell)} onClick={closeMenu}>Sell</Link></li>
 
           {/* Wishlist Icon */}
           <li>

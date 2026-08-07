@@ -14,6 +14,7 @@ const {
   activateSeller,
   deactivateSeller,
   suspendSeller,
+  getSellerListings,
   getAllBooks,
   removeBook,
   hideBook,
@@ -41,6 +42,7 @@ router.delete("/users/:userId", adminAuthMiddleware, deleteUser);
 
 // Sellers
 router.get("/sellers", adminAuthMiddleware, getAllSellers);
+router.get("/sellers/:sellerId/listings", adminAuthMiddleware, getSellerListings);
 router.put("/sellers/:userId/activate", adminAuthMiddleware, activateSeller);
 router.put("/sellers/:userId/deactivate", adminAuthMiddleware, deactivateSeller);
 router.put("/sellers/:userId/suspend", adminAuthMiddleware, suspendSeller);

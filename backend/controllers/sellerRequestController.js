@@ -2,6 +2,11 @@ const { User, Notification } = require("../models");
 
 const requestSellerApproval = async (req, res) => {
   try {
+    // Check if user is admin - admins cannot submit seller requests
+    if (req.user.role === 'admin') {
+      return res.status(403).json({ msg: 'Admin users cannot submit seller requests.' });
+    }
+
     const userId = req.user.id;
     
     const user = await User.findByPk(userId);

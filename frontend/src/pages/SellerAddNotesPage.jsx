@@ -12,6 +12,7 @@ import {
   FiList,
   FiDollarSign,
   FiRepeat,
+  FiRefreshCw,
   FiGift,
   FiCheckCircle,
   FiAlignLeft,
@@ -26,7 +27,43 @@ export default function SellerAddNotesPage() {
     const [loading, setLoading] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
     const [isSuccessModal, setIsSuccessModal] = useState(false);
+    const [sellerStatus, setSellerStatus] = useState(null);
+    const [statusLoading, setStatusLoading] = useState(true);
     const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        checkSellerStatus();
+    }, []);
+
+    const checkSellerStatus = async () => {
+        try {
+            const response = await api.get('/seller-requests/status');
+            setSellerStatus(response.data.sellerStatus);
+            
+            // If not approved, redirect to seller request page
+            if (response.data.sellerStatus !== 'approved') {
+                navigate('/seller/add');
+            }
+        } catch (error) {
+            console.error('Failed to check seller status:', error);
+            // If error checking status, redirect to seller request page
+            navigate('/seller/add');
+        } finally {
+            setStatusLoading(false);
+        }
+    };
+
+    if (statusLoading) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                <div style={{ fontSize: '1.2rem', color: '#666' }}>Loading...</div>
+            </div>
+        );
+    }
+
+    if (sellerStatus !== 'approved') {
+        return null; // Will redirect in useEffect
+    }
 
     useEffect(() => {
         // Strict enforcement: if no category is in context, they skipped the selection page.
