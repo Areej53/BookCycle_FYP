@@ -16,7 +16,7 @@ const TypeBadge = ({ type }) => {
   const config = {
     buy:  { label: 'Buy',        bg: 'rgba(188,108,37,.12)', c: '#BC6C25' },
     rent: { label: 'Rent',       bg: 'rgba(19,73,60,.1)',    c: '#13493C' },
-    free: { label: 'Free Shelf', bg: 'rgba(96,108,56,.12)',  c: '#606C38' },
+    exchange: { label: 'Exchange', bg: 'rgba(96,108,56,.12)',  c: '#606C38' },
   }[safeType] || { label: 'Book', bg: '#eee', c: '#444' };
 
   return (
@@ -39,8 +39,8 @@ const CartPage = () => {
 
   const subtotal = cart.reduce((acc, item) => {
     if (item.type === 'buy') return acc + Number(item.price || 0)
-    if (item.type === 'rent') return acc + (Number(item.rentPerWeek || 0) * Number(item.duration || 1))
-    if (item.type === 'free') return acc
+    if (item.type === 'rent') return acc + Number(item.rentPerWeek || 0)
+    if (item.type === 'exchange') return acc
     return acc
   }, 0)
 
@@ -116,11 +116,11 @@ const CartPage = () => {
                     <img src={item.img} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
                     {/* Type ribbon */}
                     <div style={{ position: 'absolute', top: 12, left: -2,
-                      background: item.type === 'free' ? 'var(--secondary)' : item.type === 'buy' ? 'var(--cta)' : 'var(--primary)',
+                      background: item.type === 'exchange' ? 'var(--secondary)' : item.type === 'buy' ? 'var(--cta)' : 'var(--primary)',
                       color: '#fff', fontSize: '.65rem', fontWeight: 800, letterSpacing: '.06em',
                       textTransform: 'uppercase', padding: '4px 12px 4px 10px',
                       borderRadius: '0 50px 50px 0', boxShadow: '2px 2px 8px rgba(0,0,0,.15)' }}>
-                      {item.type === 'free' ? '🎁 Share' : item.type === 'buy' ? '💰 Buy' : '🔄 Rent'}
+                      {item.type === 'exchange' ? '🔄 Exchange' : item.type === 'buy' ? '💰 Buy' : '🔄 Rent'}
                     </div>
                   </div>
 
@@ -164,40 +164,30 @@ const CartPage = () => {
                       {item.type === 'rent' && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
                           <div>
-                            <div style={{ fontSize: '.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>Rate</div>
+                            <div style={{ fontSize: '.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>Rental Price</div>
                             <div style={{ fontFamily: "'Playfair Display',serif", fontSize: '1.15rem',
                               fontWeight: 900, color: 'var(--primary)' }}>
-                              Rs. {Number(item.rentPerWeek || 0)}<span style={{ fontSize: '.75rem', fontWeight: 500, color: 'var(--text-muted)' }}>/wk</span>
+                              Rs. {Number(item.rentPerWeek || 0)}
                             </div>
                           </div>
                           <div>
                             <div style={{ fontSize: '.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>Duration</div>
-                            <select value={item.duration}
-                              onChange={e => updateDuration(item.id, e.target.value)}
-                              className="cart-duration-select">
-                              {DURATION_OPTIONS.map(d => (
-                                <option key={d} value={d}>{d} week{d !== '1' ? 's' : ''}</option>
-                              ))}
-                            </select>
-                          </div>
-                          <div>
-                            <div style={{ fontSize: '.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>Total</div>
                             <div style={{ fontFamily: "'Playfair Display',serif", fontSize: '1.15rem',
-                              fontWeight: 900, color: 'var(--cta)' }}>
-                              Rs. {Number(item.rentPerWeek || 0) * Number(item.duration || 1)}
+                              fontWeight: 700, color: 'var(--text-dark)' }}>
+                              {item.rentalDuration || item.duration || '3 Months'}
                             </div>
                           </div>
                         </div>
                       )}
-                      {item.type === 'free' && (
+                      {item.type === 'exchange' && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <span style={{ fontSize: '1.4rem' }}>🎁</span>
+                          <span style={{ fontSize: '1.4rem' }}>🔄</span>
                           <div>
                             <div style={{ fontWeight: 700, color: 'var(--secondary)', fontSize: '.95rem' }}>
-                              Free Shelf Data
+                              Exchange Data
                             </div>
                             <div style={{ fontSize: '.75rem', color: 'var(--text-muted)' }}>
-                              Donated by a fellow reader
+                              Exchange with other readers
                             </div>
                           </div>
                           <div style={{ marginLeft: '12px' }}>
@@ -275,11 +265,11 @@ const CartPage = () => {
                       <div style={{ minWidth: 0, flex: 1, paddingRight: 10 }}>
                         <div className="summary-item-title">{item.title}</div>
                         <div style={{ fontSize: '.72rem', color: 'var(--text-muted)', marginTop: 2 }}>
-                          {item.type === 'rent' ? `${item.duration}wk × Rs.${Number(item.rentPerWeek || 0)}` : item.type === 'free' ? 'Free Shelf' : 'Purchase'}
+                          {item.type === 'rent' ? `${item.rentalDuration || item.duration}` : item.type === 'exchange' ? 'Exchange' : 'Purchase'}
                         </div>
                       </div>
-                      <div className={`summary-item-price ${item.type === 'free' ? 'free' : ''}`} style={{ color: item.type === 'free' ? 'var(--secondary)' : '', fontWeight: item.type === 'free' ? '900' : '' }}>
-                        {item.type === 'free' ? 'Rs. 120 (Delivery Charges)' : `Rs. ${item.type === 'buy' ? Number(item.price || 0) : Number(item.rentPerWeek || 0) * Number(item.duration || 1)}`}
+                      <div className={`summary-item-price ${item.type === 'exchange' ? 'exchange' : ''}`} style={{ color: item.type === 'exchange' ? 'var(--secondary)' : '', fontWeight: item.type === 'exchange' ? '900' : '' }}>
+                        {item.type === 'exchange' ? 'Rs. 120 (Delivery Charges)' : `Rs. ${item.type === 'buy' ? Number(item.price || 0) : Number(item.rentPerWeek || 0)}`}
                       </div>
                     </div>
                   ))}

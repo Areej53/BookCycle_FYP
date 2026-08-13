@@ -69,7 +69,7 @@ export default function HomePage() {
         { id: 'r1', title: 'Zero to One', author: 'Peter Thiel', type: 'buy', price: '400', img: 'https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=200&q=80', timeAgo: '2 hrs ago', sellerName: 'Sample Seller', sellerRating: 'No ratings', sellerReviewsCount: 0 },
         { id: 'r2', title: 'Ikigai', author: 'Héctor García', type: 'rent', price: '35', unit: '/wk', img: 'https://images.unsplash.com/photo-1476275466078-4007374efbbe?w=200&q=80', timeAgo: '5 hrs ago', sellerName: 'Sample Seller', sellerRating: 'No ratings', sellerReviewsCount: 0 }
     ]);
-    const [freeBooks, setFreeBooks] = useState([]);
+    const [exchangeBooks, setExchangeBooks] = useState([]);
     const [topBooks, setTopBooks] = useState([]);
     const [topSellingBooks, setTopSellingBooks] = useState([]);
 
@@ -84,25 +84,25 @@ export default function HomePage() {
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const [featRes, recentRes, freeRes, topRes, sellRes] = await Promise.all([
+                const [featRes, recentRes, exchangeRes, topRes, sellRes] = await Promise.all([
                     api.get('books?limit=8&sort=random'),
                     api.get('books?limit=6&sort=recent'),
-                    api.get('books?type=share&limit=3&sort=recent'),
+                    api.get('books?type=exchange&limit=3&sort=recent'),
                     api.get('books?limit=4&sort=popular'),
                     api.get('books?type=sell&limit=3&sort=random')
                 ]);
-                
+
                 const formatBooks = (booksArr, max) => {
                     return booksArr.slice(0, max).map(b => ({
                         id: b._id,
                         _id: b._id,
                         img: getImageUrl(b),
-                        type: b.exchangeType === 'Sell' ? 'buy' : b.exchangeType === 'Rent' ? 'rent' : 'free',
+                        type: b.exchangeType === 'Sell' ? 'buy' : b.exchangeType === 'Rent' ? 'rent' : 'exchange',
                         title: b.title,
                         author: b.author,
                         category: b.category,
                         condition: b.condition,
-                        price: b.exchangeType === 'Share' ? 120 : extractNumericPrice(b.price),
+                        price: b.exchangeType === 'Exchange' ? 120 : extractNumericPrice(b.price),
                         unit: b.exchangeType === 'Rent' ? '/wk' : '',
                         timeAgo: getTimeAgo(b.createdAt),
                         exchangeType: b.exchangeType,
@@ -119,8 +119,8 @@ export default function HomePage() {
                 if (recentRes.data.books) {
                     setRecentBooks(formatBooks(recentRes.data.books, 6));
                 }
-                if (freeRes.data.books) {
-                    setFreeBooks(formatBooks(freeRes.data.books, 3));
+                if (exchangeRes.data.books) {
+                    setExchangeBooks(formatBooks(exchangeRes.data.books, 3));
                 }
                 if (topRes.data.books) {
                     setTopBooks(formatBooks(topRes.data.books, 4));
@@ -190,7 +190,7 @@ export default function HomePage() {
     if (activeSort !== 'recent') activeTags.push({ group: 'sort', val: activeSort, label: activeSort });
 
     const categoryCount = {};
-    const allFetchedBooks = [...featuredBooks, ...recentBooks, ...freeBooks, ...topBooks, ...topSellingBooks];
+    const allFetchedBooks = [...featuredBooks, ...recentBooks, ...exchangeBooks, ...topBooks, ...topSellingBooks];
     
     allFetchedBooks.forEach(book => {
       const cat = book.category;
@@ -231,9 +231,9 @@ export default function HomePage() {
             <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 12.5A5.5 5.5 0 118 2.5a5.5 5.5 0 010 11z"/><circle cx="8" cy="8" r="2.5"/></svg>
             All
           </span>
-          <span className={`f-chip ${activeType === 'share' ? 'active' : ''}`} onClick={() => setActiveType('share')}>
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 2v12M4 6h5.5a2.5 2.5 0 010 5H4"/></svg>
-            Free
+          <span className={`f-chip ${activeType === 'exchange' ? 'active' : ''}`} onClick={() => setActiveType('exchange')}>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M7 16V4M7 4L3 8M7 4L11 8M9 12v8M9 20L13 16M9 20L5 16"/></svg>
+            Exchange
           </span>
           <span className={`f-chip ${activeType === 'sell' ? 'active' : ''}`} onClick={() => setActiveType('sell')}>
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 3h2l2 7h6l1.5-5H6"/><circle cx="8" cy="13" r="1"/><circle cx="12" cy="13" r="1"/></svg>
@@ -338,7 +338,7 @@ export default function HomePage() {
     <div className="hero-stats">
       <div className="stat"><div className="stat-num" style={{ color: 'var(--accent)', fontSize: '1.8rem', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>2,400+</div><div className="stat-label" style={{ color: 'rgba(255,250,224,.55)', fontSize: '.8rem' }}>Books Available</div></div>
       <div className="stat"><div className="stat-num" style={{ color: 'var(--accent)', fontSize: '1.8rem', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>840+</div><div className="stat-label" style={{ color: 'rgba(255,250,224,.55)', fontSize: '.8rem' }}>Active Readers</div></div>
-      <div className="stat"><div className="stat-num" style={{ color: 'var(--accent)', fontSize: '1.8rem', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>320+</div><div className="stat-label" style={{ color: 'rgba(255,250,224,.55)', fontSize: '.8rem' }}>Free Books</div></div>
+      <div className="stat"><div className="stat-num" style={{ color: 'var(--accent)', fontSize: '1.8rem', fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>320+</div><div className="stat-label" style={{ color: 'rgba(255,250,224,.55)', fontSize: '.8rem' }}>Exchange Books</div></div>
     </div>
   </div>
   <div className="hero-visual">
@@ -349,7 +349,7 @@ export default function HomePage() {
       </div>
       
       <div className="hero-chip chip-1"><span className="dot"></span>840+ Active Readers</div>
-      <div className="hero-chip chip-2"><span className="dot"></span>320+ Free Books</div>
+      <div className="hero-chip chip-2"><span className="dot"></span>320+ Exchange Books</div>
       
       <div className="book3d-stage">
         
@@ -425,8 +425,8 @@ export default function HomePage() {
               )}
             </div>
             <div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span className={`book-price ${b.type === 'free' ? 'free' : ''}`}>
-                {b.type === 'free' ? 'Free' : `Rs. ${b.price}${b.unit}`}
+              <span className={`book-price ${b.type === 'exchange' ? 'exchange' : ''}`}>
+                {b.type === 'exchange' ? 'Exchange' : `Rs. ${b.price}${b.unit}`}
               </span>
               {b.category === 'Notes' ? (
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -625,16 +625,18 @@ export default function HomePage() {
   
   <div style={{ marginTop: '60px' }}>
     <div className="section-header">
-      <div><h2 className="section-title">Free Knowledge <span>Shelf</span></h2></div>
+      <div><h2 className="section-title">Exchange Knowledge <span>Shelf</span></h2></div>
       <Link to="/explore" className="see-all">Explore shelf</Link>
     </div>
     <div style={{ background: 'linear-gradient(135deg,rgba(96,108,56,.07),rgba(19,73,60,.05))', border: '1.5px solid rgba(96,108,56,.2)', borderRadius: '20px', padding: '26px' }}>
       <div className="books-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
-        {freeBooks.map(b => (
+        {exchangeBooks.map(b => (
           <div className="book-card" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer' }}>
             <div className="book-cover" style={{ position: 'relative' }}>
               <img src={b.img} alt={b.title} loading="lazy"/>
               <span className="book-badge badge-free">Free</span>
+              <img src={b.img} alt={b.title}/>
+              <span className="book-badge badge-exchange">Exchange</span>
             </div>
             <div className="book-info">
               <div className="book-title">{b.title}</div>
@@ -650,7 +652,7 @@ export default function HomePage() {
                 )}
               </div>
               <div className="book-footer">
-                <span className="book-price free" style={{ color: 'var(--cta)', fontWeight: '900' }}>Free</span>
+                <span className="book-price exchange" style={{ color: 'var(--cta)', fontWeight: '900' }}>Exchange</span>
                 {b.category === 'Notes' ? (
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                     <button 
@@ -748,7 +750,7 @@ export default function HomePage() {
             </div>
             <div style={{ marginTop: '5px', fontSize: '.77rem', color: 'var(--text-muted)' }}>Added {b.timeAgo}</div>
             <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-              <span className={`book-price ${b.type === 'free' ? 'free' : ''}`} style={{ flexShrink: 0, fontWeight: '900', color: b.type === 'free' ? 'var(--cta)' : '' }}>{b.type === 'free' ? 'Free' : `Rs. ${b.price}${b.unit}`}</span>
+              <span className={`book-price ${b.type === 'exchange' ? 'exchange' : ''}`} style={{ flexShrink: 0, fontWeight: '900', color: b.type === 'exchange' ? 'var(--cta)' : '' }}>{b.type === 'exchange' ? 'Exchange' : `Rs. ${b.price}${b.unit}`}</span>
               <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginLeft: 'auto' }}>
                 {b.category === 'Notes' ? (
                     <>
@@ -775,12 +777,23 @@ export default function HomePage() {
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                     </button>
                     </>
-                ) : b.badge === 'free' ? (
-                  <Link to={`/book/${b.id}`} className="btn-mini" style={{ background: 'var(--secondary)', color: '#fff', padding: '4px 12px', borderRadius: '6px', fontSize: '.75rem', fontWeight: '700' }}>Claim</Link>
+                ) : b.badge === 'exchange' ? (
+                  <>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (!user) { navigate('/login'); return; }
+                            navigate(`/book/${b.id}`);
+                        }}
+                        style={{ background: 'var(--secondary)', color: '#fff', padding: '4px 12px', borderRadius: '6px', fontSize: '.75rem', fontWeight: '700', border: 'none', cursor: 'pointer' }}
+                    >
+                        Request Exchange
+                    </button>
+                  </>
                 ) : b.type === 'rent' ? (
                   <span style={{ fontSize: '.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Currently unavailable</span>
                 ) : (
-                  <button 
+                  <button
                     onClick={(e) => { e.stopPropagation(); handleAddToCart(b); }}
                     className="btn-mini-cart"
                   >

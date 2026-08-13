@@ -12,6 +12,7 @@ import {
   FiList,
   FiDollarSign,
   FiRepeat,
+  FiRefreshCw,
   FiGift,
   FiCheckCircle,
   FiAlignLeft,
@@ -26,7 +27,43 @@ export default function SellerAddNotesPage() {
     const [loading, setLoading] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
     const [isSuccessModal, setIsSuccessModal] = useState(false);
+    const [sellerStatus, setSellerStatus] = useState(null);
+    const [statusLoading, setStatusLoading] = useState(true);
     const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        checkSellerStatus();
+    }, []);
+
+    const checkSellerStatus = async () => {
+        try {
+            const response = await api.get('/seller-requests/status');
+            setSellerStatus(response.data.sellerStatus);
+            
+            // If not approved, redirect to seller request page
+            if (response.data.sellerStatus !== 'approved') {
+                navigate('/seller/add');
+            }
+        } catch (error) {
+            console.error('Failed to check seller status:', error);
+            // If error checking status, redirect to seller request page
+            navigate('/seller/add');
+        } finally {
+            setStatusLoading(false);
+        }
+    };
+
+    if (statusLoading) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                <div style={{ fontSize: '1.2rem', color: '#666' }}>Loading...</div>
+            </div>
+        );
+    }
+
+    if (sellerStatus !== 'approved') {
+        return null; // Will redirect in useEffect
+    }
 
     useEffect(() => {
         // Strict enforcement: if no category is in context, they skipped the selection page.
@@ -197,8 +234,8 @@ export default function SellerAddNotesPage() {
       <div className={`listing-opt ${sellerData.exchangeType === 'Rent' ? 'active' : ''}`} onClick={() => handleListingType('Rent')}>
         <div className="lo-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiRepeat /></div><div className="lo-name">Rent</div><div className="lo-sub">Weekly or monthly rental.</div>
       </div>
-      <div className={`listing-opt ${sellerData.exchangeType === 'Share' ? 'active' : ''}`} onClick={() => handleListingType('Share')}>
-        <div className="lo-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiGift /></div><div className="lo-name">Free Shelf</div><div className="lo-sub">Donate your book free.</div>
+      <div className={`listing-opt ${sellerData.exchangeType === 'Exchange' ? 'active' : ''}`} onClick={() => handleListingType('Exchange')}>
+        <div className="lo-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiRefreshCw /></div><div className="lo-name">Exchange</div><div className="lo-sub">Exchange with other books.</div>
       </div>
     </div>
 
@@ -265,10 +302,10 @@ export default function SellerAddNotesPage() {
         </div>
     )}
 
-    {sellerData.exchangeType === 'Share' && (
-        <div className="pricing-section show free-info" style={{ marginBottom: '24px', display:'flex', alignItems: 'center', gap: '8px' }}>
-          <FiGift style={{ fontSize: '1.2rem', color: 'var(--cta)' }} />
-          These notes will be listed FREE on the Knowledge Shelf. No price needed.
+    {sellerData.exchangeType === 'Exchange' && (
+        <div className="pricing-section show exchange-info" style={{ marginBottom: '24px', display:'flex', alignItems: 'center', gap: '8px' }}>
+          <FiRefreshCw style={{ fontSize: '1.2rem', color: 'var(--cta)' }} />
+          These notes will be listed for Exchange. Specify what you're looking for in exchange.
         </div>
     )}
 
