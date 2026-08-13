@@ -230,6 +230,16 @@ export default function ExploreBooksPage() {
             <div className="bc-cat">{book.category}</div>
             <div className="bc-title">{book.title}</div>
             <div className="bc-author">by {book.author}</div>
+            <div className="bc-seller" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>Seller: {book.owner?.name || 'Unknown'}</span>
+              {book.sellerRating && book.sellerRating.displayRating !== 'No ratings' && (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                  <span style={{ color: '#FFD700' }}>★</span>
+                  <span>{book.sellerRating.displayRating}</span>
+                  {book.sellerRating.reviewsCount > 0 && <span>({book.sellerRating.reviewsCount})</span>}
+                </span>
+              )}
+            </div>
             <div className="bc-cond">Condition: <strong>{book.condition}</strong></div>
             <div className="price-line" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
                 <div className="price-label">
