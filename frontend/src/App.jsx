@@ -1,4 +1,17 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+
+// Custom scroll restoration component
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 import {
   ForgotPassword,
   HomeLayout,
@@ -7,6 +20,7 @@ import {
   Logout,
   Register,
   ResetPassword,
+  NotFoundPage,
   HomePage,
   ExploreBooksPage,
   CategoryResultsPage,
@@ -33,7 +47,12 @@ import { SellerProvider } from "./context/SellerContext";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <HomeLayout />,
+    element: (
+      <>
+        <ScrollToTop />
+        <HomeLayout />
+      </>
+    ),
     children: [
       {
         index: true,
@@ -145,6 +164,10 @@ const router = createBrowserRouter([
         ],
       },
     ],
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />,
   },
 ]);
 

@@ -408,7 +408,7 @@ export default function HomePage() {
       {featuredBooks.map(b => (
         <div className="book-card" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer', position: 'relative' }}>
           <div className="book-cover">
-            <img src={b.img} alt={b.title}/>
+            <img src={b.img} alt={b.title} loading="lazy" />
             {b.type && <span className={`book-badge badge-${b.type}`}>{b.type === 'buy' ? 'Buy' : b.type.charAt(0).toUpperCase() + b.type.slice(1)}</span>}
           </div>
           <div className="book-info">
@@ -514,7 +514,7 @@ export default function HomePage() {
         .home-cat-count { font-size: .72rem; color: rgba(255,255,255,.6); margin-top: 2px; }
       `}</style>
         <div className="home-cat-card" onClick={() => navigate('/explore?cats=programming')}>
-            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&q=80" alt="Programming"/></div>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&q=80" alt="Programming" loading="lazy"/></div>
             <div className="home-cat-overlay">
                 <div className="home-cat-name">Programming</div>
             </div>
@@ -572,7 +572,7 @@ export default function HomePage() {
     <div className="steps-grid">
       <div className="step">
         <div className="step-num">01</div>
-        <div className="step-img"><img src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=200&q=80" alt="Upload"/></div>
+        <div className="step-img"><img src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=200&q=80" alt="Upload" loading="lazy"/></div>
         <h3>Upload Book</h3>
         <p>List your book with photos, condition & preferred mode — takes 2 minutes.</p>
         <div className="step-arrow">→</div>
@@ -633,7 +633,7 @@ export default function HomePage() {
         {freeBooks.map(b => (
           <div className="book-card" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer' }}>
             <div className="book-cover" style={{ position: 'relative' }}>
-              <img src={b.img} alt={b.title}/>
+              <img src={b.img} alt={b.title} loading="lazy"/>
               <span className="book-badge badge-free">Free</span>
             </div>
             <div className="book-info">
@@ -730,7 +730,7 @@ export default function HomePage() {
       {recentBooks.map(b => (
         <div className="book-card book-card-h" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer', position: 'relative', display: 'flex', width: '100%' }}>
           <div className="book-cover" style={{ width: '82px', flexShrink: '0', borderRadius: '0', minHeight: '110px', height: 'auto', position: 'relative' }}>
-            <img src={b.img} alt={b.title}/>
+            <img src={b.img} alt={b.title} loading="lazy"/>
             {b.type && <span className={`book-badge badge-${b.type}`} style={{ top: '6px', right: '4px', fontSize: '.6rem', padding: '2px 6px' }}>{b.type === 'buy' ? 'Buy' : b.type.charAt(0).toUpperCase() + b.type.slice(1)}</span>}
           </div>
           <div className="book-info" style={{ padding: '14px', flex: 1, minWidth: 0 }}>
@@ -832,7 +832,7 @@ export default function HomePage() {
     {topBooks.length === 0 && <div style={{ fontSize: '.8rem', color: 'var(--text-muted)' }}>No books found</div>}
     {topBooks.map(b => (
       <div className="top-book-row" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer' }}>
-        <div className="top-book-cover"><img src={b.img} alt={b.title}/></div>
+        <div className="top-book-cover"><img src={b.img} alt={b.title} loading="lazy"/></div>
         <div className="top-book-info">
           <div className="top-book-title">{b.title}</div>
           <div className="top-book-meta">{b.author}</div>
@@ -857,7 +857,7 @@ export default function HomePage() {
     {topSellingBooks.length === 0 && <div style={{ fontSize: '.8rem', color: 'var(--text-muted)' }}>No books found</div>}
     {topSellingBooks.map(b => (
       <div className="top-book-row" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer' }}>
-        <div className="top-book-cover"><img src={b.img} alt={b.title}/></div>
+        <div className="top-book-cover"><img src={b.img} alt={b.title} loading="lazy"/></div>
         <div className="top-book-info">
           <div className="top-book-title">{b.title}</div>
           <div className="top-book-meta">Rs. {b.price}</div>
@@ -934,7 +934,7 @@ export default function HomePage() {
 
 <section className="cta-section">
   <div className="cta-bg">
-    <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1600&q=85" alt="Library"/>
+    <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1600&q=85" alt="Library" loading="lazy"/>
   </div>
   <div className="cta-content">
     <div className="section-label" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', display: 'inline-flex', marginBottom: '20px' }}>✦ Join 840+ Members</div>

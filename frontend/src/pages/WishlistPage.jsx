@@ -56,7 +56,7 @@ export default function WishlistPage() {
                                 style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: '20px', overflow: 'hidden', transition: 'all .3s ease', position: 'relative', animation: `fadeUp .5s ease ${idx * 0.1}s both`, cursor: 'pointer' }}
                             >
                                 <div style={{ height: '220px', overflow: 'hidden', position: 'relative' }}>
-                                    <img src={book.img} alt={book.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <img src={book.img} alt={book.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
                                     <button 
                                         onClick={(e) => { e.stopPropagation(); removeFromWishlist(book.id || book._id); }}
                                         style={{ position: 'absolute', top: '15px', right: '15px', background: '#fff', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'grid', placeItems: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', color: 'var(--cta)', zIndex: 10 }}

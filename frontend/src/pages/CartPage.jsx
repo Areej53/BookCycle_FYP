@@ -113,7 +113,7 @@ const CartPage = () => {
                 <div key={item.id} className="cart-item-card" style={{ animation: `fadeUp .4s ease ${idx * 0.07}s both` }}>
                   {/* Image */}
                   <div className="cart-item-img-wrapper">
-                    <img src={item.img} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={item.img} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
                     {/* Type ribbon */}
                     <div style={{ position: 'absolute', top: 12, left: -2,
                       background: item.type === 'free' ? 'var(--secondary)' : item.type === 'buy' ? 'var(--cta)' : 'var(--primary)',

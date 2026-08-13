@@ -14,6 +14,7 @@ const Register = () => {
   const navigate = useNavigate();
   const [token, setToken] = useState(getStoredAuthToken);
   const [inlineError, setInlineError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [role, setRole] = useState("");
   const [interests, setInterests] = useState([]);
 
@@ -75,12 +76,15 @@ const Register = () => {
       role,
       interests
     };
+    setIsLoading(true);
     try {
       await api.post("/register", formData);
       navigate("/login");
     } catch (err) {
       setInlineError(getApiErrorMessage(err));
       // toast.error(getApiErrorMessage(err)); /* unused */
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -93,12 +97,12 @@ const Register = () => {
   return (
     <div className="register-main">
       <div className="register-left">
-        <img src={Image} alt="" />
+        <img src={Image} alt="BookCycle illustration" />
       </div>
       <div className="register-right">
         <div className="register-right-container">
           <div className="register-logo">
-            <img src={Logo} alt="" />
+            <img src={Logo} alt="BookCycle Logo" />
           </div>
           <div className="register-center">
             <h2>Welcome to our website!</h2>
@@ -145,7 +149,9 @@ const Register = () => {
               </div>
 
               <div className="register-center-buttons">
-                <button type="submit">Sign Up</button>
+                <button type="submit" disabled={isLoading}>
+                  {isLoading ? "Creating account..." : "Sign Up"}
+                </button>
               </div>
             </form>
           </div>

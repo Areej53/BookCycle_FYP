@@ -217,11 +217,14 @@ export default function ExploreBooksPage() {
     </div>
     <div className="books-grid" id="books-grid">
       {isLoading ? (
-        <div style={{gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: 'var(--muted)'}}>Loading books...</div>
+        <div style={{gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: 'var(--muted)'}}>
+          <div style={{display: 'inline-block', width: '40px', height: '40px', border: '3px solid var(--border)', borderTop: '3px solid var(--accent)', borderRadius: '50%', animation: 'spin 1s linear infinite'}}></div>
+          <p style={{marginTop: '16px'}}>Loading books...</p>
+        </div>
       ) : books.map((book, idx) => (
         <div className="book-card" key={book._id} style={{ animationDelay: `${idx * 0.04}s` }} onClick={() => navigate(`/book/${book._id}`)}>
           <div className="bc-img-wrap" style={{ position: 'relative' }}>
-            <img src={getImageUrl(book)} alt={book.title} className="bc-img"/>
+            <img src={getImageUrl(book)} alt={book.title} className="bc-img" loading="lazy"/>
             {book.exchangeType === 'Sell' && <span className="tb tb-buy">Buy</span>}
             {book.exchangeType === 'Rent' && <span className="tb tb-rent" style={{ background: 'var(--primary)', color: '#fff', padding: '4px 10px', borderRadius: '4px', fontSize: '.75rem', fontWeight: 'bold' }}>Rent</span>}
             {book.exchangeType === 'Share' && <span className="tb tb-free">Free</span>}

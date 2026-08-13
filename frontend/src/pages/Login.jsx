@@ -13,6 +13,7 @@ import { useAuth } from "../context/AuthContext";
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [inlineError, setInlineError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { login, token } = useAuth();
   const navigate = useNavigate();
 
@@ -42,6 +43,7 @@ const Login = () => {
       email,
       password,
     };
+    setIsLoading(true);
     try {
       const response = await api.post("/login", formData);
       login(response.data.token);
@@ -50,6 +52,8 @@ const Login = () => {
       console.log(err);
       setInlineError(getApiErrorMessage(err));
       // toast.error(getApiErrorMessage(err)); // unused
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -63,12 +67,12 @@ const Login = () => {
   return (
     <div className="login-main">
       <div className="login-left">
-        <img src={Image} alt="" />
+        <img src={Image} alt="BookCycle illustration" />
       </div>
       <div className="login-right">
         <div className="login-right-container">
           <div className="login-logo">
-            <img src={Logo} alt="" />
+            <img src={Logo} alt="BookCycle Logo" />
           </div>
           <div className="login-center">
             <h2>Welcome back!</h2>
@@ -109,7 +113,9 @@ const Login = () => {
                 </Link>
               </div>
               <div className="login-center-buttons">
-                <button type="submit">Log In</button>
+                <button type="submit" disabled={isLoading}>
+                  {isLoading ? "Logging in..." : "Log In"}
+                </button>
               </div>
             </form>
           </div>

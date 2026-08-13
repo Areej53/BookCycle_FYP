@@ -33,16 +33,20 @@ export default function ReviewModal({ orderId, sellerName, onClose, onSubmitted 
     <div
       style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="review-modal-title"
     >
       <div
         style={{ background: "#fff", padding: 24, borderRadius: 16, width: 360, boxShadow: "0 10px 40px rgba(0,0,0,.2)" }}
         onClick={(e) => e.stopPropagation()}
+        role="document"
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <h3 style={{ margin: 0, color: PALETTE.primary, fontSize: "1.1rem", fontFamily: "'Playfair Display',serif" }}>
+          <h3 id="review-modal-title" style={{ margin: 0, color: PALETTE.primary, fontSize: "1.1rem", fontFamily: "'Playfair Display',serif" }}>
             Rate this seller
           </h3>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: PALETTE.muted, padding: 0 }}>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: PALETTE.muted, padding: 0 }} aria-label="Close modal">
             <FiX size={18} />
           </button>
         </div>

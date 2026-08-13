@@ -49,12 +49,12 @@ const ResetPassword = () => {
   return (
     <div className="login-main">
       <div className="login-left">
-        <img src={Image} alt="" />
+        <img src={Image} alt="BookCycle illustration" />
       </div>
       <div className="login-right">
         <div className="login-right-container">
           <div className="login-logo">
-            <img src={Logo} alt="" />
+            <img src={Logo} alt="BookCycle Logo" />
           </div>
           <div className="login-center">
             <h2>Choose a new password</h2>
