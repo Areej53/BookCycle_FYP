@@ -62,12 +62,12 @@ export default function HomePage() {
     const [modalMessage, setModalMessage] = useState("");
     const wrapperRef = useRef(null);
     const [featuredBooks, setFeaturedBooks] = useState([
-        { id: 'f1', title: 'Atomic Habits', author: 'James Clear', type: 'rent', price: '30', unit: '/wk', img: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80', timeAgo: 'Just now' },
-        { id: 'f2', title: 'Deep Work', author: 'Cal Newport', type: 'buy', price: '350', img: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80', timeAgo: 'Just now' }
+        { id: 'f1', title: 'Atomic Habits', author: 'James Clear', type: 'rent', price: '30', unit: '/wk', img: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80', timeAgo: 'Just now', sellerName: 'Sample Seller', sellerRating: 'No ratings', sellerReviewsCount: 0 },
+        { id: 'f2', title: 'Deep Work', author: 'Cal Newport', type: 'buy', price: '350', img: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80', timeAgo: 'Just now', sellerName: 'Sample Seller', sellerRating: 'No ratings', sellerReviewsCount: 0 }
     ]);
     const [recentBooks, setRecentBooks] = useState([
-        { id: 'r1', title: 'Zero to One', author: 'Peter Thiel', type: 'buy', price: '400', img: 'https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=200&q=80', timeAgo: '2 hrs ago' },
-        { id: 'r2', title: 'Ikigai', author: 'Héctor García', type: 'rent', price: '35', unit: '/wk', img: 'https://images.unsplash.com/photo-1476275466078-4007374efbbe?w=200&q=80', timeAgo: '5 hrs ago' }
+        { id: 'r1', title: 'Zero to One', author: 'Peter Thiel', type: 'buy', price: '400', img: 'https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=200&q=80', timeAgo: '2 hrs ago', sellerName: 'Sample Seller', sellerRating: 'No ratings', sellerReviewsCount: 0 },
+        { id: 'r2', title: 'Ikigai', author: 'Héctor García', type: 'rent', price: '35', unit: '/wk', img: 'https://images.unsplash.com/photo-1476275466078-4007374efbbe?w=200&q=80', timeAgo: '5 hrs ago', sellerName: 'Sample Seller', sellerRating: 'No ratings', sellerReviewsCount: 0 }
     ]);
     const [exchangeBooks, setExchangeBooks] = useState([]);
     const [topBooks, setTopBooks] = useState([]);
@@ -106,7 +106,10 @@ export default function HomePage() {
                         unit: b.exchangeType === 'Rent' ? '/wk' : '',
                         timeAgo: getTimeAgo(b.createdAt),
                         exchangeType: b.exchangeType,
-                        sellerId: b.owner?._id || b.owner || null
+                        sellerId: b.owner?._id || b.owner || null,
+                        sellerName: b.owner?.name || 'Unknown Seller',
+                        sellerRating: b.sellerRating?.displayRating || 'No ratings',
+                        sellerReviewsCount: b.sellerRating?.reviewsCount || 0
                     }));
                 };
 
@@ -405,12 +408,22 @@ export default function HomePage() {
       {featuredBooks.map(b => (
         <div className="book-card" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer', position: 'relative' }}>
           <div className="book-cover">
-            <img src={b.img} alt={b.title}/>
+            <img src={b.img} alt={b.title} loading="lazy" />
             {b.type && <span className={`book-badge badge-${b.type}`}>{b.type === 'buy' ? 'Buy' : b.type.charAt(0).toUpperCase() + b.type.slice(1)}</span>}
           </div>
           <div className="book-info">
             <div className="book-title">{b.title}</div>
             <div className="book-author">{b.author}</div>
+            <div className="book-seller" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+              <span>{b.sellerName}</span>
+              {b.sellerRating !== 'No ratings' && (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                  <span style={{ color: '#FFD700' }}>★</span>
+                  <span>{b.sellerRating}</span>
+                  {b.sellerReviewsCount > 0 && <span>({b.sellerReviewsCount})</span>}
+                </span>
+              )}
+            </div>
             <div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span className={`book-price ${b.type === 'exchange' ? 'exchange' : ''}`}>
                 {b.type === 'exchange' ? 'Exchange' : `Rs. ${b.price}${b.unit}`}
@@ -501,7 +514,7 @@ export default function HomePage() {
         .home-cat-count { font-size: .72rem; color: rgba(255,255,255,.6); margin-top: 2px; }
       `}</style>
         <div className="home-cat-card" onClick={() => navigate('/explore?cats=programming')}>
-            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&q=80" alt="Programming"/></div>
+            <div className="home-cat-img"><img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&q=80" alt="Programming" loading="lazy"/></div>
             <div className="home-cat-overlay">
                 <div className="home-cat-name">Programming</div>
             </div>
@@ -559,7 +572,7 @@ export default function HomePage() {
     <div className="steps-grid">
       <div className="step">
         <div className="step-num">01</div>
-        <div className="step-img"><img src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=200&q=80" alt="Upload"/></div>
+        <div className="step-img"><img src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=200&q=80" alt="Upload" loading="lazy"/></div>
         <h3>Upload Book</h3>
         <p>List your book with photos, condition & preferred mode — takes 2 minutes.</p>
         <div className="step-arrow">→</div>
@@ -620,12 +633,24 @@ export default function HomePage() {
         {exchangeBooks.map(b => (
           <div className="book-card" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer' }}>
             <div className="book-cover" style={{ position: 'relative' }}>
+              <img src={b.img} alt={b.title} loading="lazy"/>
+              <span className="book-badge badge-free">Free</span>
               <img src={b.img} alt={b.title}/>
               <span className="book-badge badge-exchange">Exchange</span>
             </div>
             <div className="book-info">
               <div className="book-title">{b.title}</div>
               <div className="book-author">{b.author}</div>
+              <div className="book-seller" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                <span>{b.sellerName}</span>
+                {b.sellerRating !== 'No ratings' && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                    <span style={{ color: '#FFD700' }}>★</span>
+                    <span>{b.sellerRating}</span>
+                    {b.sellerReviewsCount > 0 && <span>({b.sellerReviewsCount})</span>}
+                  </span>
+                )}
+              </div>
               <div className="book-footer">
                 <span className="book-price exchange" style={{ color: 'var(--cta)', fontWeight: '900' }}>Exchange</span>
                 {b.category === 'Notes' ? (
@@ -707,12 +732,22 @@ export default function HomePage() {
       {recentBooks.map(b => (
         <div className="book-card book-card-h" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer', position: 'relative', display: 'flex', width: '100%' }}>
           <div className="book-cover" style={{ width: '82px', flexShrink: '0', borderRadius: '0', minHeight: '110px', height: 'auto', position: 'relative' }}>
-            <img src={b.img} alt={b.title}/>
+            <img src={b.img} alt={b.title} loading="lazy"/>
             {b.type && <span className={`book-badge badge-${b.type}`} style={{ top: '6px', right: '4px', fontSize: '.6rem', padding: '2px 6px' }}>{b.type === 'buy' ? 'Buy' : b.type.charAt(0).toUpperCase() + b.type.slice(1)}</span>}
           </div>
           <div className="book-info" style={{ padding: '14px', flex: 1, minWidth: 0 }}>
             <div className="book-title" style={{ fontSize: '.9rem' }}>{b.title}</div>
             <div className="book-author">{b.author}</div>
+            <div className="book-seller" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+              <span>{b.sellerName}</span>
+              {b.sellerRating !== 'No ratings' && (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                  <span style={{ color: '#FFD700' }}>★</span>
+                  <span>{b.sellerRating}</span>
+                  {b.sellerReviewsCount > 0 && <span>({b.sellerReviewsCount})</span>}
+                </span>
+              )}
+            </div>
             <div style={{ marginTop: '5px', fontSize: '.77rem', color: 'var(--text-muted)' }}>Added {b.timeAgo}</div>
             <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
               <span className={`book-price ${b.type === 'exchange' ? 'exchange' : ''}`} style={{ flexShrink: 0, fontWeight: '900', color: b.type === 'exchange' ? 'var(--cta)' : '' }}>{b.type === 'exchange' ? 'Exchange' : `Rs. ${b.price}${b.unit}`}</span>
@@ -810,10 +845,19 @@ export default function HomePage() {
     {topBooks.length === 0 && <div style={{ fontSize: '.8rem', color: 'var(--text-muted)' }}>No books found</div>}
     {topBooks.map(b => (
       <div className="top-book-row" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer' }}>
-        <div className="top-book-cover"><img src={b.img} alt={b.title}/></div>
+        <div className="top-book-cover"><img src={b.img} alt={b.title} loading="lazy"/></div>
         <div className="top-book-info">
           <div className="top-book-title">{b.title}</div>
           <div className="top-book-meta">{b.author}</div>
+          <div className="top-book-seller" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+            <span>{b.sellerName}</span>
+            {b.sellerRating !== 'No ratings' && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: '4px' }}>
+                <span style={{ color: '#FFD700' }}>★</span>
+                <span>{b.sellerRating}</span>
+              </span>
+            )}
+          </div>
         </div>
       </div>
     ))}
@@ -826,10 +870,19 @@ export default function HomePage() {
     {topSellingBooks.length === 0 && <div style={{ fontSize: '.8rem', color: 'var(--text-muted)' }}>No books found</div>}
     {topSellingBooks.map(b => (
       <div className="top-book-row" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer' }}>
-        <div className="top-book-cover"><img src={b.img} alt={b.title}/></div>
+        <div className="top-book-cover"><img src={b.img} alt={b.title} loading="lazy"/></div>
         <div className="top-book-info">
           <div className="top-book-title">{b.title}</div>
           <div className="top-book-meta">Rs. {b.price}</div>
+          <div className="top-book-seller" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+            <span>{b.sellerName}</span>
+            {b.sellerRating !== 'No ratings' && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: '4px' }}>
+                <span style={{ color: '#FFD700' }}>★</span>
+                <span>{b.sellerRating}</span>
+              </span>
+            )}
+          </div>
         </div>
       </div>
     ))}
@@ -894,7 +947,7 @@ export default function HomePage() {
 
 <section className="cta-section">
   <div className="cta-bg">
-    <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1600&q=85" alt="Library"/>
+    <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1600&q=85" alt="Library" loading="lazy"/>
   </div>
   <div className="cta-content">
     <div className="section-label" style={{ background: 'rgba(255,255,255,.2)', color: '#fff', display: 'inline-flex', marginBottom: '20px' }}>✦ Join 840+ Members</div>

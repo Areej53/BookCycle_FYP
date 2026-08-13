@@ -56,7 +56,7 @@ export default function WishlistPage() {
                                 style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: '20px', overflow: 'hidden', transition: 'all .3s ease', position: 'relative', animation: `fadeUp .5s ease ${idx * 0.1}s both`, cursor: 'pointer' }}
                             >
                                 <div style={{ height: '220px', overflow: 'hidden', position: 'relative' }}>
-                                    <img src={book.img} alt={book.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <img src={book.img} alt={book.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
                                     <button 
                                         onClick={(e) => { e.stopPropagation(); removeFromWishlist(book.id || book._id); }}
                                         style={{ position: 'absolute', top: '15px', right: '15px', background: '#fff', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'grid', placeItems: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', color: 'var(--cta)', zIndex: 10 }}
@@ -73,7 +73,17 @@ export default function WishlistPage() {
                                 <div style={{ padding: '20px' }}>
                                     <div style={{ fontSize: '.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--accent)', letterSpacing: '.05em', marginBottom: '6px' }}>{book.category}</div>
                                     <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.2rem', fontWeight: 700, color: 'var(--primary)', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{book.title}</h3>
-                                    <div style={{ fontSize: '.85rem', color: 'var(--text-muted)', marginBottom: '16px' }}>by {book.author}</div>
+                                    <div style={{ fontSize: '.85rem', color: 'var(--text-muted)', marginBottom: '8px' }}>by {book.author}</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <span>Seller: {book.sellerName || book.owner?.name || 'Unknown'}</span>
+                                        {book.sellerRating && book.sellerRating !== 'No ratings' && (
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                                <span style={{ color: '#FFD700' }}>★</span>
+                                                <span>{book.sellerRating}</span>
+                                                {book.sellerReviewsCount > 0 && <span>({book.sellerReviewsCount})</span>}
+                                            </span>
+                                        )}
+                                    </div>
                                     
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', borderTop: '1px solid var(--bg)', paddingTop: '16px' }}>
                                         {book.badge === 'exchange' ? (

@@ -104,12 +104,12 @@ export default function SearchResultsPage() {
     <div className="search-wrap-hero">
       <div className="search-bar">
         <input type="text" id="search-inp" placeholder="Search by title, author, or category…" value={localQuery} onChange={e => setLocalQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()}/>
-        <button className="search-btn" onClick={handleSearch} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <button className="search-btn" onClick={handleSearch} disabled={isLoading} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          Search
+          {isLoading ? 'Searching...' : 'Search'}
         </button>
       </div>
     </div>
@@ -325,11 +325,11 @@ export default function SearchResultsPage() {
         You can also explore by category below:
       </div>
       <div className="no-results-cats">
-        <span className="no-results-cat" onClick={function(){}}>ðŸ’» Programming</span>
-        <span className="no-results-cat" onClick={function(){}}>ðŸ“– Novels</span>
-        <span className="no-results-cat" onClick={function(){}}>ðŸ“ Mathematics</span>
-        <span className="no-results-cat" onClick={function(){}}>âš›ï¸ Physics</span>
-        <span className="no-results-cat" onClick={function(){}}>➕ Algebra</span>
+        <span className="no-results-cat" onClick={() => navigate('/explore?cats=programming')}>Programming</span>
+        <span className="no-results-cat" onClick={() => navigate('/explore?cats=novels')}>Novels</span>
+        <span className="no-results-cat" onClick={() => navigate('/explore?cats=mathematics')}>Mathematics</span>
+        <span className="no-results-cat" onClick={() => navigate('/explore?cats=physics')}>Physics</span>
+        <span className="no-results-cat" onClick={() => navigate('/explore?cats=algebra')}>Algebra</span>
         <span className="no-results-cat" onClick={() => navigate('/explore')}>Explore All →</span>
       </div>
     </div>}

@@ -111,7 +111,7 @@ export default function BookDetailsPage() {
                     
                     <div className="book-img-block">
                         <div style={{ position: 'sticky', top: '120px' }}>
-                            <img src={getImageUrl(book)} alt={book.title} style={{ width: '100%', borderRadius: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.15)', border: '1px solid var(--border)' }} />
+                            <img src={getImageUrl(book)} alt={book.title} style={{ width: '100%', borderRadius: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.15)', border: '1px solid var(--border)' }} loading="lazy" />
                             <div style={{ marginTop: '20px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
                                 {(book.images && book.images.length > 1) && book.images.map((img, i) => (
                                     <img key={i} src={img} alt={`Preview ${i}`} style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '10px', cursor: 'pointer', border: '2px solid transparent' }} />

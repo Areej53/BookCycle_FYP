@@ -5,6 +5,7 @@ export { default as Register } from "./Register";
 export { default as Logout } from "./Logout";
 export { default as ForgotPassword } from "./ForgotPassword";
 export { default as ResetPassword } from "./ResetPassword";
+export { default as NotFoundPage } from "./NotFoundPage";
 
 // Imported User Marketplace Pages
 export { default as HomePage } from "./HomePage";

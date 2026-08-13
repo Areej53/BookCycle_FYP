@@ -113,7 +113,7 @@ const CartPage = () => {
                 <div key={item.id} className="cart-item-card" style={{ animation: `fadeUp .4s ease ${idx * 0.07}s both` }}>
                   {/* Image */}
                   <div className="cart-item-img-wrapper">
-                    <img src={item.img} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={item.img} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
                     {/* Type ribbon */}
                     <div style={{ position: 'absolute', top: 12, left: -2,
                       background: item.type === 'exchange' ? 'var(--secondary)' : item.type === 'buy' ? 'var(--cta)' : 'var(--primary)',
@@ -133,6 +133,16 @@ const CartPage = () => {
                           {item.title}
                         </h3>
                         <div style={{ fontSize: '.85rem', color: 'var(--text-muted)' }}>by {item.author}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span>Seller: {item.sellerName || item.owner?.name || 'Unknown'}</span>
+                          {item.sellerRating && item.sellerRating !== 'No ratings' && (
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                              <span style={{ color: '#FFD700' }}>★</span>
+                              <span>{item.sellerRating}</span>
+                              {item.sellerReviewsCount > 0 && <span>({item.sellerReviewsCount})</span>}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <TypeBadge type={item.type} />
                     </div>

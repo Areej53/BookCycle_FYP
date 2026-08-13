@@ -4,6 +4,10 @@ const { sequelize } = require('../db/connectPostgres');
 const fs = require('fs');
 const path = require('path');
 
+// Bayesian average confidence constant for seller ratings
+const BAYESIAN_CONFIDENCE = 3;
+const DEFAULT_GLOBAL_AVERAGE = 7.0; // Default fallback average (scale 1-10)
+
 const saveBase64Image = (base64String) => {
   if (!base64String || !base64String.startsWith('data:image')) return base64String;
   const matches = base64String.match(/^data:image\/([A-Za-z-+\/]+);base64,(.+)$/);
@@ -22,6 +26,36 @@ const saveBase64Image = (base64String) => {
 const exactCategoryEnums = ['Programming', 'Science', 'Novels', 'Self Development', 'Algebra', 'Mathematics', 'Physics', 'Notes', 'Other'];
 const exactCondEnums = ['New', 'Used/Good'];
 const exactTypeEnums = ['Sell', 'Rent', 'Exchange'];
+
+// Helper function to calculate Bayesian average for seller ratings
+// This handles edge cases: new sellers with few reviews, mixed positive/negative reviews
+const calculateBayesianRating = (seller) => {
+  if (!seller || seller.reviewsCount === 0) {
+    return {
+      displayRating: 'No ratings',
+      calculatedRating: 0,
+      reviewsCount: 0
+    };
+  }
+
+  const simpleAverage = seller.ratingsSum / seller.reviewsCount;
+  
+  // For Bayesian average, we need a global average. Since we don't have it in this context,
+  // we use a reasonable default and the seller's own data
+  const globalAverage = DEFAULT_GLOBAL_AVERAGE;
+  
+  // Bayesian average formula: (C * global_avg + n * item_avg) / (C + n)
+  // where C = confidence constant, n = number of reviews
+  const bayesianRating = (BAYESIAN_CONFIDENCE * globalAverage + seller.reviewsCount * simpleAverage) / 
+                         (BAYESIAN_CONFIDENCE + seller.reviewsCount);
+  
+  return {
+    displayRating: bayesianRating.toFixed(1),
+    calculatedRating: bayesianRating,
+    reviewsCount: seller.reviewsCount,
+    simpleAverage: simpleAverage.toFixed(1)
+  };
+};
 
 const matchEnum = (arr, val) => {
   let lowerVal = val.toLowerCase().trim();
@@ -132,12 +166,28 @@ const getAllBooks = async (req, res) => {
       where: whereClause,
       attributes: { exclude: ['pdf'] },
       include: [
-        { model: User, as: 'owner', attributes: ['name'] },
+        { model: User, as: 'owner', attributes: ['name', 'reviewsCount', 'ratingsSum'] },
         { model: Rent, as: 'rentDetails' },
         { model: Exchange, as: 'exchangeDetails' }
       ]
     });
-    const shuffled = allBooks.sort(() => 0.5 - Math.random());
+    
+    // Add computed seller ratings to each book
+    const booksWithRatings = allBooks.map(book => {
+      const bookData = book.toJSON();
+      if (bookData.owner) {
+        bookData.sellerRating = calculateBayesianRating(bookData.owner);
+      } else {
+        bookData.sellerRating = {
+          displayRating: 'No ratings',
+          calculatedRating: 0,
+          reviewsCount: 0
+        };
+      }
+      return bookData;
+    });
+    
+    const shuffled = booksWithRatings.sort(() => 0.5 - Math.random());
     const books = limitNum ? shuffled.slice(0, limitNum) : shuffled;
     return res.status(200).json({ books, count: books.length });
   }
@@ -146,7 +196,7 @@ const getAllBooks = async (req, res) => {
     where: whereClause,
     attributes: { exclude: ['pdf'] },
     include: [
-      { model: User, as: 'owner', attributes: ['name'] },
+      { model: User, as: 'owner', attributes: ['name', 'reviewsCount', 'ratingsSum'] },
       { model: Rent, as: 'rentDetails' },
       { model: Exchange, as: 'exchangeDetails' }
     ],
@@ -154,7 +204,22 @@ const getAllBooks = async (req, res) => {
     limit: limitNum
   });
 
-  res.status(200).json({ books, count: books.length });
+  // Add computed seller ratings to each book
+  const booksWithRatings = books.map(book => {
+    const bookData = book.toJSON();
+    if (bookData.owner) {
+      bookData.sellerRating = calculateBayesianRating(bookData.owner);
+    } else {
+      bookData.sellerRating = {
+        displayRating: 'No ratings',
+        calculatedRating: 0,
+        reviewsCount: 0
+      };
+    }
+    return bookData;
+  });
+
+  res.status(200).json({ books: booksWithRatings, count: booksWithRatings.length });
 };
 
 const getBook = async (req, res) => {
@@ -162,7 +227,7 @@ const getBook = async (req, res) => {
   const book = await Book.findByPk(id, {
     attributes: { exclude: ['pdf'] },
     include: [
-      { model: User, as: 'owner', attributes: ['id', 'name', 'email'] },
+      { model: User, as: 'owner', attributes: ['id', 'name', 'email', 'reviewsCount', 'ratingsSum'] },
       { model: Rent, as: 'rentDetails' },
       { model: Exchange, as: 'exchangeDetails' }
     ]
@@ -197,7 +262,19 @@ const getBook = async (req, res) => {
     }
   }
 
-  res.status(200).json({ book });
+  // Add computed seller rating to the book
+  const bookData = book.toJSON();
+  if (bookData.owner) {
+    bookData.sellerRating = calculateBayesianRating(bookData.owner);
+  } else {
+    bookData.sellerRating = {
+      displayRating: 'No ratings',
+      calculatedRating: 0,
+      reviewsCount: 0
+    };
+  }
+
+  res.status(200).json({ book: bookData });
 };
 
 const createBook = async (req, res) => {
