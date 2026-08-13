@@ -634,8 +634,6 @@ export default function HomePage() {
           <div className="book-card" key={b.id} onClick={() => navigate(`/book/${b.id}`)} style={{ cursor: 'pointer' }}>
             <div className="book-cover" style={{ position: 'relative' }}>
               <img src={b.img} alt={b.title} loading="lazy"/>
-              <span className="book-badge badge-free">Free</span>
-              <img src={b.img} alt={b.title}/>
               <span className="book-badge badge-exchange">Exchange</span>
             </div>
             <div className="book-info">
