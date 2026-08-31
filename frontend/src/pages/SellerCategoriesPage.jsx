@@ -28,12 +28,12 @@ export default function SellerCategoriesPage() {
             
             // If not approved, redirect to seller request page
             if (response.data.sellerStatus !== 'approved') {
-                navigate('/seller/add');
+                navigate('/seller/request');
             }
         } catch (error) {
             console.error('Failed to check seller status:', error);
             // If error checking status, redirect to seller request page
-            navigate('/seller/add');
+            navigate('/seller/request');
         } finally {
             setLoading(false);
         }
