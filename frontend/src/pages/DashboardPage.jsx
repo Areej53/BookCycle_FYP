@@ -1239,13 +1239,13 @@ const DashboardPage = () => {
 
       {reviewModalOrder && (
         <ReviewModal
-          orderId={reviewModalOrder._id}
+          orderId={reviewModalOrder._id || reviewModalOrder.orderId}
           sellerName={reviewModalOrder.sellerName}
           onClose={() => setReviewModalOrder(null)}
           onSubmitted={() => {
-            const reviewedId = reviewModalOrder._id;
+            const reviewedId = reviewModalOrder._id || reviewModalOrder.orderId;
             setBuyerOrders(prev => prev.map(o => String(o.id ?? o._id) === String(reviewedId) ? { ...o, hasReview: true } : o));
-            showToast("Review submitted");
+            showToast("Review submitted successfully!");
           }}
         />
       )}

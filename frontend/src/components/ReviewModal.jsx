@@ -12,18 +12,28 @@ export default function ReviewModal({ orderId, sellerName, onClose, onSubmitted 
   const [error, setError] = useState("");
 
   const submit = async () => {
-    if (!token) return;
+    if (!token) {
+      setError("Please log in to submit a review.");
+      return;
+    }
+    if (!orderId) {
+      setError("Order ID is missing. Please try again.");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
-      await DashboardApi.createReview({
+      const response = await DashboardApi.createReview({
         token,
         payload: { orderId, rating, comment: comment.trim() || undefined }
       });
+      console.log("Review submitted successfully:", response);
       onSubmitted?.();
       onClose();
     } catch (e) {
-      setError(e?.response?.data?.msg || "Could not submit review. Please try again.");
+      console.error("Review submission error:", e);
+      const errorMsg = e?.response?.data?.msg || e?.message || "Could not submit review. Please try again.";
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }

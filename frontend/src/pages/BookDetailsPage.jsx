@@ -126,11 +126,36 @@ export default function BookDetailsPage() {
                             <span style={{ background: book.exchangeType === 'Exchange' ? 'rgba(126,200,164,0.1)' : (book.exchangeType === 'Share' ? 'rgba(96,108,56,0.1)' : 'rgba(221,161,94,0.1)'), color: book.exchangeType === 'Exchange' ? '#7ec8a4' : (book.exchangeType === 'Share' ? 'var(--secondary)' : 'var(--accent)'), padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>{book.exchangeType}</span>
                         </div>
 
-                        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '3rem', color: 'var(--primary)', marginBottom: '10px', lineHeight: 1.1 }}>{book.title}</h1>
-                        <div style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginBottom: '25px' }}>by <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{book.author}</span></div>
+                        <h1 style={{ fontFamily: "'Playfair Display", serif", fontSize: '3rem', color: 'var(--primary)', marginBottom: '10px', lineHeight: 1.1 }}>{book.title}</h1>
+                        <div style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginBottom: '15px' }}>by <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{book.author}</span></div>
+
+                        {book.owner?.name && (
+                          <div style={{ fontSize: '0.95rem', color: 'var(--text-muted)', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span>Seller: <strong>{book.owner.name}</strong></span>
+                            {book.sellerRating && book.sellerRating.displayRating !== 'No ratings' && (
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '12px', background: 'rgba(221,161,94,0.1)', padding: '4px 10px', borderRadius: '20px' }}>
+                                <span style={{ color: '#FFD700' }}>★</span>
+                                <span style={{ fontWeight: 600, color: 'var(--accent)' }}>{book.sellerRating.displayRating}</span>
+                                {book.sellerRating.reviewsCount > 0 && <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>({book.sellerRating.reviewsCount} reviews)</span>}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {book.owner?.email && (
+                          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '15px' }}>
+                            Contact: <span style={{ color: 'var(--primary)', fontWeight: 500 }}>{book.owner.email}</span>
+                          </div>
+                        )}
+
+                        {book.owner?.phone && (
+                          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '15px' }}>
+                            Phone: <span style={{ color: 'var(--primary)', fontWeight: 500 }}>{book.owner.phone}</span>
+                          </div>
+                        )}
 
                         {book.owner?._id && (
-                          <div style={{ marginTop: '20px' }}>
+                          <div style={{ marginTop: '25px' }}>
                             <SellerRatingCard sellerId={book.owner._id} />
                           </div>
                         )}
