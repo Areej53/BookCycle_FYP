@@ -61,15 +61,9 @@ export default function HomePage() {
     const [selectedPdf, setSelectedPdf] = useState(null);
     const [modalMessage, setModalMessage] = useState("");
     const wrapperRef = useRef(null);
-    const [featuredBooks, setFeaturedBooks] = useState([
-        { id: 'f1', title: 'Atomic Habits', author: 'James Clear', type: 'rent', price: '30', unit: '/wk', img: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80', timeAgo: 'Just now', sellerName: 'Sample Seller', sellerRating: 'No ratings', sellerReviewsCount: 0 },
-        { id: 'f2', title: 'Deep Work', author: 'Cal Newport', type: 'buy', price: '350', img: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80', timeAgo: 'Just now', sellerName: 'Sample Seller', sellerRating: 'No ratings', sellerReviewsCount: 0 }
-    ]);
-    const [recentBooks, setRecentBooks] = useState([
-        { id: 'r1', title: 'Zero to One', author: 'Peter Thiel', type: 'buy', price: '400', img: 'https://images.unsplash.com/photo-1550399105-c4db5fb85c18?w=200&q=80', timeAgo: '2 hrs ago', sellerName: 'Sample Seller', sellerRating: 'No ratings', sellerReviewsCount: 0 },
-        { id: 'r2', title: 'Ikigai', author: 'Héctor García', type: 'rent', price: '35', unit: '/wk', img: 'https://images.unsplash.com/photo-1476275466078-4007374efbbe?w=200&q=80', timeAgo: '5 hrs ago', sellerName: 'Sample Seller', sellerRating: 'No ratings', sellerReviewsCount: 0 }
-    ]);
-    const [exchangeBooks, setExchangeBooks] = useState([]);
+    const [featuredBooks, setFeaturedBooks] = useState([]);
+    const [recentBooks, setRecentBooks] = useState([]);
+    const [freeBooks, setFreeBooks] = useState([]);
     const [topBooks, setTopBooks] = useState([]);
     const [topSellingBooks, setTopSellingBooks] = useState([]);
 

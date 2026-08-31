@@ -166,7 +166,7 @@ const getAllBooks = async (req, res) => {
       where: whereClause,
       attributes: { exclude: ['pdf'] },
       include: [
-        { model: User, as: 'owner', attributes: ['name', 'reviewsCount', 'ratingsSum'] },
+        { model: User, as: 'owner', attributes: ['name', 'reviewsCount', 'ratingsSum', 'email', 'phone'] },
         { model: Rent, as: 'rentDetails' },
         { model: Exchange, as: 'exchangeDetails' }
       ]
@@ -196,7 +196,7 @@ const getAllBooks = async (req, res) => {
     where: whereClause,
     attributes: { exclude: ['pdf'] },
     include: [
-      { model: User, as: 'owner', attributes: ['name', 'reviewsCount', 'ratingsSum'] },
+      { model: User, as: 'owner', attributes: ['name', 'reviewsCount', 'ratingsSum', 'email', 'phone'] },
       { model: Rent, as: 'rentDetails' },
       { model: Exchange, as: 'exchangeDetails' }
     ],
@@ -227,7 +227,7 @@ const getBook = async (req, res) => {
   const book = await Book.findByPk(id, {
     attributes: { exclude: ['pdf'] },
     include: [
-      { model: User, as: 'owner', attributes: ['id', 'name', 'email', 'reviewsCount', 'ratingsSum'] },
+      { model: User, as: 'owner', attributes: ['id', 'name', 'email', 'phone', 'reviewsCount', 'ratingsSum'] },
       { model: Rent, as: 'rentDetails' },
       { model: Exchange, as: 'exchangeDetails' }
     ]

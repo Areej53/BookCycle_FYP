@@ -134,7 +134,7 @@ const CartPage = () => {
                         </h3>
                         <div style={{ fontSize: '.85rem', color: 'var(--text-muted)' }}>by {item.author}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span>Seller: {item.sellerName || item.owner?.name || 'Unknown'}</span>
+                          <span>Seller: <strong>{item.sellerName || item.owner?.name || 'Unknown'}</strong></span>
                           {item.sellerRating && item.sellerRating !== 'No ratings' && (
                             <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                               <span style={{ color: '#FFD700' }}>★</span>

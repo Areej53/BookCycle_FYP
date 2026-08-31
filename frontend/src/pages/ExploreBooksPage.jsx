@@ -234,7 +234,7 @@ export default function ExploreBooksPage() {
             <div className="bc-title">{book.title}</div>
             <div className="bc-author">by {book.author}</div>
             <div className="bc-seller" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>Seller: {book.owner?.name || 'Unknown'}</span>
+              <span>Seller: <strong>{book.owner?.name || 'Unknown'}</strong></span>
               {book.sellerRating && book.sellerRating.displayRating !== 'No ratings' && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                   <span style={{ color: '#FFD700' }}>★</span>
