@@ -55,10 +55,25 @@ User.init({
     allowNull: false,
     validate: {
       isIn: {
-        args: [['customer', 'shopkeeper']],
+        args: [['customer', 'shopkeeper', 'admin']],
         msg: "Role is not supported"
       }
     }
+  },
+  sellerStatus: {
+    type: DataTypes.STRING(20),
+    allowNull: true,
+    defaultValue: null,
+    validate: {
+      isIn: {
+        args: [['pending', 'approved', 'rejected', 'inactive', 'suspended']],
+        msg: "Invalid seller status"
+      }
+    }
+  },
+  sellerRequestDate: {
+    type: DataTypes.DATE,
+    allowNull: true
   },
   interests: {
     type: DataTypes.ARRAY(DataTypes.STRING),

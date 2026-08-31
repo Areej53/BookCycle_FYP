@@ -53,6 +53,25 @@ export const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+// Add authorization header to all requests
+api.interceptors.request.use((config) => {
+  const auth = localStorage.getItem("auth");
+  if (auth) {
+    try {
+      const parsed = JSON.parse(auth);
+      if (typeof parsed === "string") {
+        config.headers.Authorization = `Bearer ${parsed}`;
+      } else if (parsed.token) {
+        config.headers.Authorization = `Bearer ${parsed.token}`;
+      }
+    } catch {
+      // If parsing fails, try using the raw value as token
+      config.headers.Authorization = `Bearer ${auth}`;
+    }
+  }
+  return config;
+});
+
 // A lightweight HTTP GET cache to eliminate DB load during rapid page navigations
 const getCache = new Map();
 const ongoingGets = new Map();

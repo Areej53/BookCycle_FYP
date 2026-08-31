@@ -164,16 +164,16 @@ export default function BookDetailsPage() {
                             <div>
                                 <div style={{ fontSize: '0.9rem', color: 'var(--primary)', opacity: 0.7, marginBottom: '5px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>Listing Price</div>
                                 <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '2.5rem', fontWeight: 900, color: 'var(--primary)' }}>
-                                    {book.exchangeType === 'Exchange' ? 'Exchange Only' : (book.exchangeType === 'Share' ? 'Free Gift' : (book.exchangeType === 'Rent' ? `Rs. ${book.rentDetails?.rentPrice || book.price}` : `Rs. ${book.price}`))}
+                                    {book.exchangeType === 'Exchange' ? 'Exchange Only' : (book.exchangeType === 'Rent' ? `Rs. ${book.rentDetails?.rentPrice || book.price}` : `Rs. ${book.price}`)}
                                 </div>
                                 {book.exchangeType === 'Rent' && (
                                     <div style={{ fontSize: '0.9rem', color: 'var(--muted)', marginTop: '4px', fontWeight: 600 }}>
                                         For {book.rentDetails?.rentalDuration || book.duration || '3 Months'} duration
                                     </div>
                                 )}
-                                {book.exchangeType === 'Exchange' && book.exchangeDetails?.lookingFor && (
+                                {book.exchangeType === 'Exchange' && (
                                     <div style={{ fontSize: '0.9rem', color: 'var(--muted)', marginTop: '4px', fontWeight: 600 }}>
-                                        Looking for: {book.exchangeDetails.lookingFor}
+                                        Looking for: {book.exchangeDetails?.lookingFor || 'Any Book'}
                                     </div>
                                 )}
                             </div>
@@ -238,6 +238,11 @@ export default function BookDetailsPage() {
                                     (!book.exchangeDetails || book.exchangeDetails.status === 'Available') ? (
                                         <button onClick={() => {
                                             if (!user) { navigate('/login'); return; }
+                                            const sellerId = book.sellerId || book.owner?._id || book.owner || null;
+                                            if (user && sellerId && String(user._id) === String(sellerId)) {
+                                                setModalMessage("The book is already in your listings");
+                                                return;
+                                            }
                                             setShowExchangeModal(true);
                                         }} style={{ background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '30px', padding: '14px 28px', fontSize: '1.05rem', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(19,73,60,0.25)' }}>
                                             Request Exchange
@@ -264,7 +269,7 @@ export default function BookDetailsPage() {
                             </div>
                             <div style={{ padding: '15px 20px', background: 'white', border: '1.5px solid var(--border)', borderRadius: '16px' }}>
                                 <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '4px' }}>Listing Type</div>
-                                <div style={{ fontWeight: 700, color: 'var(--primary)' }}>{book.exchangeType === 'Share' ? 'Free Gift' : book.exchangeType}</div>
+                                <div style={{ fontWeight: 700, color: 'var(--primary)' }}>{book.exchangeType}</div>
                             </div>
                         </div>
 

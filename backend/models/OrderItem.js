@@ -26,7 +26,7 @@ OrderItem.init({
     defaultValue: 'buy',
     validate: {
       isIn: {
-        args: [['buy', 'rent', 'free']],
+        args: [['buy', 'rent', 'exchange']],
         msg: "Type is not supported"
       }
     }

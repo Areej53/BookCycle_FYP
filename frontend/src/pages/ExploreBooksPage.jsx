@@ -124,7 +124,7 @@ export default function ExploreBooksPage() {
 <div className="explore-hero">
   <div className="explore-hero-inner">
     <h1>Explore <em>Books</em></h1>
-    <p className="explore-hero-sub">Explore 12+ books available to buy or claim free across Islamabad.</p>
+    <p className="explore-hero-sub">Explore 12+ books available to buy or exchange across Islamabad.</p>
     <div className="search-wrap">
       <div className="search-bar">
         <input type="text" id="search-inp" placeholder="Search by title, author, or category…" value={localQuery} onChange={e => setLocalQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()}/>
@@ -227,7 +227,7 @@ export default function ExploreBooksPage() {
             <img src={getImageUrl(book)} alt={book.title} className="bc-img" loading="lazy"/>
             {book.exchangeType === 'Sell' && <span className="tb tb-buy">Buy</span>}
             {book.exchangeType === 'Rent' && <span className="tb tb-rent" style={{ background: 'var(--primary)', color: '#fff', padding: '4px 10px', borderRadius: '4px', fontSize: '.75rem', fontWeight: 'bold' }}>Rent</span>}
-            {book.exchangeType === 'Share' && <span className="tb tb-free">Free</span>}
+            {book.exchangeType === 'Exchange' && <span className="tb tb-exchange">Exchange</span>}
           </div>
           <div className="bc-body">
             <div className="bc-cat">{book.category}</div>
@@ -246,7 +246,7 @@ export default function ExploreBooksPage() {
             <div className="bc-cond">Condition: <strong>{book.condition}</strong></div>
             <div className="price-line" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
                 <div className="price-label">
-                  {book.exchangeType === 'Share' ? null : book.exchangeType === 'Rent' ? (
+                  {book.exchangeType === 'Exchange' ? null : book.exchangeType === 'Rent' ? (
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '1.15rem', fontWeight: '900', color: 'var(--cta)' }}>
                         Rs. {book.rentDetails?.rentPrice || book.price}
@@ -303,26 +303,61 @@ export default function ExploreBooksPage() {
                     </button>
                   </div>
                 ) : (
-                    (book.exchangeType === 'Sell' || book.exchangeType === 'Rent') ? (
+                    book.exchangeType === 'Exchange' ? (
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        <button 
-                            onClick={(e) => { 
-                                e.stopPropagation(); 
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
                                 if (!user) { navigate('/login'); return; }
-                                toggleWishlist(book); 
+                                toggleWishlist(book);
                             }}
-                            style={{ 
-                                background: 'none', border: '1.5px solid var(--border)', 
-                                borderRadius: '50%', width: '30px', height: '30px', 
-                                display: 'grid', placeItems: 'center', cursor: 'pointer', 
+                            style={{
+                                background: 'none', border: '1.5px solid var(--border)',
+                                borderRadius: '50%', width: '30px', height: '30px',
+                                display: 'grid', placeItems: 'center', cursor: 'pointer',
+                                color: isInWishlist(book._id) ? 'var(--cta)' : 'var(--text-muted)',
+                                transition: 'all .2s'
+                            }}
+                        >
+                            <FiHeart size={14} fill={isInWishlist(book._id) ? "var(--cta)" : "none"} />
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (!user) { navigate('/login'); return; }
+                                navigate(`/book/${book._id}`);
+                            }}
+                            style={{
+                                background: 'var(--secondary)', color: '#fff',
+                                border: 'none', borderRadius: '6px',
+                                padding: '6px 12px', fontSize: '.75rem',
+                                fontWeight: '700', cursor: 'pointer',
+                                transition: 'all .2s'
+                            }}
+                        >
+                            Request Exchange
+                        </button>
+                      </div>
+                    ) : (book.exchangeType === 'Sell' || book.exchangeType === 'Rent') ? (
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (!user) { navigate('/login'); return; }
+                                toggleWishlist(book);
+                            }}
+                            style={{
+                                background: 'none', border: '1.5px solid var(--border)',
+                                borderRadius: '50%', width: '30px', height: '30px',
+                                display: 'grid', placeItems: 'center', cursor: 'pointer',
                                 color: isInWishlist(book._id) ? 'var(--cta)' : 'var(--text-muted)',
                                 transition: 'all .2s'
                             }}
                           >
                               <FiHeart size={14} fill={isInWishlist(book._id) ? "var(--cta)" : "none"} />
                         </button>
-                        <button onClick={(e) => { 
-                            e.stopPropagation(); 
+                        <button onClick={(e) => {
+                            e.stopPropagation();
                             const added = addToCart(book);
                             if (added) showToast(`"${book.title}" added to cart!`);
                         }} className="btn-mini-cart" style={{ color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--primary)', border: 'none', width: '30px', height: '30px', borderRadius: '50%', cursor: 'pointer' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></button>
@@ -364,8 +399,8 @@ export default function ExploreBooksPage() {
                     <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bk.title}</div>
                     <div style={{ fontSize: '.74rem', color: 'var(--muted)', margin: '2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>by {bk.author}</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
-                        <div style={{ fontSize: '.78rem', fontWeight: '700', color: bk.exchangeType === 'Share' ? 'var(--secondary)' : 'var(--cta)' }}>
-                            {bk.exchangeType === 'Share' ? 'Free' : `Rs. ${bk.price}`}
+                        <div style={{ fontSize: '.78rem', fontWeight: '700', color: bk.exchangeType === 'Exchange' ? 'var(--secondary)' : 'var(--cta)' }}>
+                            {bk.exchangeType === 'Exchange' ? 'Exchange' : `Rs. ${bk.price}`}
                         </div>
                         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                             <button
