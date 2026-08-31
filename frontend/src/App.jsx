@@ -144,6 +144,10 @@ const router = createBrowserRouter([
           },
           {
             path: "seller/add",
+            element: <SellerAddBookPage />,
+          },
+          {
+            path: "seller/request",
             element: <SellerRequestPage />,
           },
           {

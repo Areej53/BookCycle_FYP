@@ -35,6 +35,20 @@ export default function SellerAddNotesPage() {
         checkSellerStatus();
     }, []);
 
+    useEffect(() => {
+        // Strict enforcement: if no category is in context, they skipped the selection page.
+        // However, we only redirect if it's completely empty, allowing them to proceed if they 
+        // somehow landed here but intended for Notes.
+        if (!sellerData.category) {
+            navigate('/seller');
+            return;
+        }
+        
+        if (sellerData.category !== 'Notes') {
+            updateSellerData({ category: 'Notes' });
+        }
+    }, [sellerData.category, updateSellerData, navigate]);
+
     const checkSellerStatus = async () => {
         try {
             const response = await api.get('/seller-requests/status');
@@ -42,12 +56,12 @@ export default function SellerAddNotesPage() {
             
             // If not approved, redirect to seller request page
             if (response.data.sellerStatus !== 'approved') {
-                navigate('/seller/add');
+                navigate('/seller/request');
             }
         } catch (error) {
             console.error('Failed to check seller status:', error);
             // If error checking status, redirect to seller request page
-            navigate('/seller/add');
+            navigate('/seller/request');
         } finally {
             setStatusLoading(false);
         }
@@ -64,20 +78,6 @@ export default function SellerAddNotesPage() {
     if (sellerStatus !== 'approved') {
         return null; // Will redirect in useEffect
     }
-
-    useEffect(() => {
-        // Strict enforcement: if no category is in context, they skipped the selection page.
-        // However, we only redirect if it's completely empty, allowing them to proceed if they 
-        // somehow landed here but intended for Notes.
-        if (!sellerData.category) {
-            navigate('/seller');
-            return;
-        }
-        
-        if (sellerData.category !== 'Notes') {
-            updateSellerData({ category: 'Notes' });
-        }
-    }, [sellerData.category, updateSellerData, navigate]);
 
     const handleChange = (e) => {
         updateSellerData({ [e.target.name]: e.target.value });

@@ -3,7 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../data/assets';
 import { SellerContext } from '../context/SellerContext';
 import { useAuth } from '../context/AuthContext';
-import { FiFileText, FiList, FiCheckCircle, FiDollarSign, FiAlignLeft, FiImage, FiGift, FiUploadCloud } from 'react-icons/fi';
+import { FiFileText, FiList, FiCheckCircle, FiDollarSign, FiAlignLeft, FiImage, FiGift, FiUploadCloud, FiCamera, FiLoader } from 'react-icons/fi';
+import { api } from '../api/client';
+import { toast } from 'react-toastify';
 import Navbar from '../components/Navbar';
 
 export default function SellerAddBookPage() {
@@ -12,6 +14,9 @@ export default function SellerAddBookPage() {
     const navigate = useNavigate();
     const [errors, setErrors] = useState({});
     const fileInputRef = useRef(null);
+    const aiScannerRef = useRef(null);
+    const [isScanning, setIsScanning] = useState(false);
+    const [aiMessage, setAiMessage] = useState('');
 
     React.useEffect(() => {
         if (!sellerData.category || sellerData.category === 'Notes') {
@@ -59,6 +64,65 @@ export default function SellerAddBookPage() {
         const newImages = [...(sellerData.images || [])];
         newImages.splice(index, 1);
         updateSellerData({ images: newImages });
+    };
+
+    const handleAiScan = async (e) => {
+        e.preventDefault();
+        
+        if (!sellerData.images || sellerData.images.length === 0) {
+            toast.error('Please upload a book cover image first');
+            return;
+        }
+
+        if (isScanning) {
+            return; // Prevent duplicate requests
+        }
+
+        setIsScanning(true);
+        setAiMessage('Analyzing book cover with AI...');
+
+        try {
+            // Use the first uploaded image for scanning
+            const firstImage = sellerData.images[0];
+            const imageData = firstImage.base64 || firstImage.preview;
+
+            const response = await api.post('/ai/scan-book-cover', {
+                image: imageData
+            });
+
+            if (response.data.success && response.data.data) {
+                const aiData = response.data.data;
+                
+                // Update form fields with AI-detected information
+                const updates = {};
+                if (aiData.title) updates.title = aiData.title;
+                if (aiData.author) updates.author = aiData.author;
+                if (aiData.category && aiData.category !== 'Other') updates.category = aiData.category;
+                if (aiData.edition) updates.edition = aiData.edition;
+                if (aiData.description) updates.description = aiData.description;
+                
+                updateSellerData(updates);
+                
+                setAiMessage('Book information detected successfully! Please review the details before submitting.');
+                toast.success('AI scan completed successfully');
+                
+                // Clear any existing errors for auto-filled fields
+                const clearedErrors = { ...errors };
+                if (aiData.title) delete clearedErrors.title;
+                if (aiData.author) delete clearedErrors.author;
+                if (aiData.description) delete clearedErrors.description;
+                setErrors(clearedErrors);
+            } else {
+                throw new Error(response.data.msg || 'AI scan failed');
+            }
+        } catch (error) {
+            console.error('AI scan error:', error);
+            const errorMessage = error.response?.data?.msg || 'AI scanning could not identify the book details. Please enter the information manually.';
+            setAiMessage(errorMessage);
+            toast.error(errorMessage);
+        } finally {
+            setIsScanning(false);
+        }
     };
 
     const handleNext = () => {
@@ -109,6 +173,62 @@ export default function SellerAddBookPage() {
   <div className="form-body">
 
     <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiFileText /></div>Book Information</div>
+    
+    {/* AI Scanner Section */}
+    <div style={{ marginBottom: '20px', padding: '16px', background: 'linear-gradient(135deg, rgba(96,108,56,0.08), rgba(19,73,60,0.05))', border: '1.5px solid rgba(96,108,56,0.2)', borderRadius: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <FiCamera style={{ fontSize: '1.2rem', color: 'var(--cta)' }} />
+          <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>AI Book Cover Scanner</span>
+        </div>
+        <button 
+          onClick={handleAiScan}
+          disabled={isScanning || !sellerData.images || sellerData.images.length === 0}
+          style={{
+            background: isScanning ? 'rgba(96,108,56,0.3)' : 'var(--primary)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '6px',
+            padding: '8px 16px',
+            cursor: isScanning ? 'not-allowed' : 'pointer',
+            fontSize: '0.85rem',
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            transition: 'all 0.2s'
+          }}
+        >
+          {isScanning ? (
+            <>
+              <FiLoader className="spin" style={{ animation: 'spin 1s linear infinite' }} />
+              Scanning...
+            </>
+          ) : (
+            <>
+              <FiCamera />
+              Scan Book Cover
+            </>
+          )}
+        </button>
+      </div>
+      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+        Upload a book cover image and click "Scan Book Cover" to automatically extract book details using AI.
+      </div>
+      {aiMessage && (
+        <div style={{
+          padding: '10px 12px',
+          borderRadius: '6px',
+          fontSize: '0.8rem',
+          background: aiMessage.includes('successfully') ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)',
+          color: aiMessage.includes('successfully') ? '#2e7d32' : '#c62828',
+          border: `1px solid ${aiMessage.includes('successfully') ? 'rgba(76, 175, 80, 0.3)' : 'rgba(244, 67, 54, 0.3)'}`
+        }}>
+          {aiMessage}
+        </div>
+      )}
+    </div>
+    
     <div className="form-grid">
       <div className="field span2">
         <label>Book Title <span className="req">*</span></label>
@@ -279,3 +399,16 @@ export default function SellerAddBookPage() {
         </div>
     );
 }
+
+// Add CSS for spinning animation
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .spin {
+    animation: spin 1s linear infinite;
+  }
+`;
+document.head.appendChild(style);

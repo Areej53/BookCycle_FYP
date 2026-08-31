@@ -23,6 +23,7 @@ const notificationsRouter = require("./routes/notifications");
 const reviewsRouter = require("./routes/reviews");
 const adminRouter = require("./routes/admin");
 const sellerRequestsRouter = require("./routes/sellerRequests");
+const aiRouter = require("./routes/ai");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
@@ -55,6 +56,7 @@ app.use("/api/v1/notifications", notificationsRouter);
 app.use("/api/v1/reviews", reviewsRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/seller-requests", sellerRequestsRouter);
+app.use("/api/v1/ai", aiRouter);
 app.use(errorHandler);
 
 const port = Number(process.env.PORT) || 5000;
