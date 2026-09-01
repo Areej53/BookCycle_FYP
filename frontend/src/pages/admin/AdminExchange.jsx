@@ -140,7 +140,8 @@ const AdminExchange = () => {
         boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
         overflow: 'hidden'
       }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1100px' }}>
           <thead>
             <tr style={{ backgroundColor: '#f8f9fa', borderBottom: '2px solid #e0e0e0' }}>
               <th style={{ padding: '16px 24px', textAlign: 'left', fontWeight: '600', color: '#1a1a2e' }}>
@@ -262,6 +263,7 @@ const AdminExchange = () => {
             })}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

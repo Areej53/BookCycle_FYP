@@ -66,6 +66,7 @@ export default function HomePage() {
     const [freeBooks, setFreeBooks] = useState([]);
     const [topBooks, setTopBooks] = useState([]);
     const [topSellingBooks, setTopSellingBooks] = useState([]);
+    const [exchangeBooks, setExchangeBooks] = useState([]);
 
     const handleAddToCart = (book) => {
         if (!user) { navigate('/login'); return; }

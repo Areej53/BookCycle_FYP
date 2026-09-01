@@ -47,6 +47,41 @@ const AdminSellerListings = () => {
     }).format(val).replace('PKR', 'Rs.');
   };
 
+  const getImageUrl = (image, category) => {
+    // Special handling for Notes category - always use the standard notes image
+    if (category === 'Notes') {
+      return 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=400&q=80';
+    }
+    
+    // Handle empty or null image
+    if (!image) return null;
+    
+    // If it's already a full URL, return as is
+    if (image.startsWith('http://') || image.startsWith('https://')) {
+      return image;
+    }
+    
+    // If it starts with /uploads, it's already relative
+    if (image.startsWith('/uploads/')) {
+      return image;
+    }
+    
+    // If it's just a filename without path, construct the full path
+    if (!image.includes('/') && !image.includes('\\')) {
+      return `/uploads/${image}`;
+    }
+    
+    // If it has some path but doesn't start with /uploads, try to extract filename
+    const parts = image.split(/[\/\\]/);
+    const filename = parts[parts.length - 1];
+    if (filename && filename.includes('.')) {
+      return `/uploads/${filename}`;
+    }
+    
+    // Fallback: try the original path with /uploads prefix
+    return `/uploads/${image}`;
+  };
+
   const getFilteredBooks = () => {
     let filtered = books;
     
@@ -393,8 +428,13 @@ const AdminSellerListings = () => {
                   marginBottom: '16px'
                 }}>
                   <img
-                    src={book.image || book.images?.[0] || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=75"}
+                    src={getImageUrl(book.image || book.images?.[0], book.category) || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=75"}
                     alt={book.title}
+                    onError={(e) => {
+                      if (!e.target.src.includes('unsplash')) {
+                        e.target.src = "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=75";
+                      }
+                    }}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 </div>

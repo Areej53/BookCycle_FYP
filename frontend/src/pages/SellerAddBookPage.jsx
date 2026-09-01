@@ -39,6 +39,10 @@ export default function SellerAddBookPage() {
 
     const handleListingType = (type) => {
         updateSellerData({ exchangeType: type });
+        // Clear image error when switching from Rent to other types
+        if (type !== 'Rent' && errors.images) {
+            setErrors({ ...errors, images: null });
+        }
     };
 
     const handleFileChange = async (e) => {
@@ -84,14 +88,17 @@ export default function SellerAddBookPage() {
         try {
             // Use the first uploaded image for scanning
             const firstImage = sellerData.images[0];
-            const imageData = firstImage.base64 || firstImage.preview;
+            const imageData = typeof firstImage === 'string' ? firstImage : (firstImage.base64 || firstImage.preview);
 
-            const response = await api.post('/ai/scan-book-cover', {
-                image: imageData
-            });
+            console.log('Starting AI scan with image length:', imageData.length);
+            console.log('Sending request to AI service...');
+            const response = await api.post('/ai/scan-book-cover', { image: imageData });
+
+            console.log('AI service response:', response.data);
 
             if (response.data.success && response.data.data) {
                 const aiData = response.data.data;
+                console.log('AI detected data:', aiData);
                 
                 // Update form fields with AI-detected information
                 const updates = {};
@@ -113,11 +120,13 @@ export default function SellerAddBookPage() {
                 if (aiData.description) delete clearedErrors.description;
                 setErrors(clearedErrors);
             } else {
-                throw new Error(response.data.msg || 'AI scan failed');
+                console.error('AI scan unsuccessful:', response.data);
+                throw new Error(response.data.msg || response.data.detail || 'AI scan failed');
             }
         } catch (error) {
             console.error('AI scan error:', error);
-            const errorMessage = error.response?.data?.msg || 'AI scanning could not identify the book details. Please enter the information manually.';
+            console.error('Error response:', error.response?.data);
+            const errorMessage = error.response?.data?.detail || error.response?.data?.msg || 'AI scanning could not identify the book details. Please enter the information manually.';
             setAiMessage(errorMessage);
             toast.error(errorMessage);
         } finally {
@@ -140,9 +149,11 @@ export default function SellerAddBookPage() {
             if (!sellerData.duration || !['3 Months', '6 Months', '1 Year'].includes(sellerData.duration)) {
                 newErrors.duration = 'Rental duration is required.';
             }
-            if (!sellerData.images || sellerData.images.length === 0) {
-                newErrors.images = 'At least one image is required for Rent listings.';
-            }
+        }
+        
+        // Images are optional for Sell and Exchange, but required for Rent
+        if (sellerData.exchangeType === 'Rent' && (!sellerData.images || sellerData.images.length === 0)) {
+            newErrors.images = 'At least one image is required for Rent listings.';
         }
         
         if (Object.keys(newErrors).length > 0) {
@@ -174,8 +185,29 @@ export default function SellerAddBookPage() {
 
     <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiFileText /></div>Book Information</div>
     
+    {/* Image Upload Section - Moved to Top */}
+    <div className="section-title" style={{ marginTop: '10px' }}><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiImage /></div>Book Images {sellerData.exchangeType === 'Rent' && <span className="req">*</span>}</div>
+    <div className="dropzone" onClick={() => fileInputRef.current.click()}>
+      <input type="file" ref={fileInputRef} multiple accept="image/*" style={{ display: 'none' }} onChange={handleFileChange}/>
+      <div className="dz-icon"><FiUploadCloud size={32} color="var(--cta)" /></div>
+      <div className="dz-title">Click to upload book cover images</div>
+      <div className="dz-sub">JPG, PNG up to 5MB · Max 6 images · {sellerData.exchangeType === 'Rent' ? 'Required for Rent listings' : 'Optional for Sell/Exchange'}</div>
+    </div>
+    {errors.images && <span className="err-msg" style={{ display: 'block', marginTop: '6px' }}>{errors.images}</span>}
+    
+    {(sellerData.images && sellerData.images.length > 0) && (
+      <div style={{ display: 'flex', gap: '10px', marginTop: '10px', flexWrap: 'wrap' }}>
+        {sellerData.images.map((img, idx) => (
+          <div key={idx} style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)' }}>
+            <img src={img.preview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <button onClick={(e) => { e.stopPropagation(); removeImage(idx); }} style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', fontSize: '10px' }}>✕</button>
+          </div>
+        ))}
+      </div>
+    )}
+    
     {/* AI Scanner Section */}
-    <div style={{ marginBottom: '20px', padding: '16px', background: 'linear-gradient(135deg, rgba(96,108,56,0.08), rgba(19,73,60,0.05))', border: '1.5px solid rgba(96,108,56,0.2)', borderRadius: '12px' }}>
+    <div style={{ marginTop: '20px', marginBottom: '20px', padding: '16px', background: 'linear-gradient(135deg, rgba(96,108,56,0.08), rgba(19,73,60,0.05))', border: '1.5px solid rgba(96,108,56,0.2)', borderRadius: '12px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <FiCamera style={{ fontSize: '1.2rem', color: 'var(--cta)' }} />
@@ -213,7 +245,7 @@ export default function SellerAddBookPage() {
         </button>
       </div>
       <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-        Upload a book cover image and click "Scan Book Cover" to automatically extract book details using AI.
+        Upload a book cover image above and click "Scan Book Cover" to automatically extract book details using AI.
       </div>
       {aiMessage && (
         <div style={{
@@ -360,26 +392,6 @@ export default function SellerAddBookPage() {
         <span className="char-counter" style={{ marginLeft: 'auto' }}>{(sellerData.description || '').length} / 500 (min 50)</span>
       </div>
     </div>
-
-    <div className="section-title"><div className="st-icon" style={{display:'flex', alignItems:'center', justifyContent:'center'}}><FiImage /></div>Book Images</div>
-    <div className="dropzone" onClick={() => fileInputRef.current.click()}>
-      <input type="file" ref={fileInputRef} multiple accept="image/*" style={{ display: 'none' }} onChange={handleFileChange}/>
-      <div className="dz-icon"><FiUploadCloud size={32} color="var(--cta)" /></div>
-      <div className="dz-title">Click to explore images here</div>
-      <div className="dz-sub">JPG, PNG up to 5MB · Max 6</div>
-    </div>
-    {errors.images && <span className="err-msg" style={{ display: 'block', marginTop: '6px' }}>{errors.images}</span>}
-    
-    {(sellerData.images && sellerData.images.length > 0) && (
-      <div style={{ display: 'flex', gap: '10px', marginTop: '10px', flexWrap: 'wrap' }}>
-        {sellerData.images.map((img, idx) => (
-          <div key={idx} style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)' }}>
-            <img src={img.preview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            <button onClick={(e) => { e.stopPropagation(); removeImage(idx); }} style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', fontSize: '10px' }}>âœ•</button>
-          </div>
-        ))}
-      </div>
-    )}
 
     <div className="form-actions" style={{ marginTop: '30px' }}>
       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
