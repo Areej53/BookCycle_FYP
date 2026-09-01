@@ -11,13 +11,13 @@ const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8001';
  */
 const scanBookCover = async (req, res) => {
   try {
-    const { image } = req.body;
+    const image = req.body?.image;
 
     // Validate image input
     if (!image) {
       return res.status(400).json({ 
         success: false, 
-        msg: 'Image is required' 
+        msg: 'Book cover image is required for AI scanning' 
       });
     }
 

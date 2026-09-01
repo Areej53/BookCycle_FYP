@@ -305,6 +305,12 @@ const createBook = async (req, res) => {
     req.body.status = statusMap[String(req.body.status).toLowerCase()] || req.body.status;
   }
   
+  // Images are optional for Sell and Exchange, but required for Rent
+  const hasImages = (req.body.images && Array.isArray(req.body.images) && req.body.images.length > 0) || Boolean(req.body.image);
+  if (req.body.exchangeType === 'Rent' && !hasImages) {
+    return res.status(400).json({ msg: 'At least one image is required for Rent listings.' });
+  }
+  
   if (req.body.image) {
     req.body.image = saveBase64Image(req.body.image);
   }

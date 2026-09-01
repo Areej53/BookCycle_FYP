@@ -37,8 +37,24 @@ const AdminBooks = () => {
     try {
       setLoading(true);
       const response = await api.get('/admin/books');
-      console.log('Books data:', response.data);
-      setBooks(response.data.books || []);
+      const books = response.data.books || [];
+      
+      // Debug: Log books with image issues
+      const problemBooks = books.filter(b => {
+        const hasImage = b.image || (b.images && b.images.length > 0);
+        return !hasImage || (b.image && !b.image.startsWith('http') && !b.image.startsWith('/uploads'));
+      });
+      
+      if (problemBooks.length > 0) {
+        console.log('Books with potential image issues:', problemBooks.map(b => ({
+          title: b.title,
+          image: b.image,
+          images: b.images,
+          category: b.category
+        })));
+      }
+      
+      setBooks(books);
     } catch (error) {
       console.error('Failed to fetch books:', error);
       setBooks([]);
@@ -86,6 +102,41 @@ const AdminBooks = () => {
     } finally {
       setActionLoading(null);
     }
+  };
+
+  const getImageUrl = (image, category) => {
+    // Special handling for Notes category - always use the standard notes image
+    if (category === 'Notes') {
+      return 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=400&q=80';
+    }
+    
+    // Handle empty or null image
+    if (!image) return null;
+    
+    // If it's already a full URL, return as is
+    if (image.startsWith('http://') || image.startsWith('https://')) {
+      return image;
+    }
+    
+    // If it starts with /uploads, it's already relative
+    if (image.startsWith('/uploads/')) {
+      return image;
+    }
+    
+    // If it's just a filename without path, construct the full path
+    if (!image.includes('/') && !image.includes('\\')) {
+      return `/uploads/${image}`;
+    }
+    
+    // If it has some path but doesn't start with /uploads, try to extract filename
+    const parts = image.split(/[\/\\]/);
+    const filename = parts[parts.length - 1];
+    if (filename && filename.includes('.')) {
+      return `/uploads/${filename}`;
+    }
+    
+    // Fallback: try the original path with /uploads prefix
+    return `/uploads/${image}`;
   };
 
   // 1. Filter by Section tab first
@@ -212,7 +263,8 @@ const AdminBooks = () => {
         border: '1px solid rgba(19, 73, 60, 0.05)',
         overflow: 'hidden'
       }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '1200px' }}>
           <thead>
             <tr style={{ backgroundColor: '#FAF9F0', borderBottom: '1px solid rgba(19, 73, 60, 0.08)' }}>
               <th style={{ padding: '16px 24px', fontWeight: '700', color: '#13493C', fontSize: '0.9rem' }}>Book Details</th>
@@ -249,23 +301,24 @@ const AdminBooks = () => {
                     {/* Book Cover and details */}
                     <td style={{ padding: '16px 24px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        {book.image ? (
-                          <img 
-                            src={book.image} 
-                            alt={book.title}
-                            style={{ 
-                              width: '40px', 
-                              height: '56px', 
-                              objectFit: 'cover',
-                              borderRadius: '4px',
-                              boxShadow: '0 2px 6px rgba(0,0,0,0.06)'
-                            }}
-                          />
-                        ) : (
-                          <div style={{ width: '40px', height: '56px', backgroundColor: 'rgba(19, 73, 60, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px' }}>
-                            <BookOpen size={16} style={{ color: '#13493C', opacity: 0.4 }} />
-                          </div>
-                        )}
+                        <img 
+                          src={getImageUrl(book.image || (Array.isArray(book.images) && book.images.length > 0 ? book.images[0] : null), book.category) || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80'}
+                          alt={book.title}
+                          onError={(e) => {
+                            console.error('Image load error for', book.title, 'src:', e.target.src, 'original image:', book.image, 'images:', book.images);
+                            e.target.src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80';
+                          }}
+                          style={{ 
+                            width: '40px', 
+                            height: '56px', 
+                            objectFit: 'cover',
+                            borderRadius: '4px',
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.06)'
+                          }}
+                        />
+                        <div style={{ width: '40px', height: '56px', backgroundColor: 'rgba(19, 73, 60, 0.05)', display: 'none', alignItems: 'center', justifyContent: 'center', borderRadius: '4px' }}>
+                          <BookOpen size={16} style={{ color: '#13493C', opacity: 0.4 }} />
+                        </div>
                         <div>
                           <div style={{ fontWeight: '700', color: '#13493C', fontSize: '0.9rem', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {book.title}
@@ -423,6 +476,7 @@ const AdminBooks = () => {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
     </div>

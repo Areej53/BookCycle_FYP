@@ -604,6 +604,43 @@ const getSellerListings = async (req, res) => {
   }
 };
 
+const removeBooksByTitlePattern = async (req, res) => {
+  try {
+    const { pattern } = req.params;
+    
+    const books = await Book.findAll({
+      where: {
+        title: {
+          [Op.like]: `%${pattern}%`
+        }
+      }
+    });
+
+    console.log(`Found ${books.length} books matching pattern "${pattern}":`);
+    books.forEach(book => {
+      console.log(`- ID: ${book.id}, Title: "${book.title}"`);
+    });
+
+    if (books.length === 0) {
+      return res.status(404).json({ msg: 'No books found matching the pattern' });
+    }
+
+    // Delete all matching books
+    for (const book of books) {
+      await book.destroy();
+      console.log(`Deleted: ${book.title} (ID: ${book.id})`);
+    }
+
+    res.status(200).json({ 
+      msg: `Successfully removed ${books.length} books matching pattern "${pattern}"`,
+      deletedCount: books.length
+    });
+  } catch (error) {
+    console.error('Remove books by pattern error:', error);
+    res.status(500).json({ msg: 'Failed to remove books' });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getSellerRequests,
@@ -624,5 +661,6 @@ module.exports = {
   restoreBook,
   getAllOrders,
   getExchangeRequests,
-  getRecentActivities
+  getRecentActivities,
+  removeBooksByTitlePattern
 };
