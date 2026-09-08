@@ -124,6 +124,14 @@ Book.init({
     type: DataTypes.INTEGER,
     defaultValue: 0
   },
+  reviewsCount: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  },
+  ratingsSum: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0.00
+  },
   ownerId: {
     type: DataTypes.STRING(24),
     allowNull: false

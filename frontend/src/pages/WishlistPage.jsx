@@ -73,7 +73,7 @@ export default function WishlistPage() {
                                 <div style={{ padding: '20px' }}>
                                     <div style={{ fontSize: '.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--accent)', letterSpacing: '.05em', marginBottom: '6px' }}>{book.category}</div>
                                     <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.2rem', fontWeight: 700, color: 'var(--primary)', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{book.title}</h3>
-                                    <div style={{ fontSize: '.85rem', color: 'var(--text-muted)', marginBottom: '8px' }}>by {book.author}</div>
+                                    <div style={{ fontSize: '.85rem', color: 'var(--text-muted)', marginBottom: '8px' }}>author: {book.author}</div>
                                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                         <span>Seller: <strong>{book.sellerName || book.owner?.name || 'Unknown'}</strong></span>
                                         {book.sellerRating && book.sellerRating !== 'No ratings' && (

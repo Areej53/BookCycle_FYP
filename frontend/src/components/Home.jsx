@@ -413,7 +413,7 @@ export default function Home({ onNavigate }) {
                   <div className="h-bcard-body">
                     <div className="h-bcat">{b.cat}</div>
                     <div className="h-btitle">{b.title}</div>
-                    <div className="h-bauthor">by {b.author}</div>
+                    <div className="h-bauthor">author: {b.author}</div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
                       <div className="h-bprice">Rs. 30/wk</div>
                       <button className="btn-mini-cart" onClick={(e) => { 
@@ -453,7 +453,7 @@ export default function Home({ onNavigate }) {
                   <div className="h-bcard-body">
                     <div className="h-bcat">{b.cat}</div>
                     <div className="h-btitle">{b.title}</div>
-                    <div className="h-bauthor">by {b.author}</div>
+                    <div className="h-bauthor">author: {b.author}</div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
                       <div className="h-bprice">{b.type === "free" ? <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg> Free</span> : `Rs. ${b.price}`}</div>
                        <button className="btn-mini-cart" onClick={(e) => { 

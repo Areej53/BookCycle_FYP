@@ -57,6 +57,27 @@ const calculateBayesianRating = (seller) => {
   };
 };
 
+// Helper function to calculate book rating (simple average for books)
+const calculateBookRating = (book) => {
+  if (!book || book.reviewsCount === 0) {
+    return {
+      displayRating: 0,
+      calculatedRating: 0,
+      reviewsCount: 0,
+      starRating: 0
+    };
+  }
+
+  const averageRating = book.ratingsSum / book.reviewsCount;
+  
+  return {
+    displayRating: averageRating.toFixed(1),
+    calculatedRating: averageRating,
+    reviewsCount: book.reviewsCount,
+    starRating: Math.round(averageRating) // For 1-5 star display
+  };
+};
+
 const matchEnum = (arr, val) => {
   let lowerVal = val.toLowerCase().trim();
   if (lowerVal === 'self-development') lowerVal = 'self development';
@@ -172,7 +193,7 @@ const getAllBooks = async (req, res) => {
       ]
     });
     
-    // Add computed seller ratings to each book
+    // Add computed seller ratings and book ratings to each book
     const booksWithRatings = allBooks.map(book => {
       const bookData = book.toJSON();
       if (bookData.owner) {
@@ -184,6 +205,8 @@ const getAllBooks = async (req, res) => {
           reviewsCount: 0
         };
       }
+      // Add book rating
+      bookData.bookRating = calculateBookRating(bookData);
       return bookData;
     });
     
@@ -204,7 +227,7 @@ const getAllBooks = async (req, res) => {
     limit: limitNum
   });
 
-  // Add computed seller ratings to each book
+  // Add computed seller ratings and book ratings to each book
   const booksWithRatings = books.map(book => {
     const bookData = book.toJSON();
     if (bookData.owner) {
@@ -216,6 +239,8 @@ const getAllBooks = async (req, res) => {
         reviewsCount: 0
       };
     }
+    // Add book rating
+    bookData.bookRating = calculateBookRating(bookData);
     return bookData;
   });
 
@@ -262,7 +287,7 @@ const getBook = async (req, res) => {
     }
   }
 
-  // Add computed seller rating to the book
+  // Add computed seller rating and book rating to the book
   const bookData = book.toJSON();
   if (bookData.owner) {
     bookData.sellerRating = calculateBayesianRating(bookData.owner);
@@ -273,6 +298,8 @@ const getBook = async (req, res) => {
       reviewsCount: 0
     };
   }
+  // Add book rating
+  bookData.bookRating = calculateBookRating(bookData);
 
   res.status(200).json({ book: bookData });
 };
@@ -459,7 +486,7 @@ const getRecommendedBooks = async (req, res) => {
         order: [['createdAt', 'DESC']],
         limit: 50,
         include: [
-          { model: User, as: 'owner', attributes: ['name'] },
+          { model: User, as: 'owner', attributes: ['name', 'reviewsCount', 'ratingsSum'] },
           { model: Rent, as: 'rentDetails' },
           { model: Exchange, as: 'exchangeDetails' }
         ]
@@ -510,16 +537,48 @@ const getRecommendedBooks = async (req, res) => {
         ],
         limit: 8,
         include: [
-          { model: User, as: 'owner', attributes: ['name'] },
+          { model: User, as: 'owner', attributes: ['name', 'reviewsCount', 'ratingsSum'] },
           { model: Rent, as: 'rentDetails' },
           { model: Exchange, as: 'exchangeDetails' }
         ]
       });
       
-      return res.status(200).json({ books: fallbackBooks });
+      // Add seller and book ratings to fallback books
+      const fallbackWithRatings = fallbackBooks.map(book => {
+        const bookData = book.toJSON();
+        if (bookData.owner) {
+          bookData.sellerRating = calculateBayesianRating(bookData.owner);
+        } else {
+          bookData.sellerRating = {
+            displayRating: 'No ratings',
+            calculatedRating: 0,
+            reviewsCount: 0
+          };
+        }
+        bookData.bookRating = calculateBookRating(bookData);
+        return bookData;
+      });
+      
+      return res.status(200).json({ books: fallbackWithRatings });
     }
 
-    res.status(200).json({ books: finalBooks });
+    // Add seller and book ratings to recommended books
+    const booksWithRatings = finalBooks.map(book => {
+      const bookData = book.toJSON();
+      if (bookData.owner) {
+        bookData.sellerRating = calculateBayesianRating(bookData.owner);
+      } else {
+        bookData.sellerRating = {
+          displayRating: 'No ratings',
+          calculatedRating: 0,
+          reviewsCount: 0
+        };
+      }
+      bookData.bookRating = calculateBookRating(bookData);
+      return bookData;
+    });
+
+    res.status(200).json({ books: booksWithRatings });
   } catch (error) {
     res.status(500).json({ msg: "Error fetching recommendations", error: error.message });
   }

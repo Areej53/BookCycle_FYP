@@ -7,6 +7,7 @@ import Footer from '../components/Footer';
 import { PALETTE } from '../constants';
 import { useToast } from '../hooks/useToast';
 import Toast from '../components/Toast';
+import StarRating from '../components/StarRating';
 
 const DELIVERY_CHARGE = 120
 const DURATION_OPTIONS = ['1', '2', '3', '4', '6', '8', '12']
@@ -132,14 +133,21 @@ const CartPage = () => {
                           fontWeight: 700, color: 'var(--primary)', marginBottom: 4, lineHeight: 1.2 }}>
                           {item.title}
                         </h3>
-                        <div style={{ fontSize: '.85rem', color: 'var(--text-muted)' }}>by {item.author}</div>
+                        <div style={{ fontSize: '.85rem', color: 'var(--text-muted)' }}>author: {item.author}</div>
+                        <div style={{ margin: '4px 0' }}>
+                          <StarRating 
+                            rating={item.bookRating?.starRating || 0} 
+                            reviewCount={item.bookRating?.reviewsCount || 0} 
+                            size={10}
+                          />
+                        </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <span>Seller: <strong>{item.sellerName || item.owner?.name || 'Unknown'}</strong></span>
-                          {item.sellerRating && item.sellerRating !== 'No ratings' && (
+                          {item.sellerRating?.displayRating !== 'No ratings' && (
                             <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                               <span style={{ color: '#FFD700' }}>★</span>
-                              <span>{item.sellerRating}</span>
-                              {item.sellerReviewsCount > 0 && <span>({item.sellerReviewsCount})</span>}
+                              <span>{item.sellerRating?.displayRating}</span>
+                              {item.sellerRating?.reviewsCount > 0 && <span>({item.sellerRating?.reviewsCount})</span>}
                             </span>
                           )}
                         </div>

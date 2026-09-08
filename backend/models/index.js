@@ -9,6 +9,7 @@ const Rent = require('./Rent');
 const Exchange = require('./Exchange');
 const ExchangeRequest = require('./ExchangeRequest');
 const Review = require('./Review');
+const BookReview = require('./BookReview');
 
 // Define Associations
 
@@ -54,6 +55,12 @@ Review.belongsTo(User, { foreignKey: 'sellerId', as: 'seller' });
 Review.belongsTo(User, { foreignKey: 'buyerId', as: 'buyer' });
 Review.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
 
+// Book <-> BookReview
+Book.hasMany(BookReview, { foreignKey: 'bookId', as: 'reviews' });
+BookReview.belongsTo(Book, { foreignKey: 'bookId', as: 'book' });
+User.hasMany(BookReview, { foreignKey: 'userId', as: 'bookReviews' });
+BookReview.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
 // Order <-> OrderItem
 Order.hasMany(OrderItem, { foreignKey: 'orderId', as: 'items' });
 OrderItem.belongsTo(Order, { foreignKey: 'orderId' });
@@ -82,5 +89,6 @@ module.exports = {
   Rent,
   Exchange,
   ExchangeRequest,
-  Review
+  Review,
+  BookReview
 };
