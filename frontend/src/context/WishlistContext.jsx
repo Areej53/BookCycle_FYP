@@ -93,8 +93,15 @@ export const WishlistProvider = ({ children }) => {
         setWishlist(prev => prev.filter(item => (item._id || item.id) !== id));
     };
 
-    const isInWishlist = (id) => {
-        return wishlist.some(item => (item._id || item.id) === id);
+    const isInWishlist = (idOrBook) => {
+        if (!idOrBook) return false;
+        const targetId = typeof idOrBook === 'object' ? (idOrBook._id || idOrBook.id) : idOrBook;
+        if (!targetId) return false;
+        const searchId = String(targetId);
+        return wishlist.some(item => {
+            const itemId = String(item._id || item.id);
+            return itemId === searchId;
+        });
     };
 
     const clearWishlist = () => {

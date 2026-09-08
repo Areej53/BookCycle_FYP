@@ -42,6 +42,7 @@ import {
 import DashboardPage from "./pages/DashboardPage";
 import { ToastContainer } from "react-toastify";
 import ProtectedRoute from "./components/ProtectedRoute";
+import SellerProtectedRoute from "./components/SellerProtectedRoute";
 import { SellerProvider } from "./context/SellerContext";
 import AdminLayout from "./components/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -139,28 +140,37 @@ const router = createBrowserRouter([
             element: <DashboardPage />,
           },
           {
-            path: "seller",
-            element: <SellerCategoriesPage />,
-          },
-          {
-            path: "seller/add",
+            path: "seller/request",
             element: <SellerRequestPage />,
           },
           {
-            path: "seller/categories",
-            element: <SellerCategoriesPage />,
-          },
-          {
-            path: "seller/notes/add",
-            element: <SellerAddNotesPage />,
-          },
-          {
-            path: "seller/published",
-            element: <SellerPublishedPage />,
-          },
-          {
-            path: "seller/review",
-            element: <SellerReviewPage />,
+            element: <SellerProtectedRoute />,
+            children: [
+              {
+                path: "seller",
+                element: <SellerCategoriesPage />,
+              },
+              {
+                path: "seller/add",
+                element: <SellerAddBookPage />,
+              },
+              {
+                path: "seller/categories",
+                element: <SellerCategoriesPage />,
+              },
+              {
+                path: "seller/notes/add",
+                element: <SellerAddNotesPage />,
+              },
+              {
+                path: "seller/published",
+                element: <SellerPublishedPage />,
+              },
+              {
+                path: "seller/review",
+                element: <SellerReviewPage />,
+              },
+            ],
           },
           {
             path: "checkout",

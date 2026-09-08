@@ -24,6 +24,7 @@ const reviewsRouter = require("./routes/reviews");
 const bookReviewsRouter = require("./routes/bookReviews");
 const adminRouter = require("./routes/admin");
 const sellerRequestsRouter = require("./routes/sellerRequests");
+const aiRouter = require("./routes/ai");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
@@ -57,6 +58,7 @@ app.use("/api/v1/reviews", reviewsRouter);
 app.use("/api/v1/book-reviews", bookReviewsRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/seller-requests", sellerRequestsRouter);
+app.use("/api/v1/ai", aiRouter);
 app.use(errorHandler);
 
 const port = Number(process.env.PORT) || 5000;
@@ -67,7 +69,7 @@ const start = async () => {
       throw new Error("JWT_SECRET is missing. Add it to backend/.env");
     }
     await connectPostgres();
-    await sequelize.sync({ alter: true });
+    // await sequelize.sync({ alter: true }); // Temporarily disabled
     app.listen(port, () => {
       console.log(`Server is running on port ${port}`);
     });

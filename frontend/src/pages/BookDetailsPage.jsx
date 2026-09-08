@@ -129,18 +129,8 @@ export default function BookDetailsPage() {
                             <span style={{ background: book.exchangeType === 'Exchange' ? 'rgba(126,200,164,0.1)' : (book.exchangeType === 'Share' ? 'rgba(96,108,56,0.1)' : 'rgba(221,161,94,0.1)'), color: book.exchangeType === 'Exchange' ? '#7ec8a4' : (book.exchangeType === 'Share' ? 'var(--secondary)' : 'var(--accent)'), padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>{book.exchangeType}</span>
                         </div>
 
-                        <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: '3rem', color: 'var(--primary)', marginBottom: '10px', lineHeight: 1.1 }}>{book.title}</h1>
-                        <div style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginBottom: '15px' }}>author: <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{book.author}</span></div>
-                        
-                        {book.bookRating && (
-                          <div style={{ marginBottom: '15px' }}>
-                            <StarRating 
-                              rating={book.bookRating.starRating || 0} 
-                              reviewCount={book.bookRating.reviewsCount || 0} 
-                              size={16}
-                            />
-                          </div>
-                        )}
+                        <h1 style={{ fontFamily: '"Playfair Display", serif', fontSize: '3rem', color: 'var(--primary)', marginBottom: '10px', lineHeight: 1.1 }}>{book.title}</h1>
+                        <div style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginBottom: '15px' }}>by <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{book.author}</span></div>
 
                         {book.owner?.name && (
                           <div style={{ fontSize: '0.95rem', color: 'var(--text-muted)', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -198,14 +188,16 @@ export default function BookDetailsPage() {
                                     }} 
                                     style={{ 
                                         width: '64px', height: '64px', borderRadius: '50%', 
-                                        background: '#fff', color: isInWishlist(book?._id) ? 'var(--cta)' : 'var(--text-muted)', 
+                                        background: isInWishlist(book) ? '#FEECEC' : '#fff', 
+                                        color: isInWishlist(book) ? '#E63946' : 'var(--text-muted)', 
                                         boxShadow: '0 8px 24px rgba(0,0,0,0.1)', 
-                                        transition: 'all 0.2s', border: '1.5px solid var(--border)', 
+                                        transition: 'all 0.2s', 
+                                        border: isInWishlist(book) ? '1.5px solid #E63946' : '1.5px solid var(--border)', 
                                         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' 
                                     }}
-                                    title="Add to Wishlist"
+                                    title={isInWishlist(book) ? "In Wishlist (Click to remove)" : "Add to Wishlist"}
                                 >
-                                    <FiHeart size={26} fill={isInWishlist(book?._id) ? "var(--cta)" : "none"} />
+                                    <FiHeart size={26} fill={isInWishlist(book) ? "#E63946" : "none"} color={isInWishlist(book) ? "#E63946" : "currentColor"} />
                                 </button>
                                 {book.category === 'Notes' ? (
                                     <>

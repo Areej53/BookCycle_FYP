@@ -43,6 +43,14 @@ export default function SellerReviewPage() {
             let payload;
             let url;
 
+            const processImages = (imgs) => {
+                if (!imgs || !Array.isArray(imgs)) return [];
+                return imgs.map(img => typeof img === 'string' ? img : (img.base64 || img.preview || ''));
+            };
+
+            const processedImages = processImages(sellerData.images);
+            const mainImage = processedImages.length > 0 ? processedImages[0] : '';
+
             if (isRent) {
                 payload = {
                     title: sellerData.title || 'Untitled',
@@ -52,8 +60,8 @@ export default function SellerReviewPage() {
                     category: sellerData.category || 'Programming',
                     rentPrice: Number(sellerData.price),
                     rentalDuration: sellerData.duration || '3 Months',
-                    images: sellerData.images ? sellerData.images.map(img => img.base64 || img.preview) : [],
-                    image: sellerData.images && sellerData.images.length > 0 ? (sellerData.images[0].base64 || sellerData.images[0].preview) : ''
+                    images: processedImages,
+                    image: mainImage
                 };
                 url = '/rent';
             } else if (isExchange) {
@@ -64,8 +72,8 @@ export default function SellerReviewPage() {
                     condition: sellerData.condition || 'New',
                     category: sellerData.category || 'Programming',
                     lookingFor: sellerData.lookingFor || null,
-                    images: sellerData.images ? sellerData.images.map(img => img.base64 || img.preview) : [],
-                    image: sellerData.images && sellerData.images.length > 0 ? (sellerData.images[0].base64 || sellerData.images[0].preview) : ''
+                    images: processedImages,
+                    image: mainImage
                 };
                 url = '/exchange';
             } else {
@@ -77,8 +85,8 @@ export default function SellerReviewPage() {
                     category: sellerData.category || 'Programming',
                     exchangeType: sellerData.exchangeType || 'Sell',
                     price: sellerData.exchangeType === 'Sell' ? Number(sellerData.price) : 0,
-                    images: sellerData.images ? sellerData.images.map(img => img.base64 || img.preview) : [],
-                    image: sellerData.images && sellerData.images.length > 0 ? (sellerData.images[0].base64 || sellerData.images[0].preview) : ''
+                    images: processedImages,
+                    image: mainImage
                 };
                 url = '/books';
             }

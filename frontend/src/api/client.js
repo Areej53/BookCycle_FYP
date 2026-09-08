@@ -53,6 +53,16 @@ export const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+// Don't set Content-Type for FormData - let axios handle it automatically
+api.interceptors.request.use((config) => {
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type'];
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
 // Add authorization header to all requests
 api.interceptors.request.use((config) => {
   const auth = localStorage.getItem("auth");

@@ -5,12 +5,20 @@ const { Op } = require("sequelize");
 // Dashboard Statistics
 const getDashboardStats = async (req, res) => {
   try {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+
     const [
       totalUsers,
       totalSellers,
       activeSellers,
       inactiveSellers,
       totalBooks,
+      booksToday,
+      booksThisWeek,
       sellListings,
       rentListings,
       exchangeListings,
@@ -19,26 +27,43 @@ const getDashboardStats = async (req, res) => {
       completedDeliveries,
       pendingSellerRequests,
       totalPayments,
-      pendingPaymentVerifications
+      pendingPaymentVerifications,
+      rawCategoryCounts
     ] = await Promise.all([
       User.count({ where: { role: 'customer' } }),
-      User.count({ where: { role: 'shopkeeper' } }),
-      User.count({ where: { role: 'shopkeeper', sellerStatus: 'approved' } }),
-      User.count({ where: { role: 'shopkeeper', sellerStatus: { [Op.or]: ['pending', 'rejected', 'inactive'] } } }),
+      User.count({ where: { [Op.or]: [{ role: 'shopkeeper' }, { sellerStatus: 'approved' }] } }),
+      User.count({ where: { sellerStatus: 'approved' } }),
+      User.count({ where: { sellerStatus: { [Op.or]: ['pending', 'rejected', 'inactive', 'suspended'] } } }),
       Book.count(),
+      Book.count({ where: { createdAt: { [Op.gte]: todayStart } } }),
+      Book.count({ where: { createdAt: { [Op.gte]: weekAgo } } }),
       Book.count({ where: { exchangeType: 'Sell' } }),
       Book.count({ where: { exchangeType: 'Rent' } }),
       Book.count({ where: { exchangeType: 'Exchange' } }),
-      Order.count({ where: { status: { [Op.in]: ['pending', 'pending_seller', 'accepted', 'out_for_delivery'] } } }),
-      Order.count({ where: { status: 'out_for_delivery' } }),
-      Order.count({ where: { status: 'delivered' } }),
+      Order.count({ where: { status: { [Op.in]: ['pending', 'pending_seller', 'accepted', 'out_for_delivery', 'payment_submitted'] } } }),
+      Order.count({ where: { status: { [Op.in]: ['out_for_delivery', 'pending', 'pending_seller', 'accepted', 'payment_submitted'] } } }),
+      Order.count({ where: { status: { [Op.in]: ['delivered', 'completed'] } } }),
       User.count({ where: { sellerStatus: 'pending' } }),
-      Order.sum('totalAmount', { where: { status: 'completed' } }),
-      Order.count({ where: { status: 'payment_submitted' } })
+      Order.sum('totalAmount', { where: { status: { [Op.in]: ['delivered', 'completed'] } } }),
+      Order.count({ where: { status: 'payment_submitted' } }),
+      Book.findAll({
+        attributes: ['category', [sequelize.fn('COUNT', sequelize.col('id')), 'count']],
+        group: ['category'],
+        raw: true
+      })
     ]).catch(err => {
       console.error('Stats query error:', err);
-      return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, []];
     });
+
+    const categoryCounts = {};
+    if (Array.isArray(rawCategoryCounts)) {
+      rawCategoryCounts.forEach(item => {
+        if (item.category) {
+          categoryCounts[item.category] = parseInt(item.count, 10) || 0;
+        }
+      });
+    }
 
     res.status(200).json({
       totalUsers,
@@ -46,6 +71,8 @@ const getDashboardStats = async (req, res) => {
       activeSellers,
       inactiveSellers,
       totalBooks,
+      booksToday,
+      booksThisWeek,
       sellListings,
       rentListings,
       exchangeListings,
@@ -54,7 +81,8 @@ const getDashboardStats = async (req, res) => {
       completedDeliveries,
       pendingSellerRequests,
       totalPayments: totalPayments || 0,
-      pendingPaymentVerifications
+      pendingPaymentVerifications,
+      categoryCounts
     });
   } catch (error) {
     console.error('Dashboard stats error:', error);
@@ -131,12 +159,16 @@ const rejectSellerRequest = async (req, res) => {
     await seller.save();
 
     // Create notification
-    await Notification.create({
-      userId: seller.id,
-      type: 'seller_rejected',
-      message: 'Your seller account request has been rejected. Please contact support for more information.',
-      isRead: false
-    });
+    try {
+      await Notification.create({
+        userId: seller.id,
+        type: 'seller_rejected',
+        message: 'Your seller account request has been rejected. Please contact support for more information.',
+        isRead: false
+      });
+    } catch (notificationErr) {
+      console.error('Failed to create seller rejected notification:', notificationErr);
+    }
 
     res.status(200).json({ msg: 'Seller rejected successfully' });
   } catch (error) {
@@ -227,10 +259,18 @@ const getAllSellers = async (req, res) => {
   try {
     console.log('Fetching all sellers...');
     
-    // Get all users who are shopkeepers OR have books listed
-    const [shopkeepers, usersWithBooks] = await Promise.all([
+    // Get all users who:
+    // 1) are shopkeepers OR have sellerStatus set (not null/empty)
+    // 2) OR have listed books in the platform
+    const [shopkeepersAndSellers, usersWithBooks] = await Promise.all([
       User.findAll({
-        where: { role: 'shopkeeper' },
+        where: {
+          role: { [Op.ne]: 'admin' },
+          [Op.or]: [
+            { role: 'shopkeeper' },
+            { sellerStatus: { [Op.ne]: null } }
+          ]
+        },
         order: [['createdAt', 'DESC']]
       }),
       Book.findAll({
@@ -239,53 +279,74 @@ const getAllSellers = async (req, res) => {
       })
     ]);
 
-    console.log(`Found ${shopkeepers.length} shopkeepers`);
-    console.log(`Found ${usersWithBooks.length} unique book owners`);
-
-    // Get unique user IDs from books
-    const bookOwnerIds = [...new Set(usersWithBooks.map(b => b.ownerId))];
-    console.log(`Unique book owner IDs: ${bookOwnerIds.length}`);
-
-    // Fetch users who own books but might not be shopkeepers
-    const bookOwners = await User.findAll({
+    const bookOwnerIds = [...new Set(usersWithBooks.map(b => b.ownerId).filter(Boolean))];
+    const bookOwners = bookOwnerIds.length > 0 ? await User.findAll({
       where: { 
         id: { [Op.in]: bookOwnerIds },
-        role: { [Op.ne]: 'admin' } // Exclude admin users
+        role: { [Op.ne]: 'admin' }
       }
-    });
-
-    console.log(`Found ${bookOwners.length} book owners who are not admin`);
+    }) : [];
 
     // Combine and deduplicate sellers
     const allSellersMap = new Map();
-    [...shopkeepers, ...bookOwners].forEach(seller => {
-      allSellersMap.set(seller.id, seller);
+    [...shopkeepersAndSellers, ...bookOwners].forEach(seller => {
+      if (seller && seller.id) {
+        allSellersMap.set(seller.id, seller);
+      }
     });
     const sellers = Array.from(allSellersMap.values());
 
-    console.log(`Total unique sellers: ${sellers.length} (shopkeepers: ${shopkeepers.length}, book owners: ${bookOwners.length})`);
+    console.log(`Total unique sellers: ${sellers.length} (shopkeepers/sellers: ${shopkeepersAndSellers.length}, book owners: ${bookOwners.length})`);
 
     const sellersWithStats = await Promise.all(sellers.map(async (seller) => {
+      const sellerData = seller.toJSON ? seller.toJSON() : seller;
+
       const [bookCount, sellCount, rentCount, exchangeCount, orderCount, books] = await Promise.all([
         Book.count({ where: { ownerId: seller.id } }),
-        Book.count({ where: { ownerId: seller.id, exchangeType: 'Sell' } }),
-        Book.count({ where: { ownerId: seller.id, exchangeType: 'Rent' } }),
-        Book.count({ where: { ownerId: seller.id, exchangeType: 'Exchange' } }),
-        Order.count({ where: { sellerId: seller.id } }),
+        Book.count({ 
+          where: { 
+            ownerId: seller.id, 
+            exchangeType: { [Op.or]: ['Sell', 'sell', 'SELL'] } 
+          } 
+        }),
+        Book.count({ 
+          where: { 
+            ownerId: seller.id, 
+            exchangeType: { [Op.or]: ['Rent', 'rent', 'RENT'] } 
+          } 
+        }),
+        Book.count({ 
+          where: { 
+            ownerId: seller.id, 
+            exchangeType: { [Op.or]: ['Exchange', 'exchange', 'EXCHANGE'] } 
+          } 
+        }),
+        Order.count({ where: { sellerId: seller.id } }).catch(() => 0),
         Book.findAll({
           where: { ownerId: seller.id },
-          order: [['createdAt', 'DESC']],
-          limit: 10
-        })
+          order: [['createdAt', 'DESC']]
+        }).catch(() => [])
       ]);
 
       // Group books by exchange type
-      const sellBooks = books.filter(b => b.exchangeType === 'Sell');
-      const rentBooks = books.filter(b => b.exchangeType === 'Rent');
-      const exchangeBooks = books.filter(b => b.exchangeType === 'Exchange');
+      const sellBooks = books.filter(b => String(b.exchangeType || '').toLowerCase() === 'sell');
+      const rentBooks = books.filter(b => String(b.exchangeType || '').toLowerCase() === 'rent');
+      const exchangeBooks = books.filter(b => String(b.exchangeType || '').toLowerCase() === 'exchange');
+
+      // Normalize seller status fallback
+      let status = sellerData.sellerStatus;
+      if (!status) {
+        if (sellerData.role === 'shopkeeper' || bookCount > 0) {
+          status = 'approved';
+        } else {
+          status = 'inactive';
+        }
+      }
 
       return {
-        ...seller.toJSON(),
+        ...sellerData,
+        name: sellerData.name || sellerData.email?.split('@')[0] || 'Seller',
+        sellerStatus: status,
         bookCount,
         sellCount,
         rentCount,
@@ -320,12 +381,16 @@ const activateSeller = async (req, res) => {
     await seller.save();
 
     // Create notification
-    await Notification.create({
-      userId: seller.id,
-      type: 'account_activated',
-      message: 'Your account has been activated. You can now use all features.',
-      isRead: false
-    });
+    try {
+      await Notification.create({
+        userId: seller.id,
+        type: 'account_activated',
+        message: 'Your account has been activated. You can now use all features.',
+        isRead: false
+      });
+    } catch (notificationErr) {
+      console.error('Failed to create account activated notification:', notificationErr);
+    }
 
     res.status(200).json({ msg: 'Seller activated successfully' });
   } catch (error) {
@@ -367,12 +432,16 @@ const suspendSeller = async (req, res) => {
     await seller.save();
 
     // Create notification
-    await Notification.create({
-      userId: seller.id,
-      type: 'account_suspended',
-      message: 'Your account has been suspended. Please contact support for more information.',
-      isRead: false
-    });
+    try {
+      await Notification.create({
+        userId: seller.id,
+        type: 'account_suspended',
+        message: 'Your account has been suspended. Please contact support for more information.',
+        isRead: false
+      });
+    } catch (notificationErr) {
+      console.error('Failed to create account suspended notification:', notificationErr);
+    }
 
     res.status(200).json({ msg: 'Seller suspended successfully' });
   } catch (error) {
@@ -604,6 +673,43 @@ const getSellerListings = async (req, res) => {
   }
 };
 
+const removeBooksByTitlePattern = async (req, res) => {
+  try {
+    const { pattern } = req.params;
+    
+    const books = await Book.findAll({
+      where: {
+        title: {
+          [Op.like]: `%${pattern}%`
+        }
+      }
+    });
+
+    console.log(`Found ${books.length} books matching pattern "${pattern}":`);
+    books.forEach(book => {
+      console.log(`- ID: ${book.id}, Title: "${book.title}"`);
+    });
+
+    if (books.length === 0) {
+      return res.status(404).json({ msg: 'No books found matching the pattern' });
+    }
+
+    // Delete all matching books
+    for (const book of books) {
+      await book.destroy();
+      console.log(`Deleted: ${book.title} (ID: ${book.id})`);
+    }
+
+    res.status(200).json({ 
+      msg: `Successfully removed ${books.length} books matching pattern "${pattern}"`,
+      deletedCount: books.length
+    });
+  } catch (error) {
+    console.error('Remove books by pattern error:', error);
+    res.status(500).json({ msg: 'Failed to remove books' });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getSellerRequests,
@@ -624,5 +730,6 @@ module.exports = {
   restoreBook,
   getAllOrders,
   getExchangeRequests,
-  getRecentActivities
+  getRecentActivities,
+  removeBooksByTitlePattern
 };

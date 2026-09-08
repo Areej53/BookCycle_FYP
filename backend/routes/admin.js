@@ -21,7 +21,8 @@ const {
   restoreBook,
   getAllOrders,
   getExchangeRequests,
-  getRecentActivities
+  getRecentActivities,
+  removeBooksByTitlePattern
 } = require("../controllers/adminController");
 const adminAuthMiddleware = require("../middleware/adminAuth");
 
@@ -52,6 +53,7 @@ router.get("/books", adminAuthMiddleware, getAllBooks);
 router.delete("/books/:bookId", adminAuthMiddleware, removeBook);
 router.put("/books/:bookId/hide", adminAuthMiddleware, hideBook);
 router.put("/books/:bookId/restore", adminAuthMiddleware, restoreBook);
+router.delete("/books/pattern/:pattern", adminAuthMiddleware, removeBooksByTitlePattern);
 
 // Orders
 router.get("/orders", adminAuthMiddleware, getAllOrders);

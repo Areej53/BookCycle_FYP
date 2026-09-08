@@ -35,6 +35,12 @@ const createRentBook = async (req, res) => {
     return res.status(400).json({ msg: "Invalid rental duration. Allowed: '3 Months', '6 Months', '1 Year'." });
   }
 
+  // Images are required for Rent listings
+  const hasImages = (req.body.images && Array.isArray(req.body.images) && req.body.images.length > 0) || Boolean(req.body.image);
+  if (!hasImages) {
+    return res.status(400).json({ msg: 'At least one image is required for Rent listings.' });
+  }
+
   req.body.ownerId = req.user.id;
   
   let image = '';
