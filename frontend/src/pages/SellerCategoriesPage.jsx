@@ -18,20 +18,29 @@ export default function SellerCategoriesPage() {
     const isRentMode = window.location.pathname.includes('/rent');
 
     useEffect(() => {
-        checkSellerStatus();
-    }, []);
+        if (!isRentMode) {
+            checkSellerStatus();
+        } else {
+            setLoading(false);
+        }
+    }, [isRentMode]);
 
     const checkSellerStatus = async () => {
         try {
             const response = await api.get('/seller-requests/status');
+            console.log('Seller status response:', response.data);
             setSellerStatus(response.data.sellerStatus);
             
             // If not approved, redirect to seller request page
             if (response.data.sellerStatus !== 'approved') {
+                console.log('Seller not approved, redirecting to request page. Status:', response.data.sellerStatus);
                 navigate('/seller/request');
+            } else {
+                console.log('Seller approved, allowing access to categories page');
             }
         } catch (error) {
             console.error('Failed to check seller status:', error);
+            console.error('Error response:', error.response?.data);
             // If error checking status, redirect to seller request page
             navigate('/seller/request');
         } finally {
@@ -47,7 +56,7 @@ export default function SellerCategoriesPage() {
         );
     }
 
-    if (sellerStatus !== 'approved') {
+    if (!isRentMode && sellerStatus !== 'approved') {
         return null; // Will redirect in useEffect
     }
 

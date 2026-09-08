@@ -67,7 +67,7 @@ const start = async () => {
       throw new Error("JWT_SECRET is missing. Add it to backend/.env");
     }
     await connectPostgres();
-    await sequelize.sync({ alter: true });
+    // await sequelize.sync({ alter: true }); // Temporarily disabled
     app.listen(port, () => {
       console.log(`Server is running on port ${port}`);
     });

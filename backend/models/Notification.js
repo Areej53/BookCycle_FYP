@@ -25,11 +25,25 @@ Notification.init({
     allowNull: false
   },
   type: {
-    type: DataTypes.STRING(20),
+    type: DataTypes.STRING(50),
     defaultValue: 'general',
     validate: {
       isIn: {
-        args: [["order", "rent", "system", "general", "order_update", "complaint"]], // includes complaint for complain notification
+        args: [[
+          "order",
+          "rent",
+          "system",
+          "general",
+          "order_update",
+          "complaint",
+          "seller_request_submitted",
+          "seller_approved",
+          "seller_rejected",
+          "account_activated",
+          "account_suspended",
+          "exchange",
+          "exchange_request"
+        ]],
         msg: "Type is not supported"
       }
     }

@@ -134,9 +134,9 @@ const AdminDashboard = () => {
     });
   };
 
-  // Simulated metrics derived from live DB counts
-  const booksToday = Math.max(1, Math.round((stats?.totalBooks || 0) * 0.1));
-  const booksThisWeek = Math.max(3, Math.round((stats?.totalBooks || 0) * 0.35));
+  // Dynamic metrics returned directly from live DB counts
+  const booksToday = stats?.booksToday ?? 0;
+  const booksThisWeek = stats?.booksThisWeek ?? 0;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px', color: '#1A1A1A' }}>
@@ -435,38 +435,62 @@ const AdminDashboard = () => {
 
         {/* Category distribution layout */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-          {[
-            { name: "Academic & Professional Textbooks", count: stats?.totalBooks || 0, pct: 90, color: "#13493C" },
-            { name: "Fiction & Literary Novels", count: Math.round((stats?.totalBooks || 0) * 0.75), pct: 70, color: "#606C38" },
-            { name: "Islamic Studies & Historical Books", count: Math.round((stats?.totalBooks || 0) * 0.5), pct: 50, color: "#DDA15E" },
-            { name: "Children & Fantasy Stories", count: Math.round((stats?.totalBooks || 0) * 0.35), pct: 35, color: "#BC6C25" }
-          ].map((cat, idx) => (
-            <div key={idx} style={{
-              backgroundColor: '#FAF9F0',
-              borderRadius: '12px',
-              padding: '16px',
-              border: '1px solid rgba(19, 73, 60, 0.03)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px'
-            }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: '700', color: '#13493C', height: '36px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {cat.name}
-              </span>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: '4px' }}>
-                <span style={{ fontSize: '1.4rem', fontWeight: '800', color: '#13493C' }}>{cat.count}</span>
-                <span style={{ fontSize: '0.72rem', color: '#667F68', fontWeight: '600' }}>Active items</span>
-              </div>
-              <div style={{ width: '100%', height: '6px', backgroundColor: '#FFF', borderRadius: '3px', overflow: 'hidden' }}>
-                <div style={{
-                  width: `${cat.pct}%`,
-                  height: '100%',
-                  backgroundColor: cat.color,
-                  borderRadius: '3px'
-                }} />
-              </div>
-            </div>
-          ))}
+          {(() => {
+            const categoryCounts = stats?.categoryCounts || {};
+            const totalBooks = stats?.totalBooks || 1;
+
+            const defaultCategoryNames = [
+              "Programming",
+              "Science",
+              "Novels",
+              "Self-Development",
+              "Algebra",
+              "Mathematics",
+              "Physics",
+              "Notes"
+            ];
+
+            const allCategoryNames = Array.from(new Set([
+              ...defaultCategoryNames,
+              ...Object.keys(categoryCounts)
+            ]));
+
+            const colors = ["#13493C", "#606C38", "#DDA15E", "#BC6C25", "#2980B9", "#16A085", "#8E44AD", "#D35400"];
+
+            return allCategoryNames.map((catName, idx) => {
+              const count = categoryCounts[catName] || 0;
+              const pct = totalBooks > 0 ? Math.min(100, Math.round((count / totalBooks) * 100)) : 0;
+              const barColor = colors[idx % colors.length];
+
+              return (
+                <div key={catName} style={{
+                  backgroundColor: '#FAF9F0',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  border: '1px solid rgba(19, 73, 60, 0.03)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px'
+                }}>
+                  <span style={{ fontSize: '0.8rem', fontWeight: '700', color: '#13493C', height: '36px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {catName}
+                  </span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: '4px' }}>
+                    <span style={{ fontSize: '1.4rem', fontWeight: '800', color: '#13493C' }}>{count}</span>
+                    <span style={{ fontSize: '0.72rem', color: '#667F68', fontWeight: '600' }}>Active items</span>
+                  </div>
+                  <div style={{ width: '100%', height: '6px', backgroundColor: '#FFF', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{
+                      width: `${count > 0 ? Math.max(pct, 8) : 0}%`,
+                      height: '100%',
+                      backgroundColor: barColor,
+                      borderRadius: '3px'
+                    }} />
+                  </div>
+                </div>
+              );
+            });
+          })()}
         </div>
       </div>
 

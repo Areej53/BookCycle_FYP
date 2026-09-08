@@ -267,7 +267,7 @@ const AdminSellerRequests = () => {
                         disabled={actionLoading === seller.id}
                         style={{
                           padding: '8px 14px',
-                          backgroundColor: '#606C38',
+                          backgroundColor: '#13493C',
                           color: '#FAF9F0',
                           border: 'none',
                           borderRadius: '8px',

@@ -185,14 +185,16 @@ export default function BookDetailsPage() {
                                     }} 
                                     style={{ 
                                         width: '64px', height: '64px', borderRadius: '50%', 
-                                        background: '#fff', color: isInWishlist(book?._id) ? 'var(--cta)' : 'var(--text-muted)', 
+                                        background: isInWishlist(book) ? '#FEECEC' : '#fff', 
+                                        color: isInWishlist(book) ? '#E63946' : 'var(--text-muted)', 
                                         boxShadow: '0 8px 24px rgba(0,0,0,0.1)', 
-                                        transition: 'all 0.2s', border: '1.5px solid var(--border)', 
+                                        transition: 'all 0.2s', 
+                                        border: isInWishlist(book) ? '1.5px solid #E63946' : '1.5px solid var(--border)', 
                                         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' 
                                     }}
-                                    title="Add to Wishlist"
+                                    title={isInWishlist(book) ? "In Wishlist (Click to remove)" : "Add to Wishlist"}
                                 >
-                                    <FiHeart size={26} fill={isInWishlist(book?._id) ? "var(--cta)" : "none"} />
+                                    <FiHeart size={26} fill={isInWishlist(book) ? "#E63946" : "none"} color={isInWishlist(book) ? "#E63946" : "currentColor"} />
                                 </button>
                                 {book.category === 'Notes' ? (
                                     <>

@@ -37,24 +37,8 @@ const AdminBooks = () => {
     try {
       setLoading(true);
       const response = await api.get('/admin/books');
-      const books = response.data.books || [];
-      
-      // Debug: Log books with image issues
-      const problemBooks = books.filter(b => {
-        const hasImage = b.image || (b.images && b.images.length > 0);
-        return !hasImage || (b.image && !b.image.startsWith('http') && !b.image.startsWith('/uploads'));
-      });
-      
-      if (problemBooks.length > 0) {
-        console.log('Books with potential image issues:', problemBooks.map(b => ({
-          title: b.title,
-          image: b.image,
-          images: b.images,
-          category: b.category
-        })));
-      }
-      
-      setBooks(books);
+      console.log('Admin books response:', response.data);
+      setBooks(response.data.books || []);
     } catch (error) {
       console.error('Failed to fetch books:', error);
       setBooks([]);
