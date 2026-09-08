@@ -27,12 +27,16 @@ const requestSellerApproval = async (req, res) => {
     await user.save();
 
     // Create notification for user
-    await Notification.create({
-      userId: user.id,
-      type: 'seller_request_submitted',
-      message: 'Your seller approval request has been submitted. You will be notified once it is reviewed.',
-      isRead: false
-    });
+    try {
+      await Notification.create({
+        userId: user.id,
+        type: 'seller_request_submitted',
+        message: 'Your seller approval request has been submitted. You will be notified once it is reviewed.',
+        isRead: false
+      });
+    } catch (notificationErr) {
+      console.error('Failed to create seller request notification:', notificationErr);
+    }
 
     res.status(200).json({ 
       msg: 'Seller approval request submitted successfully',
@@ -40,7 +44,7 @@ const requestSellerApproval = async (req, res) => {
     });
   } catch (error) {
     console.error('Request seller approval error:', error);
-    res.status(500).json({ msg: 'Failed to submit seller approval request' });
+    res.status(500).json({ msg: error.message || 'Failed to submit seller approval request' });
   }
 };
 

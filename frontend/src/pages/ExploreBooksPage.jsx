@@ -264,14 +264,16 @@ export default function ExploreBooksPage() {
                     <button 
                         onClick={(e) => { e.stopPropagation(); if (!user) { navigate('/login'); return; } toggleWishlist(book); }}
                         style={{ 
-                            background: 'none', border: '1.5px solid var(--border)', 
+                            background: isInWishlist(book) ? '#FEECEC' : 'none', 
+                            border: isInWishlist(book) ? '1.5px solid #E63946' : '1.5px solid var(--border)', 
                             borderRadius: '50%', width: '30px', height: '30px', 
                             display: 'grid', placeItems: 'center', cursor: 'pointer', 
-                            color: isInWishlist(book._id) ? 'var(--cta)' : 'var(--text-muted)',
+                            color: isInWishlist(book) ? '#E63946' : 'var(--text-muted)',
                             transition: 'all .2s'
                         }}
+                        title={isInWishlist(book) ? "In Wishlist (Click to remove)" : "Add to Wishlist"}
                     >
-                        <FiHeart size={14} fill={isInWishlist(book._id) ? "var(--cta)" : "none"} />
+                        <FiHeart size={14} fill={isInWishlist(book) ? "#E63946" : "none"} color={isInWishlist(book) ? "#E63946" : "currentColor"} />
                     </button>
                     <button className="btn-mini" style={{ background: 'var(--primary)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '4px 8px', border: 'none', color: '#fff', borderRadius: '6px', cursor: 'pointer', transition: 'all .2s', fontSize: '.75rem', fontWeight: '700', whiteSpace: 'nowrap' }} onClick={async (e) => { 
                         e.stopPropagation(); 
@@ -312,14 +314,16 @@ export default function ExploreBooksPage() {
                                 toggleWishlist(book);
                             }}
                             style={{
-                                background: 'none', border: '1.5px solid var(--border)',
+                                background: isInWishlist(book) ? '#FEECEC' : 'none', 
+                                border: isInWishlist(book) ? '1.5px solid #E63946' : '1.5px solid var(--border)',
                                 borderRadius: '50%', width: '30px', height: '30px',
                                 display: 'grid', placeItems: 'center', cursor: 'pointer',
-                                color: isInWishlist(book._id) ? 'var(--cta)' : 'var(--text-muted)',
+                                color: isInWishlist(book) ? '#E63946' : 'var(--text-muted)',
                                 transition: 'all .2s'
                             }}
+                            title={isInWishlist(book) ? "In Wishlist (Click to remove)" : "Add to Wishlist"}
                         >
-                            <FiHeart size={14} fill={isInWishlist(book._id) ? "var(--cta)" : "none"} />
+                            <FiHeart size={14} fill={isInWishlist(book) ? "#E63946" : "none"} color={isInWishlist(book) ? "#E63946" : "currentColor"} />
                         </button>
                         <button
                             onClick={(e) => {
@@ -347,14 +351,16 @@ export default function ExploreBooksPage() {
                                 toggleWishlist(book);
                             }}
                             style={{
-                                background: 'none', border: '1.5px solid var(--border)',
+                                background: isInWishlist(book) ? '#FEECEC' : 'none', 
+                                border: isInWishlist(book) ? '1.5px solid #E63946' : '1.5px solid var(--border)',
                                 borderRadius: '50%', width: '30px', height: '30px',
                                 display: 'grid', placeItems: 'center', cursor: 'pointer',
-                                color: isInWishlist(book._id) ? 'var(--cta)' : 'var(--text-muted)',
+                                color: isInWishlist(book) ? '#E63946' : 'var(--text-muted)',
                                 transition: 'all .2s'
                             }}
+                            title={isInWishlist(book) ? "In Wishlist (Click to remove)" : "Add to Wishlist"}
                           >
-                              <FiHeart size={14} fill={isInWishlist(book._id) ? "var(--cta)" : "none"} />
+                              <FiHeart size={14} fill={isInWishlist(book) ? "#E63946" : "none"} color={isInWishlist(book) ? "#E63946" : "currentColor"} />
                         </button>
                         <button onClick={(e) => {
                             e.stopPropagation();

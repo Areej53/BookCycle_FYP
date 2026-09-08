@@ -35,29 +35,25 @@ const SellerRequestPage = () => {
   const handleSubmitRequest = async () => {
     try {
       setSubmitting(true);
+      setMessage('');
       console.log('Submitting seller request...');
       const response = await api.post('/seller-requests/request');
       console.log('Seller request response:', response.data);
-      console.log('Response status:', response.status);
-      console.log('Full response:', response);
       
       // Success - update status and show success message
       setSellerStatus('pending');
       setMessage('Your seller approval request has been submitted successfully!');
     } catch (error) {
       console.error('Failed to submit request:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
-      console.error('Error message:', error.message);
-      console.error('Full error object:', error);
+      const errorMsg = error.response?.data?.msg || error.message || 'Failed to submit request. Please try again.';
       
-      // Check if it's a network error or server error
-      if (error.response) {
-        setMessage(error.response.data?.msg || 'Failed to submit request. Please try again.');
-      } else if (error.request) {
-        setMessage('Network error. Please check your connection and try again.');
+      if (errorMsg.includes('already pending') || errorMsg.includes('pending approval')) {
+        setSellerStatus('pending');
+        setMessage('Your seller request is currently pending admin approval.');
+      } else if (errorMsg.includes('already approved')) {
+        setSellerStatus('approved');
       } else {
-        setMessage('Failed to submit request. Please try again.');
+        setMessage(errorMsg);
       }
     } finally {
       setSubmitting(false);
@@ -77,19 +73,29 @@ const SellerRequestPage = () => {
       case 'pending':
         return {
           icon: Clock,
-          color: '#f59e0b',
+          color: '#d97706',
           bgColor: '#fef3c7',
-          title: 'Request Pending',
-          description: 'Your seller approval request is currently under review. You will be notified once it has been approved or rejected.',
-          showButton: false
+          badge: 'PENDING ADMIN REVIEW',
+          badgeBg: '#fef3c7',
+          badgeColor: '#b45309',
+          title: 'Your Application is Pending Approval',
+          description: 'Your request to open a seller account on BookCycle is currently under review by our administration team. You will be notified as soon as your account is approved.',
+          showDetails: true,
+          showButton: true,
+          buttonText: 'Check Application Status',
+          buttonAction: fetchSellerStatus
         };
       case 'approved':
         return {
           icon: CheckCircle,
           color: '#10b981',
           bgColor: '#d1fae5',
-          title: 'Account Approved',
-          description: 'Congratulations! Your seller account has been approved. You can now start listing books.',
+          badge: 'ACCOUNT APPROVED',
+          badgeBg: '#d1fae5',
+          badgeColor: '#047857',
+          title: 'Seller Account Approved!',
+          description: 'Congratulations! Your seller account has been approved by the admin team. You can now choose your categories and start listing books.',
+          showDetails: false,
           showButton: true,
           buttonText: 'Start Listing Books',
           buttonAction: () => navigate('/seller')
@@ -99,8 +105,12 @@ const SellerRequestPage = () => {
           icon: XCircle,
           color: '#ef4444',
           bgColor: '#fee2e2',
-          title: 'Request Rejected',
-          description: 'Your seller account request has been rejected. Please contact support for more information.',
+          badge: 'APPLICATION REJECTED',
+          badgeBg: '#fee2e2',
+          badgeColor: '#b91c1c',
+          title: 'Seller Request Rejected',
+          description: 'Your seller account application has been reviewed and rejected by the administrator. Please contact support for more information.',
+          showDetails: false,
           showButton: false
         };
       case 'suspended':
@@ -108,8 +118,12 @@ const SellerRequestPage = () => {
           icon: AlertCircle,
           color: '#ef4444',
           bgColor: '#fee2e2',
+          badge: 'ACCOUNT SUSPENDED',
+          badgeBg: '#fee2e2',
+          badgeColor: '#b91c1c',
           title: 'Account Suspended',
-          description: 'Your account has been suspended. Please contact support for more information.',
+          description: 'Your seller account has been suspended by the administrator. Please contact support for assistance.',
+          showDetails: false,
           showButton: false
         };
       case 'inactive':
@@ -117,17 +131,25 @@ const SellerRequestPage = () => {
           icon: AlertCircle,
           color: '#6b7280',
           bgColor: '#f3f4f6',
+          badge: 'ACCOUNT INACTIVE',
+          badgeBg: '#f3f4f6',
+          badgeColor: '#374151',
           title: 'Account Inactive',
-          description: 'Your seller account is currently inactive. Please contact support to reactivate it.',
+          description: 'Your seller account is currently inactive. Please contact support to reactivate your store.',
+          showDetails: false,
           showButton: false
         };
       default:
         return {
           icon: Store,
-          color: '#667eea',
-          bgColor: '#e0e7ff',
+          color: '#13493C',
+          bgColor: '#EAF8F2',
+          badge: 'SELLER ONBOARDING',
+          badgeBg: '#EAF8F2',
+          badgeColor: '#13493C',
           title: 'Request Seller Permission',
-          description: 'Before listing books on BookCycle, your seller account must be approved by the administrator. Your request will be reviewed within approximately 3 working days. You will receive a notification once your request has been approved or rejected.',
+          description: 'Before listing books on BookCycle, your seller account must be approved by the administrator. Your request will be reviewed within approximately 1-3 working days.',
+          showDetails: false,
           showButton: true,
           buttonText: 'Send Seller Approval Request',
           buttonAction: handleSubmitRequest
@@ -139,13 +161,33 @@ const SellerRequestPage = () => {
   const Icon = config.icon;
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px' }}>
+    <div style={{ maxWidth: '750px', margin: '40px auto', padding: '0 20px' }}>
       <div style={{
         backgroundColor: '#fff',
-        borderRadius: '16px',
-        padding: '40px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+        borderRadius: '20px',
+        padding: '40px 32px',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.06)',
+        border: '1px solid #f0f0f0'
       }}>
+        
+        {/* Status Badge */}
+        {config.badge && (
+          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <span style={{
+              display: 'inline-block',
+              padding: '6px 16px',
+              borderRadius: '20px',
+              fontSize: '0.75rem',
+              fontWeight: '800',
+              letterSpacing: '0.05em',
+              backgroundColor: config.badgeBg,
+              color: config.badgeColor
+            }}>
+              {config.badge}
+            </span>
+          </div>
+        )}
+
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
           <div style={{
             width: '80px',
@@ -155,22 +197,26 @@ const SellerRequestPage = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            margin: '0 auto 20px'
+            margin: '0 auto 20px',
+            boxShadow: `0 4px 15px ${config.bgColor}`
           }}>
             <Icon size={40} style={{ color: config.color }} />
           </div>
+          
           <h1 style={{ 
-            margin: '0 0 15px', 
-            fontSize: '2rem', 
-            fontWeight: 'bold',
+            margin: '0 0 14px', 
+            fontSize: '1.8rem', 
+            fontWeight: '800',
             color: '#1a1a2e'
           }}>
             {config.title}
           </h1>
+          
           <p style={{ 
-            margin: '0', 
-            fontSize: '1.1rem', 
-            color: '#666',
+            margin: '0 auto', 
+            maxWidth: '600px',
+            fontSize: '1.05rem', 
+            color: '#555',
             lineHeight: '1.6'
           }}>
             {config.description}
@@ -179,52 +225,107 @@ const SellerRequestPage = () => {
 
         {message && (
           <div style={{
-            padding: '16px',
-            borderRadius: '8px',
-            backgroundColor: message.includes('success') ? '#d1fae5' : '#fee2e2',
-            color: message.includes('success') ? '#065f46' : '#991b1b',
-            marginBottom: '20px',
-            textAlign: 'center'
+            padding: '14px 20px',
+            borderRadius: '10px',
+            backgroundColor: message.includes('success') ? '#d1fae5' : message.includes('pending') ? '#fef3c7' : '#fee2e2',
+            color: message.includes('success') ? '#065f46' : message.includes('pending') ? '#92400e' : '#991b1b',
+            marginBottom: '24px',
+            textAlign: 'center',
+            fontSize: '0.95rem',
+            fontWeight: '600'
           }}>
             {message}
           </div>
         )}
 
+        {/* Detailed Info Card for Pending State */}
+        {config.showDetails && (
+          <div style={{
+            backgroundColor: '#fafafa',
+            borderRadius: '14px',
+            padding: '24px',
+            marginBottom: '28px',
+            border: '1px solid #eaeaea'
+          }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '1rem', color: '#333', fontWeight: '700' }}>
+              Application Summary
+            </h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                <span style={{ color: '#666' }}>Current Status:</span>
+                <span style={{ fontWeight: '700', color: '#d97706' }}>Under Review</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                <span style={{ color: '#666' }}>Review Timeframe:</span>
+                <span style={{ fontWeight: '600', color: '#333' }}>1 - 3 Working Days</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                <span style={{ color: '#666' }}>Next Step:</span>
+                <span style={{ fontWeight: '600', color: '#333' }}>Admin Verification & Approval</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {config.showButton && (
-          <div style={{ textAlign: 'center', marginTop: '30px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', flexWrap: 'wrap', marginTop: '24px' }}>
             <button
               onClick={config.buttonAction}
               disabled={submitting}
               style={{
-                padding: '16px 32px',
-                fontSize: '1rem',
-                fontWeight: '600',
+                padding: '14px 28px',
+                fontSize: '0.95rem',
+                fontWeight: '700',
                 color: '#fff',
                 backgroundColor: config.color,
                 border: 'none',
-                borderRadius: '8px',
+                borderRadius: '10px',
                 cursor: submitting ? 'not-allowed' : 'pointer',
-                transition: 'background 0.2s',
-                opacity: submitting ? 0.7 : 1
+                transition: 'transform 0.1s, opacity 0.2s',
+                opacity: submitting ? 0.7 : 1,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
               }}
-              onMouseOver={(e) => !submitting && (e.target.style.opacity = '0.9')}
-              onMouseOut={(e) => !submitting && (e.target.style.opacity = '1')}
+              onMouseOver={(e) => !submitting && (e.currentTarget.style.opacity = '0.9')}
+              onMouseOut={(e) => !submitting && (e.currentTarget.style.opacity = '1')}
             >
               {submitting ? 'Submitting...' : config.buttonText}
             </button>
+            
+            {sellerStatus === 'pending' && (
+              <button
+                onClick={() => navigate('/dashboard')}
+                style={{
+                  padding: '14px 28px',
+                  fontSize: '0.95rem',
+                  fontWeight: '700',
+                  color: '#4b5563',
+                  backgroundColor: '#f3f4f6',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e5e7eb'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+              >
+                Go to Dashboard
+              </button>
+            )}
           </div>
         )}
 
         <div style={{ 
-          marginTop: '40px', 
+          marginTop: '36px', 
           paddingTop: '20px', 
-          borderTop: '1px solid #e0e0e0',
+          borderTop: '1px solid #eee',
           textAlign: 'center'
         }}>
-          <p style={{ margin: '0', fontSize: '0.9rem', color: '#999' }}>
-            Need help? Contact our support team at support@bookcycle.com
+          <p style={{ margin: '0', fontSize: '0.88rem', color: '#888' }}>
+            Questions about your application? Contact support at <a href="mailto:support@bookcycle.com" style={{ color: '#4f46e5' }}>support@bookcycle.com</a>
           </p>
         </div>
+
       </div>
     </div>
   );

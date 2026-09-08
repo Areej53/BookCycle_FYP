@@ -67,8 +67,6 @@ const AdminSellers = () => {
   };
 
   const handleSuspend = async (userId) => {
-    if (!confirm('Are you sure you want to block/suspend this seller? They will not be able to log in.')) return;
-    
     try {
       setActionLoading(userId);
       await api.put(`/admin/sellers/${userId}/suspend`);
@@ -94,7 +92,7 @@ const AdminSellers = () => {
       ...(seller.books?.rent || []),
       ...(seller.books?.exchange || [])
     ];
-    console.log('Opening seller profile:', seller.name, 'with', allBooks.length, 'books');
+    console.log('Opening seller profile:', seller.name || seller.email, 'with', allBooks.length, 'books');
     setSellerBooks(allBooks);
     setSelectedSeller(seller);
   };
@@ -111,17 +109,19 @@ const AdminSellers = () => {
       case 'inactive':
         return { bg: '#F2F3F4', color: '#7F8C8D', border: '1px solid rgba(127, 140, 141, 0.2)', label: 'Inactive' };
       default:
-        return { bg: '#FAF9F0', color: '#13493C', border: '1px solid rgba(19, 73, 60, 0.2)', label: status || 'N/A' };
+        return { bg: '#FAF9F0', color: '#13493C', border: '1px solid rgba(19, 73, 60, 0.2)', label: status || 'Active' };
     }
   };
 
   const filteredSellers = sellers.filter(seller => {
-    const matchesSearch = seller.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          seller.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const sName = seller.name || seller.email || 'Seller';
+    const sEmail = seller.email || '';
+    const matchesSearch = sName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          sEmail.toLowerCase().includes(searchTerm.toLowerCase());
     if (filterStatus === 'all') return matchesSearch;
-    if (filterStatus === 'active') return matchesSearch && seller.sellerStatus === 'approved';
+    if (filterStatus === 'active') return matchesSearch && (seller.sellerStatus === 'approved' || seller.role === 'shopkeeper' || (seller.bookCount > 0 && !seller.isBlocked));
     if (filterStatus === 'pending') return matchesSearch && seller.sellerStatus === 'pending';
-    if (filterStatus === 'suspended') return matchesSearch && (seller.sellerStatus === 'suspended' || seller.isBlocked);
+    if (filterStatus === 'suspended') return matchesSearch && (seller.sellerStatus === 'suspended' || seller.sellerStatus === 'blocked' || seller.isBlocked);
     return matchesSearch;
   });
 
@@ -495,17 +495,17 @@ const AdminSellers = () => {
             borderRadius: '16px',
             boxShadow: '0 4px 20px rgba(19, 73, 60, 0.05)',
             border: '1px solid rgba(19, 73, 60, 0.05)',
-            overflow: 'hidden'
+            overflowX: 'auto'
           }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <table style={{ width: '100%', minWidth: '940px', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
                 <tr style={{ backgroundColor: '#FAF9F0', borderBottom: '1px solid rgba(19, 73, 60, 0.08)' }}>
-                  <th style={{ padding: '16px 24px', fontWeight: '700', color: '#13493C', fontSize: '0.9rem' }}>Seller Profile</th>
-                  <th style={{ padding: '16px 24px', fontWeight: '700', color: '#13493C', fontSize: '0.9rem' }}>Email Address</th>
-                  <th style={{ padding: '16px 24px', fontWeight: '700', color: '#13493C', fontSize: '0.9rem' }}>Listings (Sell / Rent / Exchange)</th>
-                  <th style={{ padding: '16px 24px', fontWeight: '700', color: '#13493C', fontSize: '0.9rem' }}>Joined Date</th>
-                  <th style={{ padding: '16px 24px', fontWeight: '700', color: '#13493C', fontSize: '0.9rem' }}>Status</th>
-                  <th style={{ padding: '16px 24px', fontWeight: '700', color: '#13493C', fontSize: '0.9rem', textAlign: 'right' }}>Actions</th>
+                  <th style={{ padding: '12px 14px', fontWeight: '700', color: '#13493C', fontSize: '0.86rem' }}>Seller Profile</th>
+                  <th style={{ padding: '12px 14px', fontWeight: '700', color: '#13493C', fontSize: '0.86rem' }}>Email Address</th>
+                  <th style={{ padding: '12px 14px', fontWeight: '700', color: '#13493C', fontSize: '0.86rem' }}>Listings (Sell / Rent / Exchange)</th>
+                  <th style={{ padding: '12px 14px', fontWeight: '700', color: '#13493C', fontSize: '0.86rem' }}>Joined Date</th>
+                  <th style={{ padding: '12px 14px', fontWeight: '700', color: '#13493C', fontSize: '0.86rem' }}>Status</th>
+                  <th style={{ padding: '12px 14px', fontWeight: '700', color: '#13493C', fontSize: '0.86rem', textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -530,11 +530,11 @@ const AdminSellers = () => {
                         onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                       >
                         {/* Avatar name */}
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <td style={{ padding: '12px 14px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <div style={{
-                              width: '38px',
-                              height: '38px',
+                              width: '36px',
+                              height: '36px',
                               borderRadius: '50%',
                               backgroundColor: '#13493C',
                               color: '#FAF9F0',
@@ -542,28 +542,29 @@ const AdminSellers = () => {
                               alignItems: 'center',
                               justifyContent: 'center',
                               fontWeight: '700',
-                              fontSize: '0.95rem'
+                              fontSize: '0.9rem',
+                              flexShrink: 0
                             }}>
-                              {seller.name.charAt(0).toUpperCase()}
+                              {(seller.name || seller.email || 'S').charAt(0).toUpperCase()}
                             </div>
-                            <div style={{ fontWeight: '700', color: '#13493C', fontSize: '0.88rem' }}>
-                              {seller.name}
+                            <div style={{ fontWeight: '700', color: '#13493C', fontSize: '0.86rem', whiteSpace: 'nowrap' }}>
+                              {seller.name || seller.email || 'Unnamed Seller'}
                             </div>
                           </div>
                         </td>
 
                         {/* Email address */}
-                        <td style={{ padding: '16px 24px', color: '#667F68', fontSize: '0.85rem' }}>
+                        <td style={{ padding: '12px 14px', color: '#667F68', fontSize: '0.84rem' }}>
                           {seller.email}
                         </td>
 
                         {/* Listings breakdown */}
-                        <td style={{ padding: '16px 24px', fontSize: '0.82rem', color: '#13493C' }}>
-                          <div style={{ fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                        <td style={{ padding: '12px 14px', fontSize: '0.82rem', color: '#13493C' }}>
+                          <div style={{ fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
                             <BookOpen size={13} style={{ color: '#606C38' }} />
                             <span>{seller.bookCount || 0} Total Books</span>
                           </div>
-                          <div style={{ display: 'flex', gap: '8px', fontSize: '0.72rem', color: '#667F68' }}>
+                          <div style={{ display: 'flex', gap: '6px', fontSize: '0.72rem', color: '#667F68' }}>
                             <span>Sell: {seller.sellCount || 0}</span>
                             <span>Rent: {seller.rentCount || 0}</span>
                             <span>Exchange: {seller.exchangeCount || 0}</span>
@@ -571,7 +572,7 @@ const AdminSellers = () => {
                         </td>
 
                         {/* Joined Date */}
-                        <td style={{ padding: '16px 24px', color: '#667F68', fontSize: '0.85rem' }}>
+                        <td style={{ padding: '12px 14px', color: '#667F68', fontSize: '0.84rem', whiteSpace: 'nowrap' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <Calendar size={13} style={{ opacity: 0.6 }} />
                             <span>{new Date(seller.createdAt).toLocaleDateString()}</span>
@@ -579,7 +580,7 @@ const AdminSellers = () => {
                         </td>
 
                         {/* Status Badge */}
-                        <td style={{ padding: '16px 24px' }}>
+                        <td style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>
                           <span style={{
                             padding: '4px 10px',
                             borderRadius: '20px',
@@ -595,41 +596,51 @@ const AdminSellers = () => {
                         </td>
 
                         {/* Action buttons (Active/Block and Profile View) */}
-                        <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                        <td style={{ padding: '12px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'flex-end', alignItems: 'center' }}>
                             <button
                               onClick={() => navigate(`/admin/sellers/${seller.id}/listings`)}
                               style={{
-                                padding: '6px 12px',
+                                padding: '6px 10px',
+                                width: '105px',
                                 backgroundColor: 'rgba(96, 108, 56, 0.1)',
                                 color: '#606C38',
                                 border: '1px solid rgba(96, 108, 56, 0.2)',
                                 borderRadius: '6px',
                                 fontWeight: '700',
-                                fontSize: '0.8rem',
+                                fontSize: '0.78rem',
                                 cursor: 'pointer',
-                                display: 'flex',
+                                display: 'inline-flex',
                                 alignItems: 'center',
+                                justifyContent: 'center',
                                 gap: '4px',
-                                transition: 'background 0.2s'
+                                transition: 'background 0.2s',
+                                whiteSpace: 'nowrap',
+                                boxSizing: 'border-box'
                               }}
                               onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(96, 108, 56, 0.2)'}
                               onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(96, 108, 56, 0.1)'}
                             >
-                              <Eye size={13} /> See Listings
+                              <Eye size={12} /> See Listings
                             </button>
                             <button
                               onClick={() => openSellerProfile(seller)}
                               style={{
-                                padding: '6px 12px',
+                                padding: '6px 10px',
+                                width: '95px',
                                 backgroundColor: 'rgba(19, 73, 60, 0.08)',
                                 color: '#13493C',
                                 border: 'none',
                                 borderRadius: '6px',
                                 fontWeight: '700',
-                                fontSize: '0.8rem',
+                                fontSize: '0.78rem',
                                 cursor: 'pointer',
-                                transition: 'background 0.2s'
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'background 0.2s',
+                                whiteSpace: 'nowrap',
+                                boxSizing: 'border-box'
                               }}
                               onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(19, 73, 60, 0.15)'}
                               onMouseOut={(e) => e.target.style.backgroundColor = 'rgba(19, 73, 60, 0.08)'}
@@ -642,46 +653,54 @@ const AdminSellers = () => {
                                 onClick={() => handleSuspend(seller.id)}
                                 disabled={actionLoading === seller.id}
                                 style={{
-                                  padding: '6px 12px',
+                                  padding: '6px 10px',
+                                  width: '82px',
                                   backgroundColor: '#FEECEC',
                                   color: '#C0392B',
                                   border: '1px solid rgba(192, 57, 43, 0.2)',
                                   borderRadius: '6px',
                                   fontWeight: '700',
-                                  fontSize: '0.8rem',
+                                  fontSize: '0.78rem',
                                   cursor: 'pointer',
-                                  display: 'flex',
+                                  display: 'inline-flex',
                                   alignItems: 'center',
+                                  justifyContent: 'center',
                                   gap: '4px',
-                                  transition: 'background 0.2s'
+                                  transition: 'background 0.2s',
+                                  whiteSpace: 'nowrap',
+                                  boxSizing: 'border-box'
                                 }}
                                 onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(192, 57, 43, 0.15)'}
                                 onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#FEECEC'}
                               >
-                                <Lock size={13} /> Block
+                                <Lock size={12} /> Block
                               </button>
                             ) : (
                               <button
                                 onClick={() => handleActivate(seller.id)}
                                 disabled={actionLoading === seller.id}
                                 style={{
-                                  padding: '6px 12px',
+                                  padding: '6px 10px',
+                                  width: '82px',
                                   backgroundColor: '#EAF8F2',
                                   color: '#1E7E5A',
                                   border: '1px solid rgba(30, 126, 90, 0.2)',
                                   borderRadius: '6px',
                                   fontWeight: '700',
-                                  fontSize: '0.8rem',
+                                  fontSize: '0.78rem',
                                   cursor: 'pointer',
-                                  display: 'flex',
+                                  display: 'inline-flex',
                                   alignItems: 'center',
+                                  justifyContent: 'center',
                                   gap: '4px',
-                                  transition: 'background 0.2s'
+                                  transition: 'background 0.2s',
+                                  whiteSpace: 'nowrap',
+                                  boxSizing: 'border-box'
                                 }}
                                 onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(30, 126, 90, 0.15)'}
                                 onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#EAF8F2'}
                               >
-                                <Unlock size={13} /> Activate
+                                <Unlock size={12} /> Activate
                               </button>
                             )}
                           </div>
