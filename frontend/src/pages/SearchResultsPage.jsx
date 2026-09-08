@@ -10,6 +10,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { FiHeart } from 'react-icons/fi';
 import ActionModal from '../components/ActionModal';
 import { useCart } from '../context/CartContext';
+import StarRating from '../components/StarRating';
 
 export default function SearchResultsPage() {
     const { user } = useAuth();
@@ -191,7 +192,14 @@ export default function SearchResultsPage() {
           <div className="bc-body">
             <div className="bc-cat">{book.category}</div>
             <div className="bc-title">{book.title}</div>
-            <div className="bc-author">by {book.author}</div>
+            <div className="bc-author">author: {book.author}</div>
+            <div style={{ margin: '4px 0' }}>
+              <StarRating 
+                rating={book.bookRating?.starRating || 0} 
+                reviewCount={book.bookRating?.reviewsCount || 0} 
+                size={12}
+              />
+            </div>
             <div className="bc-seller" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span>Seller: <strong>{book.owner?.name || 'Unknown'}</strong></span>
               {book.sellerRating && book.sellerRating.displayRating !== 'No ratings' && (
@@ -363,7 +371,7 @@ export default function SearchResultsPage() {
                 <img src={bk.image || (bk.images && bk.images[0]) ? (bk.image?.startsWith('http') || bk.image?.startsWith('data:') ? bk.image : `http://localhost:5000${bk.image || bk.images[0]}`) : 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80'} style={{ width: '100%', height: '130px', objectFit: 'cover' }} alt={bk.title} />
                 <div style={{ padding: '10px 12px' }}>
                     <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bk.title}</div>
-                    <div style={{ fontSize: '.74rem', color: 'var(--muted)', margin: '2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>by {bk.author}</div>
+                    <div style={{ fontSize: '.74rem', color: 'var(--muted)', margin: '2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>author: {bk.author}</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
                         <div style={{ fontSize: '.78rem', fontWeight: '700', color: bk.exchangeType === 'Exchange' ? 'var(--secondary)' : 'var(--cta)' }}>
                             {bk.exchangeType === 'Exchange' ? 'Exchange' : `Rs. ${bk.price}`}

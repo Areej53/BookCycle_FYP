@@ -12,6 +12,7 @@ import { FiHeart } from 'react-icons/fi';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ActionModal from '../components/ActionModal';
+import StarRating from '../components/StarRating';
 
 export default function ExploreBooksPage() {
     const { user } = useAuth();
@@ -232,7 +233,14 @@ export default function ExploreBooksPage() {
           <div className="bc-body">
             <div className="bc-cat">{book.category}</div>
             <div className="bc-title">{book.title}</div>
-            <div className="bc-author">by {book.author}</div>
+            <div className="bc-author">author: {book.author}</div>
+            <div style={{ margin: '4px 0' }}>
+              <StarRating 
+                rating={book.bookRating?.starRating || 0} 
+                reviewCount={book.bookRating?.reviewsCount || 0} 
+                size={12}
+              />
+            </div>
             <div className="bc-seller" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span>Seller: <strong>{book.owner?.name || 'Unknown'}</strong></span>
               {book.sellerRating && book.sellerRating.displayRating !== 'No ratings' && (
@@ -403,7 +411,7 @@ export default function ExploreBooksPage() {
                 <img src={getImageUrl(bk)} style={{ width: '100%', height: '130px', objectFit: 'cover' }} alt={bk.title} />
                 <div style={{ padding: '10px 12px' }}>
                     <div style={{ fontFamily: '\'Playfair Display\',serif', fontSize: '.85rem', fontWeight: '700', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bk.title}</div>
-                    <div style={{ fontSize: '.74rem', color: 'var(--muted)', margin: '2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>by {bk.author}</div>
+                    <div style={{ fontSize: '.74rem', color: 'var(--muted)', margin: '2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>author: {bk.author}</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
                         <div style={{ fontSize: '.78rem', fontWeight: '700', color: bk.exchangeType === 'Exchange' ? 'var(--secondary)' : 'var(--cta)' }}>
                             {bk.exchangeType === 'Exchange' ? 'Exchange' : `Rs. ${bk.price}`}

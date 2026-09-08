@@ -12,6 +12,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import RecommendationWidget from '../components/RecommendationWidget';
 import ActionModal from '../components/ActionModal';
+import StarRating from '../components/StarRating';
 
 const getImageUrl = (book) => {
     const imagePath = book.image || (book.images && book.images[0]);
@@ -64,6 +65,7 @@ export default function HomePage() {
     const [featuredBooks, setFeaturedBooks] = useState([]);
     const [recentBooks, setRecentBooks] = useState([]);
     const [freeBooks, setFreeBooks] = useState([]);
+    const [exchangeBooks, setExchangeBooks] = useState([]);
     const [topBooks, setTopBooks] = useState([]);
     const [topSellingBooks, setTopSellingBooks] = useState([]);
     const [exchangeBooks, setExchangeBooks] = useState([]);
@@ -105,8 +107,8 @@ export default function HomePage() {
                         exchangeType: b.exchangeType,
                         sellerId: b.owner?._id || b.owner || null,
                         sellerName: b.owner?.name || 'Unknown Seller',
-                        sellerRating: b.sellerRating?.displayRating || 'No ratings',
-                        sellerReviewsCount: b.sellerRating?.reviewsCount || 0
+                        sellerRating: b.sellerRating || { displayRating: 'No ratings', reviewsCount: 0 },
+                        bookRating: b.bookRating || { starRating: 0, reviewsCount: 0 }
                     }));
                 };
 
@@ -413,14 +415,21 @@ export default function HomePage() {
           </div>
           <div className="book-info">
             <div className="book-title">{b.title}</div>
-            <div className="book-author">{b.author}</div>
+            <div className="book-author">author: {b.author}</div>
+            <div style={{ margin: '4px 0' }}>
+              <StarRating 
+                rating={b.bookRating?.starRating || 0} 
+                reviewCount={b.bookRating?.reviewsCount || 0} 
+                size={12}
+              />
+            </div>
             <div className="book-seller" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-              <span>{b.sellerName}</span>
-              {b.sellerRating !== 'No ratings' && (
+              <span>Seller: {b.sellerName}</span>
+              {b.sellerRating?.displayRating !== 'No ratings' && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                   <span style={{ color: '#FFD700' }}>★</span>
-                  <span>{b.sellerRating}</span>
-                  {b.sellerReviewsCount > 0 && <span>({b.sellerReviewsCount})</span>}
+                  <span>{b.sellerRating?.displayRating}</span>
+                  {b.sellerRating?.reviewsCount > 0 && <span>({b.sellerRating?.reviewsCount})</span>}
                 </span>
               )}
             </div>
@@ -679,14 +688,21 @@ export default function HomePage() {
             </div>
             <div className="book-info">
               <div className="book-title">{b.title}</div>
-              <div className="book-author">{b.author}</div>
+              <div className="book-author">author: {b.author}</div>
+              <div style={{ margin: '4px 0' }}>
+                <StarRating 
+                  rating={b.bookRating?.starRating || 0} 
+                  reviewCount={b.bookRating?.reviewsCount || 0} 
+                  size={10}
+                />
+              </div>
               <div className="book-seller" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                <span>{b.sellerName}</span>
-                {b.sellerRating !== 'No ratings' && (
+                <span>Seller: {b.sellerName}</span>
+                {b.sellerRating?.displayRating !== 'No ratings' && (
                   <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                     <span style={{ color: '#FFD700' }}>★</span>
-                    <span>{b.sellerRating}</span>
-                    {b.sellerReviewsCount > 0 && <span>({b.sellerReviewsCount})</span>}
+                    <span>{b.sellerRating?.displayRating}</span>
+                    {b.sellerRating?.reviewsCount > 0 && <span>({b.sellerRating?.reviewsCount})</span>}
                   </span>
                 )}
               </div>
@@ -780,14 +796,21 @@ export default function HomePage() {
           </div>
           <div className="book-info" style={{ padding: '14px', flex: 1, minWidth: 0 }}>
             <div className="book-title" style={{ fontSize: '.9rem' }}>{b.title}</div>
-            <div className="book-author">{b.author}</div>
+            <div className="book-author">author: {b.author}</div>
+            <div style={{ margin: '4px 0' }}>
+              <StarRating 
+                rating={b.bookRating?.starRating || 0} 
+                reviewCount={b.bookRating?.reviewsCount || 0} 
+                size={10}
+              />
+            </div>
             <div className="book-seller" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-              <span>{b.sellerName}</span>
-              {b.sellerRating !== 'No ratings' && (
+              <span>Seller: {b.sellerName}</span>
+              {b.sellerRating?.displayRating !== 'No ratings' && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                   <span style={{ color: '#FFD700' }}>★</span>
-                  <span>{b.sellerRating}</span>
-                  {b.sellerReviewsCount > 0 && <span>({b.sellerReviewsCount})</span>}
+                  <span>{b.sellerRating?.displayRating}</span>
+                  {b.sellerRating?.reviewsCount > 0 && <span>({b.sellerRating?.reviewsCount})</span>}
                 </span>
               )}
             </div>
@@ -894,12 +917,19 @@ export default function HomePage() {
         <div className="top-book-info">
           <div className="top-book-title">{b.title}</div>
           <div className="top-book-meta">{b.author}</div>
+          <div style={{ margin: '2px 0' }}>
+            <StarRating 
+              rating={b.bookRating?.starRating || 0} 
+              reviewCount={b.bookRating?.reviewsCount || 0} 
+              size={10}
+            />
+          </div>
           <div className="top-book-seller" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-            <span>{b.sellerName}</span>
-            {b.sellerRating !== 'No ratings' && (
+            <span>Seller: {b.sellerName}</span>
+            {b.sellerRating?.displayRating !== 'No ratings' && (
               <span style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: '4px' }}>
                 <span style={{ color: '#FFD700' }}>★</span>
-                <span>{b.sellerRating}</span>
+                <span>{b.sellerRating?.displayRating}</span>
               </span>
             )}
           </div>
@@ -919,12 +949,19 @@ export default function HomePage() {
         <div className="top-book-info">
           <div className="top-book-title">{b.title}</div>
           <div className="top-book-meta">Rs. {b.price}</div>
+          <div style={{ margin: '2px 0' }}>
+            <StarRating 
+              rating={b.bookRating?.starRating || 0} 
+              reviewCount={b.bookRating?.reviewsCount || 0} 
+              size={10}
+            />
+          </div>
           <div className="top-book-seller" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-            <span>{b.sellerName}</span>
-            {b.sellerRating !== 'No ratings' && (
+            <span>Seller: {b.sellerName}</span>
+            {b.sellerRating?.displayRating !== 'No ratings' && (
               <span style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: '4px' }}>
                 <span style={{ color: '#FFD700' }}>★</span>
-                <span>{b.sellerRating}</span>
+                <span>{b.sellerRating?.displayRating}</span>
               </span>
             )}
           </div>

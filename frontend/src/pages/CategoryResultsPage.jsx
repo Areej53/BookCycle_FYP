@@ -216,7 +216,7 @@ export default function CategoryResultsPage() {
           <div className="bc-body">
             <div className="bc-cat">{book.category}</div>
             <div className="bc-title">{book.title}</div>
-            <div className="bc-author">by {book.author}</div>
+            <div className="bc-author">author: {book.author}</div>
             <div className="bc-seller" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span>Seller: <strong>{book.owner?.name || 'Unknown'}</strong></span>
               {book.sellerRating && book.sellerRating.displayRating !== 'No ratings' && (
