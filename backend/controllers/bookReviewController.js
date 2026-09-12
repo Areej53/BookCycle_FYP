@@ -25,6 +25,12 @@ const createBookReview = async (req, res) => {
       return res.status(404).json({ msg: "Book not found." });
     }
 
+    // Check if user is the seller/owner of the book
+    if (book.ownerId === userId) {
+      await t.rollback();
+      return res.status(403).json({ msg: "You cannot review your own book." });
+    }
+
     // Check if user already reviewed this book
     const existingReview = await BookReview.findOne({
       where: { bookId, userId },
@@ -87,11 +93,32 @@ const getBookReviews = async (req, res) => {
       ? Number((book.ratingsSum / book.reviewsCount).toFixed(1))
       : null;
 
+    // Calculate rating distribution
+    const allReviews = await BookReview.findAll({
+      where: { bookId },
+      attributes: ['rating']
+    });
+
+    const ratingDistribution = {
+      5: 0,
+      4: 0,
+      3: 0,
+      2: 0,
+      1: 0
+    };
+
+    allReviews.forEach(review => {
+      if (review.rating >= 1 && review.rating <= 5) {
+        ratingDistribution[review.rating]++;
+      }
+    });
+
     return res.json({
       bookId: book.id,
       bookTitle: book.title,
       averageRating,
       reviewsCount: book.reviewsCount,
+      ratingDistribution,
       page,
       totalPages: Math.ceil(count / limit),
       reviews: rows
