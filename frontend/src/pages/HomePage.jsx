@@ -68,7 +68,6 @@ export default function HomePage() {
     const [exchangeBooks, setExchangeBooks] = useState([]);
     const [topBooks, setTopBooks] = useState([]);
     const [topSellingBooks, setTopSellingBooks] = useState([]);
-    const [exchangeBooks, setExchangeBooks] = useState([]);
     const [rentBooks, setRentBooks] = useState([]);
 
     const handleAddToCart = (book) => {
