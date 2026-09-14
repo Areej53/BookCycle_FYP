@@ -1,3 +1,4 @@
+const { sequelize } = require('../db/connectPostgres');
 const User = require('./User');
 const Book = require('./Book');
 const Order = require('./Order');
@@ -79,6 +80,7 @@ UserViewedBook.belongsTo(User, { foreignKey: 'userId' });
 UserViewedBook.belongsTo(Book, { foreignKey: 'bookId', as: 'book' });
 
 module.exports = {
+  sequelize,
   User,
   Book,
   Order,

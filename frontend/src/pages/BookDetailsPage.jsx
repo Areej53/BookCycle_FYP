@@ -8,13 +8,12 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
-import { FiHeart, FiStar } from 'react-icons/fi';
+import { FiHeart } from 'react-icons/fi';
 import RecommendationWidget from '../components/RecommendationWidget';
 import ActionModal from '../components/ActionModal';
 import ExchangeRequestModal from '../components/ExchangeRequestModal';
 import SellerRatingCard from '../components/SellerRatingCard';
-import StarRating from '../components/StarRating';
-import BookReviewModal from '../components/BookReviewModal';
+import ProductRatingsReviews from '../components/ProductRatingsReviews';
 
 export default function BookDetailsPage() {
     const { id } = useParams();
@@ -27,7 +26,6 @@ export default function BookDetailsPage() {
     const [modalMessage, setModalMessage] = useState('');
     const [selectedPdf, setSelectedPdf] = useState(null);
     const [showExchangeModal, setShowExchangeModal] = useState(false);
-    const [showReviewModal, setShowReviewModal] = useState(false);
 
     const getImageUrl = (book) => {
         const imagePath = book.image || (book.images && book.images[0]);
@@ -59,10 +57,6 @@ export default function BookDetailsPage() {
     const handleAddToCart = () => {
         if (!user) {
             navigate('/login');
-            return;
-        }
-        if (book?.exchangeType === 'Rent') {
-            setModalMessage('Currently unavailable');
             return;
         }
         const added = addToCart(book);
@@ -254,11 +248,17 @@ export default function BookDetailsPage() {
                                         </button>
                                     ) : (
                                         <div style={{ background: 'rgba(188,108,37,.08)', color: 'var(--cta)', padding: '12px 20px', borderRadius: '12px', fontWeight: 700, fontSize: '.9rem' }}>
-                                            {book.exchangeDetails.status === 'Reserved' ? 'Reserved' : 'Currently unavailable'}
+                                            {book.exchangeDetails.status === 'Reserved' ? 'Reserved' : 'Available'}
                                         </div>
                                     )
                                 ) : (
-                                    <span style={{ fontSize: '.85rem', color: 'var(--muted)', fontWeight: 600 }}>Currently unavailable</span>
+                                    <button 
+                                        onClick={handleAddToCart}
+                                        className="btn-mini-cart"
+                                        style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--primary)', color: '#fff', boxShadow: '0 12px 30px rgba(19,73,60,0.35)', transition: 'all 0.2s', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                    >
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                                    </button>
                                 )}
                             </div>
                         </div>
@@ -278,40 +278,31 @@ export default function BookDetailsPage() {
                             </div>
                         </div>
 
-                        {user && (
-                            <div style={{ marginBottom: '30px', textAlign: 'center' }}>
-                                <button 
-                                    onClick={() => setShowReviewModal(true)}
-                                    style={{
-                                        background: 'linear-gradient(135deg, #13493C 0%, #1a6b5a 100%)',
-                                        color: '#fff',
-                                        border: 'none',
-                                        borderRadius: '30px',
-                                        padding: '12px 24px',
-                                        fontSize: '1rem',
-                                        fontWeight: 600,
-                                        cursor: 'pointer',
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: '8px',
-                                        boxShadow: '0 4px 15px rgba(19,73,60,0.2)',
-                                        transition: 'all 0.3s'
-                                    }}
-                                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                                >
-                                    <FiStar size={18} style={{ fill: '#f59e0b', color: '#f59e0b' }} />
-                                    Write a Review
-                                </button>
-                            </div>
-                        )}
-
                         <div className="desc-section">
                             <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.8rem', color: 'var(--primary)', marginBottom: '15px' }}>About this book</h2>
                             <p style={{ lineHeight: 1.8, color: 'var(--text-muted)', fontSize: '1.05rem', whiteSpace: 'pre-line' }}>
                                 {book.description || "No description provided for this listing."}
                             </p>
                         </div>
+
+                        {/* Ratings & Reviews Section */}
+                        <ProductRatingsReviews 
+                            bookId={book._id} 
+                            bookTitle={book.title}
+                            onReviewSubmitted={() => {
+                                // Refresh book data to show updated rating
+                                const fetchBook = async () => {
+                                    try {
+                                        const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+                                        const response = await api.get(`/books/${id}`, config);
+                                        setBook(response.data.book);
+                                    } catch (err) {
+                                        console.error('Error refreshing book data:', err);
+                                    }
+                                };
+                                fetchBook();
+                            }}
+                        />
                     </div>
                 </main>
             </div>
@@ -324,27 +315,6 @@ export default function BookDetailsPage() {
                 onClose={() => setShowExchangeModal(false)} 
                 requestedBook={book}
             />
-            
-            {showReviewModal && (
-                <BookReviewModal 
-                    bookId={book._id}
-                    bookTitle={book.title}
-                    onClose={() => setShowReviewModal(false)}
-                    onSubmitted={() => {
-                        // Refresh book data to show updated rating
-                        const fetchBook = async () => {
-                            try {
-                                const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-                                const response = await api.get(`/books/${id}`, config);
-                                setBook(response.data.book);
-                            } catch (err) {
-                                console.error('Error refreshing book data:', err);
-                            }
-                        };
-                        fetchBook();
-                    }}
-                />
-            )}
             
             {selectedPdf && (
                 <div className="pdf-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', zIndex: 999999, display: 'flex', flexDirection: 'column' }} onClick={() => setSelectedPdf(null)} onContextMenu={(e) => e.preventDefault()}>

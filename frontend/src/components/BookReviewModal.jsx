@@ -22,7 +22,23 @@ const BookReviewModal = ({ bookId, bookTitle, onClose, onSubmitted }) => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
+      // Get token using the same logic as the API client
+      const auth = localStorage.getItem('auth');
+      let token = null;
+      
+      if (auth) {
+        try {
+          const parsed = JSON.parse(auth);
+          if (typeof parsed === 'string') {
+            token = parsed;
+          } else if (parsed.token) {
+            token = parsed.token;
+          }
+        } catch {
+          token = auth;
+        }
+      }
+      
       if (!token) {
         setError('You must be logged in to submit a review');
         setLoading(false);
@@ -33,10 +49,6 @@ const BookReviewModal = ({ bookId, bookTitle, onClose, onSubmitted }) => {
         bookId,
         rating,
         comment: comment.trim() || undefined
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
       });
 
       toast.success('Review submitted successfully!');
