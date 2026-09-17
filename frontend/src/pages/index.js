@@ -25,3 +25,4 @@ export { default as RideDetailsPage } from "./RideDetailsPage";
 export { default as ConfirmPaymentPage } from "./ConfirmPaymentPage";
 export { default as OrderTrackingPage } from "./OrderTrackingPage";
 export { default as ExchangeCategoriesPage } from "./ExchangeCategoriesPage";
+export { default as TermsPage } from "./TermsPage";

@@ -359,7 +359,7 @@ const AdminBooks = () => {
                     <td style={{ padding: '16px 24px', fontWeight: '700', color: '#13493C', fontSize: '0.85rem' }}>
                       {book.exchangeType === 'Exchange' ? 'Exchange (Free)' : 
                        (book.exchangeType === 'Rent' ? 
-                        `Rs. ${book.rentWeek || book.price || 0}/wk` : 
+                        `Rs. ${book.rentWeek || book.price || 0}` : 
                         `Rs. ${book.price || 0}`)}
                     </td>
 

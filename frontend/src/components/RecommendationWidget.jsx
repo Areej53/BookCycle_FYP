@@ -48,7 +48,7 @@ export default function RecommendationWidget() {
               <div className="rec-stars">★★★★★</div>
               <div className="rec-bottom">
                 <span className={`rec-price ${book.exchangeType === 'Exchange' ? 'exchange-price' : ''}`}>
-                  {book.exchangeType === 'Exchange' ? 'Exchange' : `Rs. ${book.price}${book.exchangeType === 'Rent' ? '/wk' : ''}`}
+                  {book.exchangeType === 'Exchange' ? 'Exchange' : `Rs. ${book.price}`}
                 </span>
                 <Link to={`/book/${book._id}`} className="rec-action" style={{ background: book.exchangeType === 'Exchange' ? 'var(--secondary)' : 'var(--cta)' }}>
                   {book.exchangeType === 'Exchange' ? 'Exchange' : (book.exchangeType === 'Rent' ? 'Rent' : 'Buy')}

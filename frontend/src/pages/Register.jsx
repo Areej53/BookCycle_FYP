@@ -15,7 +15,7 @@ const Register = () => {
   const [token, setToken] = useState(getStoredAuthToken);
   const [inlineError, setInlineError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState("customer");
   const [interests, setInterests] = useState([]);
 
   const handleInterestChange = (e) => {
@@ -40,7 +40,6 @@ const Register = () => {
 
     if (name.length === 0 || lastname.length === 0 || email.length === 0 || password.length === 0 || confirmPassword.length === 0) {
       setInlineError("Please fill all required fields");
-      // toast.error("Please fill all inputs"); /* unused */
       return;
     }
 
@@ -52,20 +51,13 @@ const Register = () => {
       return;
     }
 
-    if (!role) {
-      setInlineError("Please select a role");
-      // toast.error("Please select a role"); /* unused */
-      return;
-    }
     if (interests.length === 0) {
       setInlineError("Please select at least one interest");
-      // toast.error("Please select at least one interest"); /* unused */
       return;
     }
 
     if (password !== confirmPassword) {
       setInlineError("Passwords don't match");
-      // toast.error("Passwords don't match"); /* unused */
       return;
     }
 
@@ -73,7 +65,7 @@ const Register = () => {
       name: `${name} ${lastname}`.trim(),
       email,
       password,
-      role,
+      role: "customer",
       interests
     };
     setIsLoading(true);
@@ -120,20 +112,6 @@ const Register = () => {
               <div className="pass-input-div">
                 <input type={showPassword ? "text" : "password"} placeholder="Confirm Password" name="confirmPassword" />
                 {showPassword ? <FaEyeSlash onClick={() => { setShowPassword(!showPassword) }} /> : <FaEye onClick={() => { setShowPassword(!showPassword) }} />}
-              </div>
-
-              <div className="role-selection">
-                <p>Role *</p>
-                <div className="role-options">
-                  <label>
-                    <input type="radio" name="role" value="customer" checked={role === "customer"} onChange={(e) => setRole(e.target.value)} />
-                    Customer
-                  </label>
-                  <label>
-                    <input type="radio" name="role" value="shopkeeper" checked={role === "shopkeeper"} onChange={(e) => setRole(e.target.value)} />
-                    Shopkeeper
-                  </label>
-                </div>
               </div>
 
               <div className="interests-selection">

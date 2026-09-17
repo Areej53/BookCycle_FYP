@@ -93,7 +93,6 @@ export default function WishlistPage() {
                                         ) : (
                                             <div style={{ fontWeight: 900, color: 'var(--cta)', fontSize: '1.2rem' }}>
                                                 {`Rs. ${String(book.price).replace(/^Rs\.?\s*/i, '')}`}
-                                                {book.badge === 'rent' && <span style={{ fontSize: '.75rem', fontWeight: 500, color: 'var(--text-muted)' }}>/wk</span>}
                                             </div>
                                         )}
                                         <div style={{ display: 'flex', gap: '8px' }}>

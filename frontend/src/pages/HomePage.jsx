@@ -101,7 +101,7 @@ export default function HomePage() {
                         category: b.category,
                         condition: b.condition,
                         price: b.exchangeType === 'Exchange' ? 120 : extractNumericPrice(b.price),
-                        unit: b.exchangeType === 'Rent' ? '/wk' : '',
+                        unit: '',
                         timeAgo: getTimeAgo(b.createdAt),
                         exchangeType: b.exchangeType,
                         sellerId: b.owner?._id || b.owner || null,
@@ -655,7 +655,7 @@ export default function HomePage() {
               <div className="book-title">{b.title}</div>
               <div className="book-author">{b.author}</div>
               <div className="book-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span className="book-price">Rs. {b.price}{b.unit || '/wk'}</span>
+                <span className="book-price">Rs. {b.price}</span>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <button 
                     onClick={(e) => { e.stopPropagation(); if (!user) { navigate('/login'); return; } toggleWishlist(b); }} 

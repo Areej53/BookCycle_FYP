@@ -88,8 +88,10 @@ export const CartProvider = ({ children }) => {
             ? (book.exchangeType === 'Sell' ? 'buy' : book.exchangeType === 'Rent' ? 'rent' : book.exchangeType === 'Exchange' ? 'exchange' : 'free')
             : (book.type || 'buy');
 
+        const finalType = String(resolvedType || 'buy').toLowerCase();
+
         // Prevent exchange books from being added to cart
-        if (resolvedType === 'exchange') {
+        if (finalType === 'exchange') {
             setModalConfig({ isOpen: true, message: "Exchange books cannot be added to cart. Please use the Request Exchange button." });
             return false;
         }
@@ -113,9 +115,9 @@ export const CartProvider = ({ children }) => {
             category: book.category,
             condition: book.condition,
             img: isRaw ? getImageUrl(book) : (book.img || getImageUrl(book)),
-            type: String(resolvedType || 'buy').toLowerCase(),
-            price: toSafeNumber(resolvedType === 'rent' ? rentPriceVal : book.price),
-            rentPerWeek: toSafeNumber(resolvedType === 'rent' ? rentPriceVal : book.price),
+            type: finalType,
+            price: toSafeNumber(finalType === 'rent' ? rentPriceVal : book.price),
+            rentPerWeek: toSafeNumber(finalType === 'rent' ? rentPriceVal : book.price),
             duration: String(rentDurationVal || '3 Months'),
             rentalDuration: String(rentDurationVal || '3 Months'),
             quantity: Number(book.quantity || 1),

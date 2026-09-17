@@ -38,6 +38,7 @@ import {
   ConfirmPaymentPage,
   OrderTrackingPage,
   ExchangeCategoriesPage,
+  TermsPage,
 } from "./pages";
 import DashboardPage from "./pages/DashboardPage";
 import { ToastContainer } from "react-toastify";
@@ -131,6 +132,14 @@ const router = createBrowserRouter([
       {
         path: "wishlist",
         element: <WishlistPage />,
+      },
+      {
+        path: "terms",
+        element: <TermsPage />,
+      },
+      {
+        path: "terms-of-service",
+        element: <TermsPage />,
       },
       {
         element: <ProtectedRoute />,

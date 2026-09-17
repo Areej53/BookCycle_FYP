@@ -198,11 +198,11 @@ const styles = `
 `;
 
 const FEATURED_BOOKS = [
-  { id: "b1", img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80", type: "rent", cat: "Self-Development", title: "Atomic Habits", author: "James Clear", price: "Rs. 50", unit: "/wk", stars: "★★★★★" },
+  { id: "b1", img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80", type: "rent", cat: "Self-Development", title: "Atomic Habits", author: "James Clear", price: "Rs. 50", unit: "", stars: "★★★★★" },
   { id: "b2", img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80", type: "buy", cat: "Programming", title: "Deep Work", author: "Cal Newport", price: "Rs. 350", stars: "★★★★★" },
   { id: "b3", img: "https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&q=80", type: "free", cat: "Science", title: "Sapiens", author: "Yuval Noah Harari", price: "free", stars: "★★★★☆" },
-  { id: "b4", img: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80", type: "rent", cat: "Self-Development", title: "Rich Dad Poor Dad", author: "Robert Kiyosaki", price: "Rs. 40", unit: "/wk", stars: "★★★★☆" },
-  { id: "b5", img: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80", type: "rent", cat: "Novels", title: "The Alchemist", author: "Paulo Coelho", price: "Rs. 30", unit: "/wk", stars: "★★★★★" },
+  { id: "b4", img: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80", type: "rent", cat: "Self-Development", title: "Rich Dad Poor Dad", author: "Robert Kiyosaki", price: "Rs. 40", unit: "", stars: "★★★★☆" },
+  { id: "b5", img: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80", type: "rent", cat: "Novels", title: "The Alchemist", author: "Paulo Coelho", price: "Rs. 30", unit: "", stars: "★★★★★" },
 ];
 
 const HOW_STEPS = [
@@ -271,7 +271,7 @@ export default function Home({ onNavigate }) {
             title: b.title,
             author: b.author,
             price: b.exchangeType === 'Share' ? 'free' : `Rs. ${b.price}`,
-            unit: b.exchangeType === 'Rent' ? '/wk' : '',
+            unit: '',
             stars: '★★★★★'
           }));
         };
@@ -415,7 +415,7 @@ export default function Home({ onNavigate }) {
                     <div className="h-btitle">{b.title}</div>
                     <div className="h-bauthor">author: {b.author}</div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
-                      <div className="h-bprice">Rs. 30/wk</div>
+                      <div className="h-bprice">{b.price}</div>
                       <button className="btn-mini-cart" onClick={(e) => { 
                         e.stopPropagation(); 
                         const added = addToCart(b);
