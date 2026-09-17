@@ -33,6 +33,8 @@ const CartPage = () => {
   const { user } = useAuth()
   const [toast, showToast] = useToast()
   const { cart, removeFromCart, updateDuration, savedItems, saveForLater, moveToCart } = useCart()
+  const [agreedTerms, setAgreedTerms] = useState(false)
+  const [termsError, setTermsError] = useState(false)
 
   const removeItem = (id) => {
     removeFromCart(id)
@@ -49,6 +51,11 @@ const CartPage = () => {
   const total = subtotal + delivery
 
   const handleCheckoutClick = () => {
+    if (!agreedTerms) {
+      setTermsError(true)
+      showToast('Please agree to the Terms of Service to proceed', true)
+      return
+    }
     if (!user) {
       navigate('/login')
       return
@@ -304,6 +311,46 @@ const CartPage = () => {
                         fontWeight: 900, color: 'var(--cta)' }}>Rs. {total}</span>
                     </div>
                   </div>
+
+                  {/* Terms of Service Checkbox */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 10,
+                    marginTop: 16,
+                    marginBottom: 12,
+                    padding: '12px 14px',
+                    background: 'var(--bg)',
+                    border: `1.5px solid ${termsError ? 'var(--cta)' : 'var(--border)'}`,
+                    borderRadius: 12,
+                    transition: 'border-color 0.2s',
+                  }}>
+                    <input
+                      type="checkbox"
+                      id="cart-terms-checkbox"
+                      checked={agreedTerms}
+                      onChange={e => {
+                        setAgreedTerms(e.target.checked);
+                        if (termsError) setTermsError(false);
+                      }}
+                      style={{
+                        width: 18,
+                        height: 18,
+                        marginTop: 2,
+                        accentColor: 'var(--primary)',
+                        cursor: 'pointer',
+                        flexShrink: 0
+                      }}
+                    />
+                    <label htmlFor="cart-terms-checkbox" style={{ fontSize: '.83rem', color: 'var(--text-main)', cursor: 'pointer', lineHeight: 1.45 }}>
+                      I agree to the BookCycle <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: 700, textDecoration: 'underline' }}>Terms of Service</a>
+                    </label>
+                  </div>
+                  {termsError && (
+                    <div style={{ fontSize: '.75rem', color: 'var(--cta)', marginBottom: 10, fontWeight: 600 }}>
+                      Please agree to the Terms of Service to proceed.
+                    </div>
+                  )}
 
                   {/* CTA */}
                   <button onClick={handleCheckoutClick} className="checkout-btn">

@@ -5,7 +5,6 @@ import { useToast } from '../hooks/useToast'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Toast from '../components/Toast'
-import ConsentModal from '../components/ConsentModal'
 import TrackOrderModal from '../components/TrackOrderModal'
 import { useAuth } from '../context/AuthContext'
 import { DashboardApi } from '../services/api'
@@ -71,10 +70,6 @@ const CheckoutPage = () => {
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
   const [placedOrders, setPlacedOrders] = useState([])
-  
-  // Consent modal state
-  const [showConsent, setShowConsent] = useState(false)
-  
   // Track order modal state
   const [showTrackOrder, setShowTrackOrder] = useState(false)
   const [form, setForm] = useState({
@@ -107,18 +102,13 @@ const CheckoutPage = () => {
     return Object.keys(e).length === 0
   }
 
-  const handlePlaceOrderClick = () => {
+  const handlePlaceOrderClick = async () => {
     if (cart.length === 0) {
       showToast('Your cart is empty', true)
       return
     }
     if (!validate()) { showToast('Please fix the errors before placing order', true); return }
-    // Show the modal instead of proceeding immediately
-    setShowConsent(true)
-  }
-
-  const handleAgreeAndSubmit = async () => {
-    setShowConsent(false)
+    
     setSubmitting(true)
     try {
       const groupedBySeller = cart.reduce((acc, item) => {
@@ -502,16 +492,7 @@ const CheckoutPage = () => {
         }
       `}</style>
       
-      {/* Consent Modal Integration */}
-      <ConsentModal
-        isOpen={showConsent}
-        onClose={() => setShowConsent(false)}
-        onConfirm={handleAgreeAndSubmit}
-        title="Confirm Your Order"
-        message="Order will proceed after seller accepts your request"
-        confirmText="Yes, place order"
-        cancelText="Review again"
-      />
+
       <Toast toast={toast} />
     </div>
   )

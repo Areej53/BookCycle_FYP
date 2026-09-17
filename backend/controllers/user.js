@@ -78,11 +78,12 @@ const getAllUsers = async (req, res) => {
 };
 
 const register = async (req, res) => {
-  const { name, email, password, role, interests } = req.body;
+  const { name, email, password, role = "customer", interests } = req.body;
+  const userRole = role || "customer";
 
-  if (!name || !email || !password || !role || !interests || interests.length === 0) {
+  if (!name || !email || !password || !interests || interests.length === 0) {
     return res.status(400).json({
-      msg: "Please provide name, email, password, role, and at least one interest",
+      msg: "Please provide name, email, password, and at least one interest",
     });
   }
 
@@ -98,7 +99,7 @@ const register = async (req, res) => {
     name,
     email,
     password,
-    role,
+    role: userRole,
     interests
   });
 
