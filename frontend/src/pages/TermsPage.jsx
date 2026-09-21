@@ -62,7 +62,7 @@ const TermsPage = () => {
         {/* Breadcrumb & Title Banner */}
         <div style={{ marginBottom: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '.8rem', color: PALETTE.muted, marginBottom: '12px' }}>
-            <span style={{ cursor: 'pointer', color: PALETTE.secondary, fontWeight: 600 }} onClick={() => navigate('/')}>Home</span>
+            <span style={{ cursor: 'pointer', color: PALETTE.secondary, fontWeight: 600 }} onClick={() => navigate('/home')}>Home</span>
             <span>›</span>
             <span style={{ color: PALETTE.primary, fontWeight: 700 }}>Terms of Service</span>
           </div>

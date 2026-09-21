@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
@@ -343,7 +343,7 @@ const CartPage = () => {
                       }}
                     />
                     <label htmlFor="cart-terms-checkbox" style={{ fontSize: '.83rem', color: 'var(--text-main)', cursor: 'pointer', lineHeight: 1.45 }}>
-                      I agree to the BookCycle <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: 700, textDecoration: 'underline' }}>Terms of Service</a>
+                      I agree to the BookCycle <Link to="/terms" style={{ color: 'var(--primary)', fontWeight: 700, textDecoration: 'underline' }}>Terms of Service</Link>
                     </label>
                   </div>
                   {termsError && (
