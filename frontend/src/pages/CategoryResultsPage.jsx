@@ -219,11 +219,11 @@ export default function CategoryResultsPage() {
             <div className="bc-author">author: {book.author}</div>
             <div className="bc-seller" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span>Seller: <strong>{book.owner?.name || 'Unknown'}</strong></span>
-              {book.sellerRating && book.sellerRating.displayRating !== 'No ratings' && (
+              {book.bookRating?.reviewsCount > 0 && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                   <span style={{ color: '#FFD700' }}>★</span>
-                  <span>{book.sellerRating.displayRating}</span>
-                  {book.sellerRating.reviewsCount > 0 && <span>({book.sellerRating.reviewsCount})</span>}
+                  <span>{book.bookRating.displayRating}/5</span>
+                  <span>({book.bookRating.reviewsCount})</span>
                 </span>
               )}
             </div>

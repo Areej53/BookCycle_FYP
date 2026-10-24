@@ -12,7 +12,19 @@ const sendEmail = async (options) => {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
+      tls: {
+        rejectUnauthorized: false
+      }
     });
+
+    // Verify connection configuration
+    try {
+      await transporter.verify();
+      console.log("SMTP server connection verified successfully");
+    } catch (verifyError) {
+      console.error("SMTP connection verification failed:", verifyError);
+      throw new Error(`SMTP connection failed: ${verifyError.message}`);
+    }
   } else {
     // Generate test SMTP service account from ethereal.email if no settings provided
     const testAccount = await nodemailer.createTestAccount();
@@ -33,12 +45,31 @@ const sendEmail = async (options) => {
     subject: options.subject,
     text: options.message,
     html: options.html,
+    // Add headers to improve deliverability
+    headers: {
+      'X-Priority': '1',
+      'X-MSMail-Priority': 'High',
+      'Importance': 'High'
+    }
   };
 
-  const info = await transporter.sendMail(mailOptions);
-  
-  if (!process.env.SMTP_HOST) {
-    console.log("Email sent! Preview URL: %s", nodemailer.getTestMessageUrl(info));
+  try {
+    console.log(`Sending email to: ${options.email}`);
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent successfully to:", options.email);
+    console.log("Message ID:", info.messageId);
+    console.log("Response:", info.response);
+    
+    if (!process.env.SMTP_HOST) {
+      console.log("Email sent! Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    }
+    
+    return info;
+  } catch (emailError) {
+    console.error("Failed to send email to:", options.email);
+    console.error("Email error details:", emailError.message);
+    console.error("Error code:", emailError.code);
+    throw emailError;
   }
 };
 
