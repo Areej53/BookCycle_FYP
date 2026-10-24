@@ -5,7 +5,6 @@ warnings.filterwarnings("ignore", category=UserWarning)
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import easyocr
-import google.generativeai as genai
 import os
 import io
 import base64
@@ -18,9 +17,24 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-# Configure logging
+# Configure logging first
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Use REST API instead of gRPC to avoid Windows Application Control issues
+os.environ["GOOGLE_GENAI_USE_REST"] = "1"
+
+# Try to import google.generativeai with error handling
+genai = None
+try:
+    import google.generativeai as genai
+    logger.info("google-generativeai imported successfully using REST API")
+except ImportError as e:
+    logger.warning(f"Failed to import google-generativeai: {e}")
+    logger.warning("AI analysis features will be disabled")
+except Exception as e:
+    logger.warning(f"Error loading google-generativeai: {e}")
+    logger.warning("AI analysis features will be disabled")
 
 app = FastAPI(title="BookCycle AI Scanner Service")
 
@@ -43,11 +57,15 @@ except Exception as e:
 
 # Configure Gemini API
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-if GEMINI_API_KEY and GEMINI_API_KEY != "your_gemini_api_key_here":
-    genai.configure(api_key=GEMINI_API_KEY)
-    logger.info("Gemini API configured")
+if genai and GEMINI_API_KEY and GEMINI_API_KEY != "your_gemini_api_key_here":
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+        logger.info("Gemini API configured")
+    except Exception as e:
+        logger.warning(f"Failed to configure Gemini API: {e}")
+        genai = None
 else:
-    logger.warning("GEMINI_API_KEY not found or not configured")
+    logger.warning("GEMINI_API_KEY not found or not configured, or google-generativeai not available")
 
 VALID_CATEGORIES = [
     "Programming", "Science", "Novels", "Self Development", 
@@ -77,6 +95,9 @@ def extract_text_from_image(image_data: bytes) -> str:
 
 def analyze_book_with_gemini(ocr_text: str) -> dict:
     """Analyze OCR text using Gemini API to extract book information"""
+    if not genai:
+        raise HTTPException(status_code=503, detail="AI service not available due to library import error. Please check logs for details.")
+    
     if not GEMINI_API_KEY or GEMINI_API_KEY == "your_gemini_api_key_here":
         raise HTTPException(status_code=500, detail="Gemini API not configured")
     

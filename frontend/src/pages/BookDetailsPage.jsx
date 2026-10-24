@@ -129,11 +129,11 @@ export default function BookDetailsPage() {
                         {book.owner?.name && (
                           <div style={{ fontSize: '0.95rem', color: 'var(--text-muted)', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span>Seller: <strong>{book.owner.name}</strong></span>
-                            {book.sellerRating && book.sellerRating.displayRating !== 'No ratings' && (
+                            {book.bookRating?.reviewsCount > 0 && (
                               <span style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '12px', background: 'rgba(221,161,94,0.1)', padding: '4px 10px', borderRadius: '20px' }}>
                                 <span style={{ color: '#FFD700' }}>★</span>
-                                <span style={{ fontWeight: 600, color: 'var(--accent)' }}>{book.sellerRating.displayRating}</span>
-                                {book.sellerRating.reviewsCount > 0 && <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>({book.sellerRating.reviewsCount} reviews)</span>}
+                                <span style={{ fontWeight: 600, color: 'var(--accent)' }}>{book.bookRating.displayRating}/5</span>
+                                <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>({book.bookRating.reviewsCount} reviews)</span>
                               </span>
                             )}
                           </div>
@@ -151,12 +151,13 @@ export default function BookDetailsPage() {
                           </div>
                         )}
 
+                        {/* Seller Rating Card — identical to dashboard */}
                         {book.owner?._id && (
-                          <div style={{ marginTop: '25px' }}>
+                          <div style={{ marginTop: '20px', marginBottom: '10px' }}>
                             <SellerRatingCard sellerId={book.owner._id} />
                           </div>
                         )}
-                        
+
                         <div className="price-card" style={{ background: '#f5f0d0', padding: '30px', borderRadius: '24px', marginBottom: '35px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
                                 <div style={{ fontSize: '0.9rem', color: 'var(--primary)', opacity: 0.7, marginBottom: '5px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>Listing Price</div>
@@ -285,12 +286,14 @@ export default function BookDetailsPage() {
                             </p>
                         </div>
 
-                        {/* Ratings & Reviews Section */}
-                        <ProductRatingsReviews 
-                            bookId={book._id} 
+                        {/* Rate Seller Button */}
+                        <ProductRatingsReviews
+                            bookId={book._id}
                             bookTitle={book.title}
+                            sellerId={book.owner?._id || book.ownerId}
+                            sellerName={book.owner?.name}
+                            rateOnly={true}
                             onReviewSubmitted={() => {
-                                // Refresh book data to show updated rating
                                 const fetchBook = async () => {
                                     try {
                                         const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
@@ -303,6 +306,7 @@ export default function BookDetailsPage() {
                                 fetchBook();
                             }}
                         />
+
                     </div>
                 </main>
             </div>

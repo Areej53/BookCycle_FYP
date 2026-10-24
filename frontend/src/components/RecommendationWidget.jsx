@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import useRecommendations from '../hooks/useRecommendations';
+import StarRating from './StarRating';
 
 function getImageUrl(book) {
     const imagePath = book.image || (book.images && book.images[0]);
@@ -45,7 +46,13 @@ export default function RecommendationWidget() {
             <div style={{ flex: '1', minWidth: '0' }}>
               <div className="rec-book-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{book.title}</div>
               <div className="rec-author" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>author: {book.author}</div>
-              <div className="rec-stars">★★★★★</div>
+              <div className="rec-stars">
+                <StarRating
+                  rating={book.bookRating?.starRating || 0}
+                  reviewCount={book.bookRating?.reviewsCount || 0}
+                  size={11}
+                />
+              </div>
               <div className="rec-bottom">
                 <span className={`rec-price ${book.exchangeType === 'Exchange' ? 'exchange-price' : ''}`}>
                   {book.exchangeType === 'Exchange' ? 'Exchange' : `Rs. ${book.price}`}
@@ -62,3 +69,4 @@ export default function RecommendationWidget() {
     </div>
   );
 }
+

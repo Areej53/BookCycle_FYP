@@ -3,6 +3,7 @@ import { api } from "../api/client";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { IMAGES } from "../data/assets";
+import StarRating from './StarRating';
 
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
@@ -198,11 +199,11 @@ const styles = `
 `;
 
 const FEATURED_BOOKS = [
-  { id: "b1", img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80", type: "rent", cat: "Self-Development", title: "Atomic Habits", author: "James Clear", price: "Rs. 50", unit: "", stars: "★★★★★" },
-  { id: "b2", img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80", type: "buy", cat: "Programming", title: "Deep Work", author: "Cal Newport", price: "Rs. 350", stars: "★★★★★" },
-  { id: "b3", img: "https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&q=80", type: "free", cat: "Science", title: "Sapiens", author: "Yuval Noah Harari", price: "free", stars: "★★★★☆" },
-  { id: "b4", img: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80", type: "rent", cat: "Self-Development", title: "Rich Dad Poor Dad", author: "Robert Kiyosaki", price: "Rs. 40", unit: "", stars: "★★★★☆" },
-  { id: "b5", img: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80", type: "rent", cat: "Novels", title: "The Alchemist", author: "Paulo Coelho", price: "Rs. 30", unit: "", stars: "★★★★★" },
+  { id: "b1", img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80", type: "rent", cat: "Self-Development", title: "Atomic Habits", author: "James Clear", price: "Rs. 50", unit: "", bookRating: { starRating: 5, reviewsCount: 128 } },
+  { id: "b2", img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80", type: "buy", cat: "Programming", title: "Deep Work", author: "Cal Newport", price: "Rs. 350", bookRating: { starRating: 5, reviewsCount: 94 } },
+  { id: "b3", img: "https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&q=80", type: "free", cat: "Science", title: "Sapiens", author: "Yuval Noah Harari", price: "free", bookRating: { starRating: 4, reviewsCount: 211 } },
+  { id: "b4", img: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80", type: "rent", cat: "Self-Development", title: "Rich Dad Poor Dad", author: "Robert Kiyosaki", price: "Rs. 40", unit: "", bookRating: { starRating: 4, reviewsCount: 176 } },
+  { id: "b5", img: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&q=80", type: "rent", cat: "Novels", title: "The Alchemist", author: "Paulo Coelho", price: "Rs. 30", unit: "", bookRating: { starRating: 5, reviewsCount: 305 } },
 ];
 
 const HOW_STEPS = [
@@ -256,12 +257,12 @@ export default function Home({ onNavigate }) {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const [featRes, recentRes, allRes] = await Promise.all([
+        // Only 2 targeted queries — no unbounded fetch
+        const [featRes, recentRes] = await Promise.all([
           api.get('books?limit=8&sort=random'),
           api.get('books?limit=10&sort=recent'),
-          api.get('books')
         ]);
-        
+
         const formatBooks = (booksArr, max) => {
           return booksArr.slice(0, max).map(b => ({
             id: b._id,
@@ -272,42 +273,40 @@ export default function Home({ onNavigate }) {
             author: b.author,
             price: b.exchangeType === 'Share' ? 'free' : `Rs. ${b.price}`,
             unit: '',
-            stars: '★★★★★'
+            bookRating: b.bookRating || { starRating: 0, reviewsCount: 0 }
           }));
         };
 
-        if (featRes.data.books && featRes.data.books.length > 0) {
-            setFeaturedBooks(formatBooks(featRes.data.books, 8));
-        } else {
-            setFeaturedBooks(FEATURED_BOOKS);
-        }
+        const featBooks = (featRes.data.books && featRes.data.books.length > 0)
+          ? formatBooks(featRes.data.books, 8)
+          : FEATURED_BOOKS;
+        const recBooks = (recentRes.data.books && recentRes.data.books.length > 0)
+          ? formatBooks(recentRes.data.books, 10)
+          : FEATURED_BOOKS;
 
-        if (recentRes.data.books && recentRes.data.books.length > 0) {
-            setRecentBooks(formatBooks(recentRes.data.books, 10));
-        } else {
-            setRecentBooks(FEATURED_BOOKS);
-        }
+        setFeaturedBooks(featBooks);
+        setRecentBooks(recBooks);
 
-        if (allRes.data.books && allRes.data.books.length > 0) {
-            const catCounts = {};
-            allRes.data.books.forEach(b => {
-                if (b.category) {
-                    catCounts[b.category] = (catCounts[b.category] || 0) + 1;
-                }
+        // Derive popular categories from already-fetched data — no extra API call needed
+        const allFetched = [...(featRes.data.books || []), ...(recentRes.data.books || [])];
+        if (allFetched.length > 0) {
+          const catCounts = {};
+          allFetched.forEach(b => {
+            if (b.category) catCounts[b.category] = (catCounts[b.category] || 0) + 1;
+          });
+          const sorted = Object.entries(catCounts)
+            .sort((a, b) => b[1] - a[1])
+            .map(([name, count]) => {
+              const iconMatch = CATEGORIES.find(c => c.name.toLowerCase() === name.toLowerCase());
+              return {
+                name,
+                count: `${count} books`,
+                icon: iconMatch ? iconMatch.icon : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+              };
             });
-            const sorted = Object.entries(catCounts)
-                .sort((a, b) => b[1] - a[1])
-                .map(([name, count]) => {
-                    const iconMatch = CATEGORIES.find(c => c.name.toLowerCase() === name.toLowerCase());
-                    return {
-                        name,
-                        count: `${count} books`,
-                        icon: iconMatch ? iconMatch.icon : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                    };
-                });
-            setPopularCats(sorted);
+          setPopularCats(sorted);
         } else {
-            setPopularCats(CATEGORIES);
+          setPopularCats(CATEGORIES);
         }
 
       } catch (error) {
@@ -318,6 +317,7 @@ export default function Home({ onNavigate }) {
     };
     fetchBooks();
   }, []);
+
 
   const showToast = useCallback((msg) => {
     setToast({ show: true, msg });
@@ -424,7 +424,13 @@ export default function Home({ onNavigate }) {
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                       </button>
                     </div>
-                    <div className="h-bstars">{b.stars}</div>
+                    <div className="h-bstars">
+                      <StarRating
+                        rating={b.bookRating?.starRating || 0}
+                        reviewCount={b.bookRating?.reviewsCount || 0}
+                        size={12}
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
@@ -464,10 +470,12 @@ export default function Home({ onNavigate }) {
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                       </button>
                     </div>
-                    <div className="h-bstars" style={{ display: 'flex', gap: '2px' }}>
-                      {[...Array(5)].map((_, i) => (
-                        <svg key={i} width="10" height="10" viewBox="0 0 24 24" fill={i < Math.floor(b.stars.length) ? "var(--accent)" : "none"} stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                      ))}
+                    <div className="h-bstars">
+                      <StarRating
+                        rating={b.bookRating?.starRating || 0}
+                        reviewCount={b.bookRating?.reviewsCount || 0}
+                        size={12}
+                      />
                     </div>
                   </div>
                 </div>
