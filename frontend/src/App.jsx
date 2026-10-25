@@ -50,6 +50,8 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import SellerRequestPage from "./pages/SellerRequestPage";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import AdminSellerRequests from "./pages/admin/AdminSellerRequests";
+import AdminRiderRequests from "./pages/admin/AdminRiderRequests";
+import AdminRiders from "./pages/admin/AdminRiders";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminSellers from "./pages/admin/AdminSellers";
 import AdminSellerListings from "./pages/admin/AdminSellerListings";
@@ -62,6 +64,14 @@ import AdminDeliveries from "./pages/admin/AdminDeliveries";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminSettings from "./pages/admin/AdminSettings";
+
+import RiderProtectedRoute from "./components/RiderProtectedRoute";
+import RiderLayout from "./components/RiderLayout";
+import RiderDashboard from "./pages/rider/RiderDashboard";
+import RiderOrders from "./pages/rider/RiderOrders";
+import RiderActiveDelivery from "./pages/rider/RiderActiveDelivery";
+import RiderHistory from "./pages/rider/RiderHistory";
+import RiderProfile from "./pages/rider/RiderProfile";
 
 const router = createBrowserRouter([
   {
@@ -214,6 +224,14 @@ const router = createBrowserRouter([
         element: <AdminSellerRequests />,
       },
       {
+        path: "rider-requests",
+        element: <AdminRiderRequests />,
+      },
+      {
+        path: "riders",
+        element: <AdminRiders />,
+      },
+      {
         path: "users",
         element: <AdminUsers />,
       },
@@ -260,6 +278,32 @@ const router = createBrowserRouter([
       {
         path: "settings",
         element: <AdminSettings />,
+      },
+    ],
+  },
+  {
+    path: "/rider",
+    element: <RiderProtectedRoute><RiderLayout /></RiderProtectedRoute>,
+    children: [
+      {
+        path: "dashboard",
+        element: <RiderDashboard />,
+      },
+      {
+        path: "orders",
+        element: <RiderOrders />,
+      },
+      {
+        path: "active-delivery",
+        element: <RiderActiveDelivery />,
+      },
+      {
+        path: "history",
+        element: <RiderHistory />,
+      },
+      {
+        path: "profile",
+        element: <RiderProfile />,
       },
     ],
   },

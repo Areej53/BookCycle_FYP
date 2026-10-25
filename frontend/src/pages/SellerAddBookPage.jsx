@@ -347,7 +347,7 @@ export default function SellerAddBookPage() {
         <div className="pricing-section show" style={{display:'block'}}>
         <div className="form-grid" style={{ marginBottom: '24px', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             <div className="field">
-            <label>Rent Price (PKR) <span className="req">*</span></label>
+            <label>Rent Price (Rs.) <span className="req">*</span></label>
             <div className="price-with-prefix">
                 <span className="price-prefix">Rs.</span>
                 <input type="number" name="price" value={sellerData.price} onChange={handleChange} placeholder="0" min="1"/>

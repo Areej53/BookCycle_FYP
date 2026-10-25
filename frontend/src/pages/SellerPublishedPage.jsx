@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { FiCheckCircle, FiLayout, FiPlusCircle, FiArrowUpRight } from 'react-icons/fi';
 import { IMAGES } from '../data/assets';
@@ -27,7 +27,7 @@ export default function SellerPublishedPage() {
     <p className="pub-sub">Congratulations! Your listing has been successfully placed on BookCycle. It is now visible to thousands of readers across Islamabad.</p>
     
     <div className="pub-ctas" style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-      <Link to="/home" className="btn-pub-dash" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FiLayout /> View Dashboard</Link>
+      <Link to="/dashboard" className="btn-pub-dash" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FiLayout /> View Dashboard</Link>
       <Link to="/seller" className="btn-pub-add" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FiPlusCircle /> Add Another Book</Link>
     </div>
 

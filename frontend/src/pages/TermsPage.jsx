@@ -167,8 +167,8 @@ const TermsPage = () => {
               Delivery services are currently available across designated sectors in Islamabad within 1–2 working days.
             </p>
             <ul style={{ paddingLeft: '20px', marginTop: '10px' }}>
-              <li style={{ marginBottom: '6px' }}><strong>Delivery Fee:</strong> Standard delivery charge of Rs. 120 applies per seller item.</li>
-              <li style={{ marginBottom: '6px' }}><strong>Payments:</strong> Payment details (e.g., EasyPaisa) are processed safely according to seller instructions.</li>
+              <li style={{ marginBottom: '6px' }}><strong>Delivery Fee:</strong> Standard delivery charge of Rs. 120 applies per seller item in Islamabad.</li>
+              <li style={{ marginBottom: '6px' }}><strong>Payment Method:</strong> All orders on BookCycle are processed exclusively through Cash on Delivery (COD). Customers pay cash directly to the delivery rider upon package arrival.</li>
             </ul>
           </SectionCard>
 

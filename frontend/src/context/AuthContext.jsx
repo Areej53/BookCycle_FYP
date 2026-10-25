@@ -34,6 +34,9 @@ export const AuthProvider = ({ children }) => {
             if (decodedUser.role === 'admin' && 
                 (window.location.pathname === '/home' || window.location.pathname === '/')) {
               window.location.href = '/admin/dashboard';
+            } else if (decodedUser.role === 'rider' && 
+                (window.location.pathname === '/home' || window.location.pathname === '/')) {
+              window.location.href = '/rider/dashboard';
             }
           }
         } else {

@@ -11,8 +11,23 @@ const Exchange = require('./Exchange');
 const ExchangeRequest = require('./ExchangeRequest');
 const Review = require('./Review');
 const BookReview = require('./BookReview');
+const RiderApplication = require('./RiderApplication');
+const DeliveryStatusHistory = require('./DeliveryStatusHistory');
+const PaymentAuditLog = require('./PaymentAuditLog');
 
 // Define Associations
+
+User.hasOne(RiderApplication, { foreignKey: 'userId', as: 'riderApplication' });
+RiderApplication.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+// Order <-> DeliveryStatusHistory
+Order.hasMany(DeliveryStatusHistory, { foreignKey: 'orderId', as: 'statusHistory' });
+DeliveryStatusHistory.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
+
+// Order <-> PaymentAuditLog
+Order.hasMany(PaymentAuditLog, { foreignKey: 'orderId', as: 'paymentHistory' });
+PaymentAuditLog.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
+PaymentAuditLog.belongsTo(User, { foreignKey: 'performedBy', as: 'performer', constraints: false });
 
 // User <-> Book
 User.hasMany(Book, { foreignKey: 'ownerId', as: 'books' });
@@ -46,8 +61,11 @@ Notification.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 // User <-> Order
 User.hasMany(Order, { foreignKey: 'buyerId', as: 'buyerOrders' });
 User.hasMany(Order, { foreignKey: 'sellerId', as: 'sellerOrders' });
+User.hasMany(Order, { foreignKey: 'riderId', as: 'assignedDeliveries' });
 Order.belongsTo(User, { foreignKey: 'buyerId', as: 'buyer' });
 Order.belongsTo(User, { foreignKey: 'sellerId', as: 'seller' });
+Order.belongsTo(User, { foreignKey: 'riderId', as: 'rider' });
+Order.belongsTo(RiderApplication, { foreignKey: 'riderId', targetKey: 'userId', as: 'riderProfile' });
 
 // User <-> Review
 User.hasMany(Review, { foreignKey: 'sellerId', as: 'receivedReviews' });
@@ -92,5 +110,8 @@ module.exports = {
   Exchange,
   ExchangeRequest,
   Review,
-  BookReview
+  BookReview,
+  RiderApplication,
+  DeliveryStatusHistory,
+  PaymentAuditLog
 };

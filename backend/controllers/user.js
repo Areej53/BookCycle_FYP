@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { User } = require("../models");
+const { User, RiderApplication } = require("../models");
 const sendEmail = require("../utils/sendEmail");
 
 // Simple in-memory rate limiter for password reset abuse prevention
@@ -52,10 +52,14 @@ const login = async (req, res) => {
         { expiresIn: "30d" }
       );
 
+      const riderApp = await RiderApplication.findOne({ where: { userId: foundUser.id } });
+
       return res.status(200).json({ 
         msg: "user logged in", 
         token,
-        role: foundUser.role
+        role: foundUser.role,
+        riderStatus: riderApp ? riderApp.status : null,
+        rejectionReason: riderApp ? riderApp.rejectionReason : null
       });
     }
     return res.status(400).json({ msg: "Wrong password" });

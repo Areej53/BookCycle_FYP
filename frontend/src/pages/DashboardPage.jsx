@@ -106,7 +106,7 @@ export const SectionLabel = ({ children }) => (
   </div>
 );
 
-const SellerOrdersPanel = ({ orders, loading }) => {
+const SellerOrdersPanel = ({ orders, loading, onAccept, onReject }) => {
   return (
     <div style={{ animation: "fadeUp .45s ease both" }}>
       {loading ? (
@@ -118,7 +118,9 @@ const SellerOrdersPanel = ({ orders, loading }) => {
         </div>
       ) : (
         <div className="orders-grid">
-          {orders.map((order) => <OrderCard key={order._id} order={order} />)}
+          {orders.map((order) => (
+            <OrderCard key={order._id} order={order} onAccept={onAccept} onReject={onReject} />
+          ))}
         </div>
       )}
     </div>
@@ -156,7 +158,7 @@ const BuyerRentalOrdersPanel = ({ orders, token }) => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '.72rem', color: '#667F68' }}>
                 <div><strong>Rent Price:</strong> Rs. {o.bookAmount != null ? o.bookAmount : o.totalAmount}</div>
                 <div><strong>Duration:</strong> {firstItem.rentalDuration || firstItem.duration || '3 Months'}</div>
-                <div><strong>Payment:</strong> {o.paymentData?.receiptUrl ? 'Receipt Uploaded' : 'Pending'}</div>
+                <div><strong>Payment:</strong> Cash on Delivery (COD)</div>
                 {o.status === 'completed' && (
                   <>
                     <div><strong>Start:</strong> {firstItem.rentalStartDate ? new Date(firstItem.rentalStartDate).toLocaleDateString() : 'Active'}</div>
@@ -166,11 +168,9 @@ const BuyerRentalOrdersPanel = ({ orders, token }) => {
               </div>
               {isPending && (
                 <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                  {!o.paymentData?.receiptUrl && (
-                    <a href={`/confirm-payment?orderId=${o._id}`} style={{ textDecoration: 'none', background: '#13493C', color: '#fff', fontSize: '.68rem', padding: '4px 10px', borderRadius: '4px', fontWeight: 700 }}>
-                      Upload Receipt
-                    </a>
-                  )}
+                  <a href={`/confirm-payment?orderId=${o._id}`} style={{ textDecoration: 'none', background: '#13493C', color: '#fff', fontSize: '.68rem', padding: '4px 10px', borderRadius: '4px', fontWeight: 700 }}>
+                    Payment Details
+                  </a>
                   <button onClick={() => handleCancelRequest(o._id)} style={{ background: 'transparent', border: '1px solid #BC6C25', color: '#BC6C25', fontSize: '.68rem', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 700 }}>
                     Cancel
                   </button>
@@ -607,38 +607,50 @@ const BookListingsPanel = ({ books, loading, onEdit, onDelete, onResell, onMarkR
   );
 };
 
-export const FinancePanel = ({ finance }) => (
-  <div>
-    <div style={{ fontSize: '.78rem', color: '#667F68', marginBottom: 4 }}>Next Payout</div>
-    <div style={{
-      fontFamily: "'Playfair Display', serif", fontSize: '2rem',
-      fontWeight: 900, color: '#BC6C25'
-    }}>Rs. {finance.totalEarningsAfterFee}</div>
-    <div style={{ fontSize: '.76rem', color: '#667F68', marginBottom: 12 }}>
-      Expected by {new Date().toLocaleDateString()}
-    </div>
-    <div style={{ height: 1, background: 'rgba(19, 73, 60, 0.08)', margin: '12px 0' }} />
-    {[
-      ['This Month', `+ Rs. ${finance.thisMonthEarnings}`, '#1E7E5A'],
-      ['Last Month', `Rs. ${finance.lastMonthEarnings}`, null],
-      ['Total Withdrawn', `Rs. ${finance.totalEarningsAfterFee}`, null],
-    ].map(([l, v, c]) => (
-      <div key={l} style={{
-        display: 'flex', justifyContent: 'space-between',
-        alignItems: 'center', padding: '6px 0'
-      }}>
-        <span style={{ fontSize: '.8rem', color: '#667F68' }}>{l}</span>
-        <span style={{ fontSize: '.85rem', fontWeight: 700, color: c || '#13493C' }}>{v}</span>
+export const FinancePanel = ({ finance }) => {
+  const formatAmount = (val) => {
+    const num = Number(val);
+    if (!num || isNaN(num) || num <= 0) return '0';
+    return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  const total = Number(finance?.totalEarningsAfterFee) || 0;
+  const thisMonth = Number(finance?.thisMonthEarnings) || 0;
+  const lastMonth = Number(finance?.lastMonthEarnings) || 0;
+
+  return (
+    <div>
+      <div style={{ fontSize: '.78rem', color: '#667F68', marginBottom: 4 }}>Payout Received</div>
+      <div style={{
+        fontFamily: "'Playfair Display', serif", fontSize: '2rem',
+        fontWeight: 900, color: '#BC6C25'
+      }}>Rs. {formatAmount(total)}</div>
+      <div style={{ fontSize: '.76rem', color: '#667F68', marginBottom: 12 }}>
+        {total > 0 ? (finance?.lastPayoutDate ? `Received on ${finance.lastPayoutDate}` : `Updated ${new Date().toLocaleDateString()}`) : 'Rs. 0 received from admin'}
       </div>
-    ))}
-  </div>
-);
+      <div style={{ height: 1, background: 'rgba(19, 73, 60, 0.08)', margin: '12px 0' }} />
+      {[
+        ['This Month', `+ Rs. ${formatAmount(thisMonth)}`, '#1E7E5A'],
+        ['Last Month', `Rs. ${formatAmount(lastMonth)}`, null],
+        ['Total Withdrawn', `Rs. ${formatAmount(total)}`, null],
+      ].map(([l, v, c]) => (
+        <div key={l} style={{
+          display: 'flex', justifyContent: 'space-between',
+          alignItems: 'center', padding: '6px 0'
+        }}>
+          <span style={{ fontSize: '.8rem', color: '#667F68' }}>{l}</span>
+          <span style={{ fontSize: '.85rem', fontWeight: 700, color: c || '#13493C' }}>{v}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const DashboardPage = () => {
   const navigate = useNavigate();
   const [, showToast] = useToast();
   const { user, token } = useAuth();
-  const { orders, loading: ordersLoading, fetchOrders } = useOrders();
+  const { orders, loading: ordersLoading, fetchOrders, setOrders } = useOrders();
   const {
     notifications,
     loading: notificationsLoading,
@@ -661,56 +673,58 @@ const DashboardPage = () => {
   const [sentExchangeRequests, setSentExchangeRequests] = useState([]);
   const [loadingExchangeRequests, setLoadingExchangeRequests] = useState(false);
   const [activeCatalogSection, setActiveCatalogSection] = useState('all');
-  const hasLoadedBooksRef = useRef(false);
+  const loadDashboardData = React.useCallback(async () => {
+    const currentUserId = user?.id || user?._id;
+    if (!token || !currentUserId) return;
+
+    setLoadingBooks(true);
+    setLoadingExchangeRequests(true);
+    try {
+      const [booksRes, usersRes, buyerOrdersRes, sellerOrdersRes, receivedRequestsRes, sentRequestsRes] = await Promise.all([
+        DashboardApi.getBooks({ token, sellerId: currentUserId }),
+        DashboardApi.getUsers({ token }),
+        DashboardApi.getOrders({ token, buyerId: currentUserId }),
+        DashboardApi.getOrders({ token, sellerId: currentUserId }),
+        api.get('/exchange-requests?type=received', { headers: { Authorization: `Bearer ${token}` } }),
+        api.get('/exchange-requests?type=sent', { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
+      setBooks(booksRes.books || []);
+      setUsers(usersRes.users || []);
+      setBuyerOrders(buyerOrdersRes.orders || []);
+      // Set orders to include both buyer and seller orders
+      const allOrders = [...(buyerOrdersRes.orders || []), ...(sellerOrdersRes.orders || [])];
+      setOrders(allOrders);
+      setReceivedExchangeRequests(receivedRequestsRes.data.requests || []);
+      setSentExchangeRequests(sentRequestsRes.data.requests || []);
+      
+      fetchNotifications();
+    } catch {
+      showToast("Failed to load dashboard data");
+    } finally {
+      setLoadingBooks(false);
+      setLoadingExchangeRequests(false);
+    }
+  }, [token, user?.id, user?._id, fetchNotifications, showToast, setOrders]);
 
   useEffect(() => {
-    hasLoadedBooksRef.current = false;
-  }, [user?.id]);
+    loadDashboardData();
+  }, [loadDashboardData]);
 
   useEffect(() => {
-    if (!token || !user?.id) return;
-    if (hasLoadedBooksRef.current) return;
-    hasLoadedBooksRef.current = true;
-
-    fetchOrders({ sellerId: user.id });
-    fetchNotifications();
-
-    (async () => {
-      setLoadingBooks(true);
-      setLoadingExchangeRequests(true);
-      try {
-        const [booksRes, usersRes, buyerOrdersRes, receivedRequestsRes, sentRequestsRes] = await Promise.all([
-          DashboardApi.getBooks({ token, sellerId: user.id }),
-          DashboardApi.getUsers({ token }),
-          DashboardApi.getOrders({ token, buyerId: user.id }),
-          api.get('/exchange-requests?type=received', { headers: { Authorization: `Bearer ${token}` } }),
-          api.get('/exchange-requests?type=sent', { headers: { Authorization: `Bearer ${token}` } }),
-        ]);
-        setBooks(booksRes.books || []);
-        setUsers(usersRes.users || []);
-        setBuyerOrders(buyerOrdersRes.orders || []);
-        setReceivedExchangeRequests(receivedRequestsRes.data.requests || []);
-        setSentExchangeRequests(sentRequestsRes.data.requests || []);
-      } catch {
-        showToast("Failed to load dashboard data");
-      } finally {
-        setLoadingBooks(false);
-        setLoadingExchangeRequests(false);
-      }
-    })();
-  }, [token, user?.id, fetchOrders, fetchNotifications, showToast]);
-
-  useEffect(() => {
-    if (!token || !user?.id) return;
+    const currentUserId = user?.id || user?._id;
+    if (!token || !currentUserId) return;
     const intervalId = setInterval(() => {
-      fetchOrders({ sellerId: user.id });
+      loadDashboardData();
     }, 10000);
     return () => clearInterval(intervalId);
-  }, [token, user?.id, fetchOrders]);
+  }, [token, user?.id, user?._id, loadDashboardData]);
 
   const sellerOrders = useMemo(
-    () => orders.filter((o) => o.sellerId?._id === user?.id),
-    [orders, user]
+    () => orders.filter((o) => {
+      const sellerId = typeof o.sellerId === 'object' ? o.sellerId._id || o.sellerId.id : o.sellerId;
+      return sellerId === user?.id || sellerId === user?._id;
+    }),
+    [orders, user?.id, user?._id]
   );
   
   const activeSellerOrders = useMemo(
@@ -860,29 +874,48 @@ const DashboardPage = () => {
   };
 
   const finance = useMemo(() => {
-    const completed = sellerOrders.filter((o) => o.status === "completed" || o.status === "ride_assigned");
+    // Only count orders where Admin has actually released / recorded the payout to this seller
+    const paidOrders = sellerOrders.filter((o) => o.sellerPayoutStatus === "PAID" || o.sellerPaidAt);
+
     const now = new Date();
-    const thisMonth = completed.filter((o) => {
-      const date = new Date(o.createdAt);
+    const thisMonthPaid = paidOrders.filter((o) => {
+      const date = new Date(o.sellerPaidAt || o.updatedAt || o.createdAt);
       return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
     });
-    const lastMonth = completed.filter((o) => {
-      const date = new Date(o.createdAt);
+    const lastMonthPaid = paidOrders.filter((o) => {
+      const date = new Date(o.sellerPaidAt || o.updatedAt || o.createdAt);
       const month = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
       const year = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
       return date.getMonth() === month && date.getFullYear() === year;
     });
 
-    const getEarnings = (o) => o.bookAmount != null ? o.bookAmount : (o.totalAmount || 0);
-    const totalEarnings = completed.reduce((sum, order) => sum + getEarnings(order), 0);
-    const thisMonthEarnings = thisMonth.reduce((sum, order) => sum + getEarnings(order), 0);
-    const lastMonthEarnings = lastMonth.reduce((sum, order) => sum + getEarnings(order), 0);
+    const getPayoutAmount = (o) => {
+      const raw = o.sellerPayableAmount != null
+        ? o.sellerPayableAmount
+        : (o.bookAmount != null ? o.bookAmount : (o.totalAmount || 0));
+      const parsed = parseFloat(raw);
+      return isNaN(parsed) ? 0 : parsed;
+    };
+
+    const totalEarnings = paidOrders.reduce((sum, order) => sum + getPayoutAmount(order), 0);
+    const thisMonthEarnings = thisMonthPaid.reduce((sum, order) => sum + getPayoutAmount(order), 0);
+    const lastMonthEarnings = lastMonthPaid.reduce((sum, order) => sum + getPayoutAmount(order), 0);
     const platformFee = 0;
+
+    let lastPayoutDate = '';
+    if (paidOrders.length > 0) {
+      const sorted = [...paidOrders].sort((a, b) => new Date(b.sellerPaidAt || b.updatedAt) - new Date(a.sellerPaidAt || a.updatedAt));
+      const d = sorted[0].sellerPaidAt || sorted[0].updatedAt;
+      if (d) lastPayoutDate = new Date(d).toLocaleDateString();
+    }
+
     return {
       totalEarningsAfterFee: totalEarnings,
       thisMonthEarnings,
       lastMonthEarnings,
       platformFee,
+      paidCount: paidOrders.length,
+      lastPayoutDate
     };
   }, [sellerOrders]);
 
@@ -971,6 +1004,30 @@ const DashboardPage = () => {
       showToast("Book is now live!");
     } catch {
       showToast("Failed to resell book", true);
+    }
+  };
+
+  const handleAcceptOrder = async (order) => {
+    if (!token || !order?._id) return;
+    if (!window.confirm("Are you sure you want to accept this order?")) return;
+    try {
+      await DashboardApi.updateOrder({ token, orderId: order._id, payload: { status: "accepted" } });
+      setOrders((prev) => prev.map((o) => (o._id === order._id ? { ...o, status: "accepted" } : o)));
+      showToast("Order accepted successfully!");
+    } catch {
+      showToast("Failed to accept order", true);
+    }
+  };
+
+  const handleRejectOrder = async (order) => {
+    if (!token || !order?._id) return;
+    if (!window.confirm("Are you sure you want to reject this order?")) return;
+    try {
+      await DashboardApi.updateOrder({ token, orderId: order._id, payload: { status: "rejected" } });
+      setOrders((prev) => prev.map((o) => (o._id === order._id ? { ...o, status: "rejected" } : o)));
+      showToast("Order rejected successfully!");
+    } catch {
+      showToast("Failed to reject order", true);
     }
   };
 
@@ -1574,7 +1631,12 @@ const DashboardPage = () => {
               {/* Active Orders Panel & Rent Requests */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <SectionLabel>Active Seller Orders</SectionLabel>
-                <SellerOrdersPanel orders={activeSellerOrders} loading={ordersLoading} />
+                <SellerOrdersPanel 
+                  orders={activeSellerOrders} 
+                  loading={ordersLoading} 
+                  onAccept={handleAcceptOrder}
+                  onReject={handleRejectOrder}
+                />
 
                 {activeRentalRequests.length > 0 && (
                   <>

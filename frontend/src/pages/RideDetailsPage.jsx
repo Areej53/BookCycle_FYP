@@ -6,6 +6,7 @@ import { useToast } from "../hooks/useToast";
 import { useOrders } from "../context/OrdersContext";
 import { useAuth } from "../context/AuthContext";
 import { DashboardApi } from "../services/api";
+import { formatOrderId } from "../utils/orderId";
 
 const RideDetailsPage = () => {
   const [searchParams] = useSearchParams();
@@ -20,8 +21,7 @@ const RideDetailsPage = () => {
     riderName: "",
     phoneNumber: "",
     bikeNumber: "",
-    trackingLink: "",
-    easypaisaNumber: ""
+    trackingLink: ""
   });
 
   useEffect(() => {
@@ -39,8 +39,8 @@ const RideDetailsPage = () => {
 
   const handleConfirm = async () => {
     // Validation
-    const { riderName, phoneNumber, bikeNumber, trackingLink, easypaisaNumber } = form;
-    if (!riderName.trim() || !phoneNumber.trim() || !bikeNumber.trim() || !trackingLink.trim() || !easypaisaNumber.trim()) {
+    const { riderName, phoneNumber, bikeNumber, trackingLink } = form;
+    if (!riderName.trim() || !phoneNumber.trim() || !bikeNumber.trim() || !trackingLink.trim()) {
       showToast("ALL fields must be filled to confirm ride details.", true);
       return;
     }
@@ -99,10 +99,6 @@ const RideDetailsPage = () => {
                   <label style={{ display: "block", fontSize: ".85rem", fontWeight: 700, color: PALETTE.text, marginBottom: 6 }}>Ride Tracking Link</label>
                   <input type="text" name="trackingLink" value={form.trackingLink} onChange={handleChange} placeholder="https://..." style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${PALETTE.border}`, boxSizing: "border-box" }} />
                 </div>
-                <div>
-                  <label style={{ display: "block", fontSize: ".85rem", fontWeight: 700, color: PALETTE.text, marginBottom: 6 }}>Easypaisa Number (For COD)</label>
-                  <input type="text" name="easypaisaNumber" value={form.easypaisaNumber} onChange={handleChange} placeholder="03xx-xxxxxxx" required style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: `1px solid ${PALETTE.border}`, boxSizing: "border-box" }} />
-                </div>
                 
                 <button onClick={handleConfirm} style={{ marginTop: 12, width: "100%", background: PALETTE.cta, color: "#fff", padding: "14px", borderRadius: 8, border: "none", fontWeight: 700, fontSize: "1rem", cursor: "pointer", transition: "opacity .2s" }} onMouseEnter={e => e.currentTarget.style.opacity = .9} onMouseLeave={e => e.currentTarget.style.opacity = 1}>
                   Send Ride Detail
@@ -120,7 +116,7 @@ const RideDetailsPage = () => {
                 <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", borderBottom: `1px solid ${PALETTE.border}`, paddingBottom: 16 }}>
                     <span style={{ color: PALETTE.muted, fontSize: ".9rem" }}>Order ID</span>
-                    <span style={{ fontWeight: 700, color: PALETTE.primary }}>{orderId}</span>
+                    <span style={{ fontWeight: 700, color: PALETTE.primary }}>{formatOrderId(orderId)}</span>
                   </div>
                   
                   <div style={{ borderBottom: `1px solid ${PALETTE.border}`, paddingBottom: 16 }}>

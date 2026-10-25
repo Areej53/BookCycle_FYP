@@ -90,9 +90,9 @@ export const CartProvider = ({ children }) => {
 
         const finalType = String(resolvedType || 'buy').toLowerCase();
 
-        // Prevent exchange books from being added to cart
-        if (finalType === 'exchange') {
-            setModalConfig({ isOpen: true, message: "Exchange books cannot be added to cart. Please use the Request Exchange button." });
+        // Prevent direct exchange addition without an offered book
+        if (finalType === 'exchange' && !book.offeredBookId) {
+            setModalConfig({ isOpen: true, message: "Exchange books cannot be added directly. Please use the Request Exchange button to offer a book." });
             return false;
         }
 
@@ -103,12 +103,21 @@ export const CartProvider = ({ children }) => {
             ? (book.rentDetails?.rentalDuration || book.duration)
             : (book.rentalDuration || book.duration);
 
+        // Extract sellerId from various possible sources
+        let extractedSellerId = book.sellerId;
+        if (!extractedSellerId && book.owner) {
+            extractedSellerId = typeof book.owner === 'object' ? (book.owner._id || book.owner.id) : book.owner;
+        }
+        if (!extractedSellerId && book.ownerId) {
+            extractedSellerId = typeof book.ownerId === 'object' ? (book.ownerId._id || book.ownerId.id) : book.ownerId;
+        }
+
         const cartItem = {
             ...(isRaw ? {} : book),
-            id: isRaw ? book._id : (book.id || book._id),
+            id: isRaw ? (book.id || book._id) : (book.id || book._id),
             title: book.title,
             author: book.author,
-            sellerId: book.sellerId || book.owner?._id || book.owner || null,
+            sellerId: extractedSellerId,
             sellerName: book.owner?.name || book.sellerName || 'Unknown Seller',
             sellerRating: book.sellerRating || { displayRating: 'No ratings', reviewsCount: 0 },
             bookRating: book.bookRating || { starRating: 0, reviewsCount: 0 },
@@ -116,12 +125,18 @@ export const CartProvider = ({ children }) => {
             condition: book.condition,
             img: isRaw ? getImageUrl(book) : (book.img || getImageUrl(book)),
             type: finalType,
-            price: toSafeNumber(finalType === 'rent' ? rentPriceVal : book.price),
-            rentPerWeek: toSafeNumber(finalType === 'rent' ? rentPriceVal : book.price),
+            price: finalType === 'exchange' ? 0 : toSafeNumber(finalType === 'rent' ? rentPriceVal : book.price),
+            rentPerWeek: finalType === 'exchange' ? 0 : toSafeNumber(finalType === 'rent' ? rentPriceVal : book.price),
             duration: String(rentDurationVal || '3 Months'),
             rentalDuration: String(rentDurationVal || '3 Months'),
             quantity: Number(book.quantity || 1),
+            offeredBookId: book.offeredBookId || undefined,
+            offeredBookTitle: book.offeredBookTitle || undefined,
+            offeredBook: book.offeredBook || undefined,
+            exchangeMessage: book.exchangeMessage || ''
         };
+
+        console.log('[addToCart] Final sellerId:', cartItem.sellerId, 'for item:', cartItem.title);
 
         const currentUserId = getCurrentUserId();
         const sellerId = cartItem.sellerId || book?.sellerId || book?.owner?._id || book?.owner || null;
@@ -135,6 +150,53 @@ export const CartProvider = ({ children }) => {
             setModalConfig({ isOpen: true, message: "That book is already in your cart" });
             return false;
         }
+
+        setCart(prev => [...prev, cartItem]);
+        return true;
+    };
+
+    const addExchangeToCart = (requestedBook, offeredBook, userMessage = '') => {
+        let extractedSellerId = requestedBook.sellerId;
+        if (!extractedSellerId && requestedBook.owner) {
+            extractedSellerId = typeof requestedBook.owner === 'object' ? (requestedBook.owner._id || requestedBook.owner.id) : requestedBook.owner;
+        }
+        if (!extractedSellerId && requestedBook.ownerId) {
+            extractedSellerId = typeof requestedBook.ownerId === 'object' ? (requestedBook.ownerId._id || requestedBook.ownerId.id) : requestedBook.ownerId;
+        }
+
+        const currentUserId = getCurrentUserId();
+        if (currentUserId && extractedSellerId && String(currentUserId) === String(extractedSellerId)) {
+            setModalConfig({ isOpen: true, message: "You cannot request an exchange on your own book." });
+            return false;
+        }
+
+        const reqId = requestedBook.id || requestedBook._id;
+        const existingInCart = cart.find(item => item.id === reqId);
+        if (existingInCart) {
+            setModalConfig({ isOpen: true, message: "That book is already in your cart." });
+            return false;
+        }
+
+        const cartItem = {
+            id: reqId,
+            title: requestedBook.title,
+            author: requestedBook.author,
+            sellerId: extractedSellerId,
+            sellerName: requestedBook.owner?.name || requestedBook.sellerName || 'Book Owner',
+            sellerRating: requestedBook.sellerRating || { displayRating: 'No ratings', reviewsCount: 0 },
+            bookRating: requestedBook.bookRating || { starRating: 0, reviewsCount: 0 },
+            category: requestedBook.category,
+            condition: requestedBook.condition,
+            img: getImageUrl(requestedBook),
+            type: 'exchange',
+            price: 0,
+            rentPerWeek: 0,
+            quantity: 1,
+            offeredBookId: offeredBook ? (offeredBook.id || offeredBook._id) : undefined,
+            offeredBookTitle: offeredBook?.title || 'Offered Book',
+            offeredBook: offeredBook || undefined,
+            exchangeMessage: userMessage || ''
+        };
 
         setCart(prev => [...prev, cartItem]);
         return true;
@@ -180,6 +242,7 @@ export const CartProvider = ({ children }) => {
             cart,
             savedItems,
             addToCart,
+            addExchangeToCart,
             removeFromCart,
             updateDuration,
             clearCart,

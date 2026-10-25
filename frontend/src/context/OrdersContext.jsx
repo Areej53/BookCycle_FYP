@@ -14,8 +14,11 @@ export const OrdersProvider = ({ children }) => {
       if (!token) return [];
       setLoading(true);
       try {
-        const sellerId = filters.sellerId || user?.id;
-        const data = await DashboardApi.getOrders({ token, sellerId, buyerId: filters.buyerId });
+        const data = await DashboardApi.getOrders({ 
+          token, 
+          sellerId: filters.sellerId, 
+          buyerId: filters.buyerId 
+        });
         const list = data.orders || [];
         setOrders(list);
         return list;
@@ -23,11 +26,11 @@ export const OrdersProvider = ({ children }) => {
         setLoading(false);
       }
     },
-    [token, user]
+    [token]
   );
 
   return (
-    <OrdersContext.Provider value={{ orders, loading, fetchOrders }}>
+    <OrdersContext.Provider value={{ orders, loading, fetchOrders, setOrders }}>
       {children}
     </OrdersContext.Provider>
   );

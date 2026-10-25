@@ -85,6 +85,7 @@ export default function SellerReviewPage() {
                     category: sellerData.category || 'Programming',
                     exchangeType: sellerData.exchangeType || 'Sell',
                     price: sellerData.exchangeType === 'Sell' ? Number(sellerData.price) : 0,
+                    status: 'Available',
                     images: processedImages,
                     image: mainImage
                 };

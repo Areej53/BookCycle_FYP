@@ -46,6 +46,18 @@ User.init({
     type: DataTypes.STRING(20),
     allowNull: true
   },
+  address: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  city: {
+    type: DataTypes.STRING(50),
+    allowNull: true
+  },
+  pickupAddress: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
   password: {
     type: DataTypes.STRING(255),
     allowNull: false
@@ -55,7 +67,7 @@ User.init({
     allowNull: false,
     validate: {
       isIn: {
-        args: [['customer', 'shopkeeper', 'admin']],
+        args: [['customer', 'shopkeeper', 'admin', 'rider']],
         msg: "Role is not supported"
       }
     }

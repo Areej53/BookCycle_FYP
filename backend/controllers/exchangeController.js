@@ -81,11 +81,11 @@ const createExchangeBook = async (req, res) => {
 };
 
 const getAllExchangeBooks = async (req, res) => {
-  const { sellerId } = req.query;
+  const sellerId = req.query.sellerId || req.query.userId || req.query.ownerId;
   
   const query = {};
   if (sellerId) {
-    query['$book.ownerId$'] = sellerId;
+    query.ownerId = String(sellerId);
   }
 
   const exchanges = await Exchange.findAll({
@@ -93,11 +93,65 @@ const getAllExchangeBooks = async (req, res) => {
     include: [{
       model: Book,
       as: 'book',
-      include: [{ model: User, as: 'owner', attributes: ['name', 'email'] }]
+      include: [{ model: User, as: 'owner', attributes: ['id', 'name', 'email'] }]
     }]
   });
 
-  res.status(200).json({ exchanges, count: exchanges.length });
+  const books = exchanges.map(ex => {
+    const b = ex.book ? (ex.book.toJSON ? ex.book.toJSON() : ex.book) : {};
+    return {
+      ...b,
+      id: b.id || ex.bookId || ex.id,
+      _id: b.id || ex.bookId || ex.id,
+      title: b.title || ex.title,
+      author: b.author || ex.author,
+      condition: b.condition || ex.condition,
+      category: b.category || ex.category,
+      images: b.images || ex.images || [],
+      image: b.image || (ex.images && ex.images[0]) || '',
+      status: ex.status || b.status || 'Available',
+      exchangeType: 'Exchange',
+      ownerId: b.ownerId || ex.ownerId,
+      owner: b.owner || undefined,
+      exchangeDetails: {
+        id: ex.id,
+        _id: ex.id,
+        status: ex.status || 'Available',
+        lookingFor: ex.lookingFor || ''
+      }
+    };
+  });
+
+  if (sellerId) {
+    const existingBookIds = new Set(books.map(b => String(b.id)));
+    const additionalBooks = await Book.findAll({
+      where: {
+        ownerId: String(sellerId),
+        status: 'Available',
+        exchangeType: 'Exchange'
+      },
+      include: [{ model: User, as: 'owner', attributes: ['id', 'name', 'email'] }]
+    });
+
+    for (const ab of additionalBooks) {
+      if (!existingBookIds.has(String(ab.id))) {
+        const b = ab.toJSON ? ab.toJSON() : ab;
+        books.push({
+          ...b,
+          id: b.id,
+          _id: b.id,
+          exchangeDetails: {
+            id: b.id,
+            _id: b.id,
+            status: 'Available',
+            lookingFor: ''
+          }
+        });
+      }
+    }
+  }
+
+  res.status(200).json({ books, exchanges, count: books.length });
 };
 
 const getExchangeBookById = async (req, res) => {

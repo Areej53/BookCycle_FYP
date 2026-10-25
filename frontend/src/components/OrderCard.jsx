@@ -4,10 +4,11 @@ import { PALETTE } from "../constants";
 import { useAuth } from "../context/AuthContext";
 import { DashboardApi } from "../services/api";
 import { useOrders } from "../context/OrdersContext";
+import { formatOrderId } from "../utils/orderId";
 
 const OrderCard = ({ order }) => {
   const navigate = useNavigate();
-  const orderId = order.orderId || order._id;
+  const orderId = order.orderId || order._id || order.id;
   const { token, user } = useAuth();
   const { fetchOrders } = useOrders();
   const [loading, setLoading] = useState(false);
@@ -20,9 +21,6 @@ const OrderCard = ({ order }) => {
     try {
       await DashboardApi.updateOrder({ token, orderId, payload: { status } });
       await fetchOrders({ sellerId: user.id });
-      if (status === "accepted") {
-        navigate(`/seller-ride?orderId=${orderId}`);
-      }
     } catch (e) {
       console.error("Failed to update status", e);
     } finally {
@@ -73,7 +71,7 @@ const OrderCard = ({ order }) => {
             letterSpacing: ".05em",
           }}
         >
-          Order ID: {orderId}
+          Order ID: {formatOrderId(orderId)}
         </div>
         <div style={{ fontSize: ".75rem", color: PALETTE.muted, fontWeight: 600 }}>
           {new Date(order.createdAt).toLocaleDateString()}
@@ -93,14 +91,28 @@ const OrderCard = ({ order }) => {
         <div style={{ fontWeight: 700, color: PALETTE.primary, marginBottom: 8, fontSize: ".75rem", textTransform: "uppercase", letterSpacing: ".05em" }}>
           {order.items?.length || 0} Items ordered
         </div>
-        {order.items?.map((item, idx) => (
-          <div key={idx} style={{ display: "flex", justifyContent: "space-between", color: PALETTE.text, marginBottom: 4 }}>
-            <span style={{ fontWeight: 600 }}>• {item.title}</span>
-            <span style={{ fontWeight: 800, color: PALETTE.muted }}>
-              {item.type === "free" ? "FREE" : item.type === "buy" ? "Buy" : "Rent"}
-            </span>
-          </div>
-        ))}
+        {order.items?.map((item, idx) => {
+          const rawType = (item.type || (order.orderType === 'EXCHANGE' ? 'exchange' : order.orderType === 'RENT' ? 'rent' : 'buy')).toLowerCase();
+          const isExchange = rawType === 'exchange' || order.orderType === 'EXCHANGE';
+          const typeLabel = isExchange ? "Exchange" : rawType === "free" ? "FREE" : rawType === "buy" ? "Buy" : "Rent";
+          const typeColor = isExchange ? "#2d6a4f" : rawType === "buy" ? PALETTE.cta : PALETTE.muted;
+
+          return (
+            <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", color: PALETTE.text, marginBottom: 4 }}>
+              <span style={{ fontWeight: 600 }}>• {item.title}</span>
+              <span style={{ 
+                fontWeight: 800, 
+                color: typeColor,
+                fontSize: isExchange ? '.78rem' : '.82rem',
+                padding: isExchange ? '2px 8px' : '0',
+                borderRadius: isExchange ? '6px' : '0',
+                background: isExchange ? 'rgba(45,106,79,.12)' : 'transparent'
+              }}>
+                {typeLabel}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto", paddingTop: 14, borderTop: `1px solid ${PALETTE.border}` }}>
@@ -148,26 +160,26 @@ const OrderCard = ({ order }) => {
             </button>
           </div>
         ) : order.status === "accepted" ? (
-          <button
-            onClick={() => navigate(`/seller-ride?orderId=${orderId}`)}
-            style={{
-              background: PALETTE.cta,
-              color: "#fff",
-              border: "none",
-              padding: "10px 18px",
-              borderRadius: 50,
-              fontWeight: 700,
-              fontSize: ".85rem",
-              cursor: "pointer",
-            }}
-          >
-            Book Ride
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+            <div style={{ background: "rgba(45,106,79,.1)", color: "#2d6a4f", fontWeight: 800, fontSize: ".75rem", padding: "8px 16px", borderRadius: 50 }}>
+              Order Accepted
+            </div>
+            {order.deliveryStatus && order.deliveryStatus !== 'ASSIGNED' && (
+              <div style={{ background: "rgba(221,161,94,.1)", color: PALETTE.cta, fontWeight: 700, fontSize: ".72rem", padding: "4px 10px", borderRadius: 50 }}>
+                {order.deliveryStatus.replace(/_/g, ' ')}
+              </div>
+            )}
+          </div>
         ) : order.status === "out_for_delivery" ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
             <div style={{ background: "rgba(221,161,94,.1)", color: PALETTE.cta, fontWeight: 800, fontSize: ".75rem", padding: "8px 16px", borderRadius: 50 }}>
               Out for delivery
             </div>
+            {order.deliveryStatus && (
+              <div style={{ background: "rgba(45,106,79,.1)", color: "#2d6a4f", fontWeight: 700, fontSize: ".72rem", padding: "4px 10px", borderRadius: 50 }}>
+                {order.deliveryStatus.replace(/_/g, ' ')}
+              </div>
+            )}
             {order.orderType === "RENT" && (
               <button
                 onClick={() => handleAction("completed")}
@@ -177,6 +189,32 @@ const OrderCard = ({ order }) => {
                 Confirm Delivered
               </button>
             )}
+          </div>
+        ) : order.status === "ride_assigned" ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+            <div style={{ background: "rgba(221,161,94,.1)", color: PALETTE.cta, fontWeight: 800, fontSize: ".75rem", padding: "8px 16px", borderRadius: 50 }}>
+              Ride Assigned
+            </div>
+            {order.deliveryStatus && (
+              <div style={{ background: "rgba(45,106,79,.1)", color: "#2d6a4f", fontWeight: 700, fontSize: ".72rem", padding: "4px 10px", borderRadius: 50 }}>
+                {order.deliveryStatus.replace(/_/g, ' ')}
+              </div>
+            )}
+            <button
+              onClick={() => navigate(`/track-order?orderId=${orderId}`)}
+              style={{
+                background: PALETTE.primary,
+                color: "#fff",
+                border: "none",
+                padding: "6px 14px",
+                borderRadius: 50,
+                fontWeight: 700,
+                fontSize: ".75rem",
+                cursor: "pointer"
+              }}
+            >
+              Track Delivery
+            </button>
           </div>
         ) : order.status === "payment_submitted" ? (
           <div style={{ display: "flex", gap: "8px", flexDirection: "column", alignItems: "flex-end" }}>
@@ -247,12 +285,12 @@ const OrderCard = ({ order }) => {
         )}
       </div>
 
-      {order.status === "payment_submitted" && order.paymentData?.receiptUrl && (
-        <div style={{ borderTop: `1px solid ${PALETTE.border}`, paddingTop: 14, marginTop: 8 }}>
-          <div style={{ fontSize: ".75rem", fontWeight: 700, color: PALETTE.text, marginBottom: 8 }}>
-            Payment Receipt
-          </div>
-          <img src={order.paymentData.receiptUrl} alt="Receipt" style={{ width: '100%', maxHeight: '180px', objectFit: 'contain', borderRadius: 8, border: `1px solid ${PALETTE.border}`, cursor: "pointer", background: '#fff' }} onClick={(e) => { e.stopPropagation(); window.open(order.paymentData.receiptUrl, '_blank'); }} title="Click to enlarge" />
+      {order.paymentStatus && order.paymentStatus !== 'COD_PENDING' && (
+        <div style={{ borderTop: `1px solid ${PALETTE.border}`, paddingTop: 10, marginTop: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '.75rem' }}>
+          <span style={{ color: PALETTE.muted }}>Payment Status:</span>
+          <span style={{ fontWeight: 700, color: order.paymentStatus === 'SETTLED' ? '#166534' : '#1D4ED8' }}>
+            {order.paymentStatus === 'COD_COLLECTED' ? 'Cash Collected by Rider' : order.paymentStatus.replace('_', ' ')}
+          </span>
         </div>
       )}
 

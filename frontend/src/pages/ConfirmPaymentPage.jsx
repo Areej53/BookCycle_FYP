@@ -5,6 +5,8 @@ import { PALETTE } from "../constants";
 import { useToast } from "../hooks/useToast";
 import { useAuth } from "../context/AuthContext";
 import { DashboardApi } from "../services/api";
+import { CheckCircle, Clock, Truck, ShieldCheck, ArrowRight, DollarSign, Package } from "lucide-react";
+import { formatOrderId } from "../utils/orderId";
 
 const ConfirmPaymentPage = () => {
   const [searchParams] = useSearchParams();
@@ -14,186 +16,246 @@ const ConfirmPaymentPage = () => {
   const { token, user } = useAuth();
   
   const [order, setOrder] = useState(null);
-  const [form, setForm] = useState({
-    transactionId: ""
-  });
-  const [receiptMode, setReceiptMode] = useState(false);
-  const [receiptUrl, setReceiptUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (orderId && token && user) {
-      DashboardApi.getOrders({ token, buyerId: user.id }).then(res => {
-        const found = res.orders?.find(o => (o.orderId || o._id) === orderId);
-        if (found) setOrder(found);
-      });
+      setLoading(true);
+      DashboardApi.getOrders({ token, buyerId: user.id })
+        .then(res => {
+          const found = res.orders?.find(o => (o.orderId || o._id || o.id) == orderId);
+          if (found) setOrder(found);
+        })
+        .catch(err => {
+          console.error("Failed to load order:", err);
+        })
+        .finally(() => setLoading(false));
     }
   }, [orderId, token, user]);
 
-  const handleFileSelect = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const type = file.type;
-    if (!type.startsWith('image/')) {
-      showToast('Only image files are accepted', true);
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('Image file must be less than 5MB', true);
-      return;
-    }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setReceiptUrl(reader.result);
-      setReceiptMode(true);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const isDeliveryReceipt = order && order.orderType === "RENT" && (order.status === "out_for_delivery" || order.status === "ride_assigned" || order.status === "accepted");
-
-  const handleSubmit = async () => {
-    if (isDeliveryReceipt) {
-      try {
-        await DashboardApi.updateOrder({
-          token,
-          orderId: order._id,
-          payload: { status: "completed" }
-        });
-        showToast("Rental has officially started! Enjoy your reading.");
-        navigate("/dashboard");
-      } catch (err) {
-        showToast("Failed to confirm delivery", true);
-      }
-      return;
-    }
-    if (!receiptMode) {
-      showToast("Please upload a receipt first", true);
-      return;
-    }
-    try {
-      await DashboardApi.updateOrder({
-        token,
-        orderId: order._id,
-        payload: {
-          status: "payment_submitted",
-          paymentData: { transactionId: form.transactionId, receiptUrl: receiptUrl }
-        }
-      });
-      showToast("Payment submitted successfully! Your order will be processed soon.");
-      navigate("/dashboard");
-    } catch (err) {
-      showToast("Failed to submit payment", true);
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'COD_COLLECTED':
+        return { bg: '#DBEAFE', color: '#1E40AF', label: 'Cash Collected by Rider' };
+      case 'DEPOSITED':
+        return { bg: '#DCFCE7', color: '#166534', label: 'Deposited & Verified' };
+      case 'SETTLED':
+        return { bg: '#D1FAE5', color: '#065F46', label: 'Fully Settled' };
+      case 'REFUNDED':
+        return { bg: '#FEE2E2', color: '#991B1B', label: 'Refunded' };
+      case 'COD_PENDING':
+      default:
+        return { bg: '#FEF3C7', color: '#92400E', label: 'Pending Doorstep Collection' };
     }
   };
 
-  const paymentNumber = order?.trackingData?.easypaisaNumber || order?.sellerId?.phone || "0301-9876543";
+  const statusBadge = getStatusBadge(order?.paymentStatus);
+  const totalAmount = order?.codAmountDue != null ? order.codAmountDue : (order?.totalAmount || 0);
 
   return (
-    <div style={{ background: "#f0ead6", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      
+    <div style={{ background: "#FAF9F0", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <div style={{ flex: 1, padding: "50px 20px" }}>
         
         <div style={{ textAlign: "center", marginBottom: 30, animation: "fadeUp .4s ease" }}>
-          <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: "2.4rem", color: PALETTE.primary, marginBottom: 8 }}>
-            {isDeliveryReceipt ? "Confirm Book Received" : "Confirm Your Payment"}
+          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "2.2rem", color: PALETTE.primary, marginBottom: 8, fontWeight: 800 }}>
+            Cash on Delivery (COD) Payment Details
           </h1>
-          <p style={{ color: PALETTE.muted, fontSize: "1.1rem" }}>
-            {isDeliveryReceipt ? "Confirm that you have physically received your rented book to start the rental period" : "Upload your Easypaisa payment receipt to complete the order"}
+          <p style={{ color: PALETTE.muted, fontSize: "1rem", maxWidth: 500, margin: "0 auto" }}>
+            Review your order payment method and total amount payable at your doorstep upon delivery.
           </p>
         </div>
 
-        <div style={{ maxWidth: 450, margin: "0 auto", background: "linear-gradient(135deg, #fefdf6 0%, #e6efe7 100%)", padding: 36, borderRadius: 24, boxShadow: "0 8px 30px rgba(19,73,60,.08)", position: "relative" }}>
-          
-          {!order ? (
-            <div style={{ color: PALETTE.muted, textAlign: 'center' }}>Loading order details...</div>
+        <div style={{
+          maxWidth: 560,
+          margin: "0 auto",
+          background: "#FFFFFF",
+          padding: 36,
+          borderRadius: 20,
+          boxShadow: "0 8px 30px rgba(19, 73, 60, 0.08)",
+          border: `1.5px solid ${PALETTE.border}`
+        }}>
+          {loading ? (
+            <div style={{ color: PALETTE.muted, textAlign: 'center', padding: "40px 0" }}>
+              Loading order payment details...
+            </div>
+          ) : !order ? (
+            <div style={{ textAlign: "center", padding: "40px 20px" }}>
+              <p style={{ color: PALETTE.muted, marginBottom: 20 }}>Order not found or access expired.</p>
+              <button
+                onClick={() => navigate("/dashboard")}
+                style={{
+                  background: PALETTE.primary,
+                  color: "#FAF9F0",
+                  padding: "10px 20px",
+                  borderRadius: 8,
+                  border: "none",
+                  fontWeight: 700,
+                  cursor: "pointer"
+                }}
+              >
+                Back to Dashboard
+              </button>
+            </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
               
+              {/* Order Header Summary */}
               <div style={{ borderBottom: `1.5px solid ${PALETTE.border}`, paddingBottom: 16 }}>
-                <h3 style={{ fontSize: "1.1rem", color: '#000', marginBottom: 12, fontWeight: 700 }}>Order Summary</h3>
-                <div style={{ display: "flex", gap: 8, fontSize: ".95rem", marginBottom: 6, color: '#000' }}>
-                  <strong>Order ID:</strong> <span style={{ color: PALETTE.cta }}>#{(order.orderId || order._id).slice(-6).toUpperCase()}</span>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <span style={{ fontSize: "0.85rem", fontWeight: 700, color: PALETTE.muted, textTransform: "uppercase" }}>
+                    Order Reference
+                  </span>
+                  <span style={{ fontSize: "0.95rem", fontWeight: 800, color: PALETTE.primary }}>
+                    {formatOrderId(order.orderId || order._id || order.id)}
+                  </span>
                 </div>
-                <div style={{ display: "flex", gap: 8, fontSize: ".95rem", marginBottom: 6, color: '#000' }}>
-                  <strong>Book:</strong> <span style={{ color: PALETTE.cta }}>{order.items?.[0]?.title || "Book"}</span>
-                </div>
-                <div style={{ display: "flex", gap: 8, fontSize: ".95rem", color: '#000' }}>
-                  <strong>Total Amount:</strong> <span style={{ color: PALETTE.cta }}>Rs. {order.totalAmount}</span>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "0.85rem", color: PALETTE.muted }}>Transaction Type:</span>
+                  <span style={{
+                    fontSize: "0.78rem",
+                    fontWeight: 700,
+                    padding: "3px 10px",
+                    borderRadius: 6,
+                    backgroundColor: order.orderType === 'RENT' ? '#EFF6FF' : order.orderType === 'EXCHANGE' ? '#FEF3C7' : '#ECFDF5',
+                    color: order.orderType === 'RENT' ? '#1D4ED8' : order.orderType === 'EXCHANGE' ? '#B45309' : '#047857'
+                  }}>
+                    {order.orderType || 'BUY'}
+                  </span>
                 </div>
               </div>
 
-              {isDeliveryReceipt ? (
-                <div>
-                  <h3 style={{ fontSize: "1.15rem", color: PALETTE.primary, marginBottom: 8, fontWeight: 700 }}>Start Your Rental</h3>
-                  <p style={{ fontSize: ".95rem", color: '#000', lineHeight: 1.5, marginBottom: 15 }}>
-                    Please click the button below to confirm you have received the book. This will notify the seller and start your rental duration countdown.
-                  </p>
-                  <button onClick={handleSubmit} style={{ width: "100%", background: PALETTE.cta, color: "#fff", padding: "16px", borderRadius: 8, border: "none", fontWeight: 600, fontSize: "1.05rem", cursor: "pointer", boxShadow: "0 4px 15px rgba(188,108,37,.3)" }}>
-                    ✓ I Have Received the Book
-                  </button>
+              {/* Payment Method & Status Card */}
+              <div style={{
+                backgroundColor: "#FFFBEB",
+                borderRadius: 14,
+                padding: "20px",
+                border: "1.5px solid #FCD34D"
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                  <div>
+                    <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#92400E", textTransform: "uppercase" }}>
+                      Selected Payment Method
+                    </div>
+                    <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "#92400E", marginTop: 2 }}>
+                      Cash on Delivery (COD)
+                    </div>
+                  </div>
+                  <span style={{
+                    padding: "4px 12px",
+                    borderRadius: 20,
+                    fontSize: "0.78rem",
+                    fontWeight: 700,
+                    backgroundColor: statusBadge.bg,
+                    color: statusBadge.color
+                  }}>
+                    {statusBadge.label}
+                  </span>
                 </div>
-              ) : (
-                <>
-                  <div>
-                    <h3 style={{ fontSize: "1.1rem", color: '#000', marginBottom: 8, fontWeight: 700 }}>Payment Instruction</h3>
-                    <p style={{ fontSize: ".95rem", color: '#000', lineHeight: 1.4, marginBottom: 10 }}>
-                      Please send the payment to the seller's Easypaisa number and upload the receipt below.
-                    </p>
-                    <div style={{ fontSize: "1.8rem", fontWeight: 800, color: PALETTE.cta, display: 'flex', alignItems: 'center', gap: 10 }}>
-                      {paymentNumber}
-                      <button onClick={() => navigator.clipboard.writeText(paymentNumber) } 
-                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.4rem', color: PALETTE.cta }}>
-                        📋
-                      </button>
-                    </div>
+
+                <p style={{ margin: "10px 0 0 0", fontSize: "0.88rem", color: "#78350F", lineHeight: 1.5 }}>
+                  Please keep exact cash ready. Payment will be collected by the verified BookCycle rider upon physical handover of your package.
+                </p>
+              </div>
+
+              {/* Price Breakdown */}
+              <div style={{
+                backgroundColor: "#FAF9F0",
+                borderRadius: 14,
+                padding: "18px 20px",
+                border: `1px solid ${PALETTE.border}`
+              }}>
+                <h4 style={{ margin: "0 0 12px 0", fontSize: "0.95rem", color: PALETTE.primary, fontWeight: 700 }}>
+                  Payment Breakdown
+                </h4>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: "0.88rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: PALETTE.muted }}>
+                      {order.orderType === 'RENT' ? 'Rental Charges:' : order.orderType === 'EXCHANGE' ? 'Exchange Book:' : 'Book Price:'}
+                    </span>
+                    <span style={{ fontWeight: 600, color: PALETTE.text }}>
+                      Rs. {order.orderType === 'EXCHANGE' ? 0 : Math.max(0, Number(order.totalAmount || 0) - Number(order.shippingCharges || 0) - Number(order.securityDeposit || 0))}
+                    </span>
                   </div>
 
-                  <div>
-                    <label style={{ display: "block", fontSize: ".95rem", color: '#000', marginBottom: 8 }}>Upload Payment Receipt</label>
-                    <div style={{ position: 'relative' }}>
-                      <input type="file" accept="image/*" onChange={handleFileSelect} 
-                        style={{ opacity: 0, position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', cursor: 'pointer', zIndex: 10 }} />
-                      <div style={{ 
-                          border: `2px dashed ${receiptMode ? PALETTE.cta : 'rgba(188,108,37,.4)'}`, 
-                          background: 'rgba(188,108,37,.05)',
-                          padding: receiptMode ? "10px" : "24px", borderRadius: 16, textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, overflow: "hidden"
-                        }}>
-                        {receiptMode && receiptUrl ? (
-                          <img src={receiptUrl} alt="Receipt Preview" style={{ width: '100%', maxHeight: '250px', objectFit: 'contain', borderRadius: '8px' }} onClick={(e) => { e.stopPropagation(); window.open(receiptUrl, '_blank'); }} title="Click to enlarge" />
-                        ) : (
-                          <>
-                            <span style={{ fontSize: '1.4rem', color: PALETTE.cta }}>↑</span>
-                            <div style={{ fontSize: '.95rem', color: '#000' }}>
-                              Click to upload or drag your receipt image
-                            </div>
-                            <div style={{ fontSize: '.8rem', color: PALETTE.muted }}>Supported formats: Any Image (Max 5MB)</div>
-                          </>
-                        )}
-                      </div>
-                    </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: PALETTE.muted }}>Delivery Courier Fee (Islamabad):</span>
+                    <span style={{ fontWeight: 600, color: PALETTE.text }}>
+                      Rs. {order.shippingCharges || 0}
+                    </span>
                   </div>
 
-                  <div>
-                    <label style={{ display: "block", fontSize: ".95rem", color: '#000', marginBottom: 8 }}>Transaction ID (optional)</label>
-                    <input 
-                      type="text" 
-                      value={form.transactionId} 
-                      onChange={(e) => setForm({ transactionId: e.target.value })} 
-                      placeholder="Enter Transaction ID (optional)" 
-                      style={{ width: "100%", padding: "14px 16px", borderRadius: 8, border: `1px solid ${PALETTE.border}`, boxSizing: "border-box", fontSize: ".95rem", background: '#fff', color: '#000' }} 
-                    />
-                  </div>
-                  
-                  <div>
-                    <button onClick={handleSubmit} style={{ width: "100%", background: PALETTE.cta, color: "#fff", padding: "16px", borderRadius: 8, border: "none", fontWeight: 600, fontSize: "1.05rem", cursor: "pointer", boxShadow: "0 4px 15px rgba(188,108,37,.3)" }}>
-                      Submit Payment
-                    </button>
-                    <div style={{ textAlign: 'center', fontSize: '.75rem', color: PALETTE.muted, marginTop: 12 }}>
-                      Payment submitted successfully. Your order will be processed soon.
+                  {Number(order.securityDeposit || 0) > 0 && (
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ color: '#4338CA' }}>Refundable Rental Security Deposit:</span>
+                      <span style={{ fontWeight: 700, color: '#4338CA' }}>
+                        Rs. {order.securityDeposit}
+                      </span>
                     </div>
+                  )}
+
+                  <div style={{
+                    marginTop: 8,
+                    paddingTop: 10,
+                    borderTop: `1.5px solid ${PALETTE.border}`,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center"
+                  }}>
+                    <span style={{ fontWeight: 800, fontSize: "1rem", color: PALETTE.primary }}>
+                      Total Payable (COD):
+                    </span>
+                    <span style={{ fontWeight: 900, fontSize: "1.4rem", color: PALETTE.cta }}>
+                      Rs. {totalAmount}
+                    </span>
                   </div>
-                </>
-              )}
+                </div>
+              </div>
+
+              {/* Delivery Recipient Details */}
+              <div style={{ fontSize: "0.88rem", color: PALETTE.text, lineHeight: 1.6 }}>
+                <div><strong>Delivery To:</strong> {order.shippingName || user?.name}</div>
+                <div><strong>Phone Number:</strong> {order.shippingPhone || user?.phone || "N/A"}</div>
+                <div><strong>Address:</strong> {order.shippingAddress || "On file"}</div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
+                <button
+                  onClick={() => navigate("/dashboard")}
+                  style={{
+                    flex: 1,
+                    background: "transparent",
+                    color: PALETTE.primary,
+                    border: `1.5px solid ${PALETTE.primary}`,
+                    padding: "14px",
+                    borderRadius: 8,
+                    fontWeight: 700,
+                    fontSize: "0.95rem",
+                    cursor: "pointer"
+                  }}
+                >
+                  Return to Dashboard
+                </button>
+                <button
+                  onClick={() => navigate(`/order-tracking?orderId=${order.orderId || order._id || order.id}`)}
+                  style={{
+                    flex: 1,
+                    background: PALETTE.primary,
+                    color: "#FAF9F0",
+                    border: "none",
+                    padding: "14px",
+                    borderRadius: 8,
+                    fontWeight: 700,
+                    fontSize: "0.95rem",
+                    cursor: "pointer",
+                    boxShadow: "0 4px 12px rgba(19, 73, 60, 0.2)"
+                  }}
+                >
+                  Track Delivery
+                </button>
+              </div>
+
             </div>
           )}
         </div>

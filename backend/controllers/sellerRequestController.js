@@ -8,7 +8,13 @@ const requestSellerApproval = async (req, res) => {
     }
 
     const userId = req.user.id;
-    
+    const { city, address, phone } = req.body;
+
+    // Islamabad-only validation
+    if (city && !city.toLowerCase().includes('islamabad')) {
+      return res.status(400).json({ msg: 'Sorry, we currently only serve sellers in Islamabad.' });
+    }
+
     const user = await User.findByPk(userId);
     if (!user) {
       return res.status(404).json({ msg: 'User not found' });
@@ -22,8 +28,13 @@ const requestSellerApproval = async (req, res) => {
       return res.status(400).json({ msg: 'Your seller account is already approved.' });
     }
 
+    // Update seller information
     user.sellerStatus = 'pending';
     user.sellerRequestDate = new Date();
+    if (city) user.city = city;
+    if (address) user.address = address;
+    if (address) user.pickupAddress = address; // Keep pickupAddress for backward compatibility
+    if (phone) user.phone = phone;
     await user.save();
 
     // Create notification for user
@@ -38,7 +49,7 @@ const requestSellerApproval = async (req, res) => {
       console.error('Failed to create seller request notification:', notificationErr);
     }
 
-    res.status(200).json({ 
+    res.status(200).json({
       msg: 'Seller approval request submitted successfully',
       sellerStatus: 'pending'
     });

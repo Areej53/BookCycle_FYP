@@ -91,7 +91,9 @@ const matchEnum = (arr, val) => {
 const getAllBooks = async (req, res) => {
   const { category, cats, search, q, type, conds, condition, price, minPrice, maxPrice, sort, sellerId } = req.query;
   
-  const whereClause = sellerId ? { ownerId: sellerId } : { status: 'Available' };
+  // When sellerId is provided, fetch all books for that seller regardless of status
+  // When sellerId is not provided, only show available books for public view
+  const whereClause = sellerId ? { ownerId: String(sellerId) } : { status: 'Available' };
 
   const finalCategory = category || cats;
   const finalSearch = search || q;
@@ -311,6 +313,8 @@ const createBook = async (req, res) => {
     return res.status(404).json({ msg: 'User not found' });
   }
 
+  // Allow both shopkeepers and customers to list books
+  // Only check seller approval for shopkeepers
   if (user.role === 'shopkeeper' && user.sellerStatus !== 'approved') {
     return res.status(403).json({ 
       msg: 'Your seller account is not approved for listing books. Please wait for administrator approval or contact support.',
@@ -319,6 +323,9 @@ const createBook = async (req, res) => {
   }
 
   req.body.ownerId = req.body.sellerId || req.user.id;
+  if (req.body.type) {
+    req.body.exchangeType = matchEnum(exactTypeEnums, req.body.type);
+  }
   if (req.body.type) {
     req.body.exchangeType = matchEnum(exactTypeEnums, req.body.type);
   }

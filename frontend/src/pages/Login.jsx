@@ -46,18 +46,35 @@ const Login = () => {
     setIsLoading(true);
     try {
       const response = await api.post("/login", formData);
+
+      // Check rider application status
+      if (response.data.riderStatus === 'PENDING') {
+        setInlineError("Your Rider application is currently under review.");
+        return;
+      }
+      if (response.data.riderStatus === 'REJECTED') {
+        const reason = response.data.rejectionReason ? `\n\nReason: ${response.data.rejectionReason}` : "";
+        setInlineError(`Your Rider application has been rejected.${reason}`);
+        return;
+      }
+      if (response.data.riderStatus === 'SUSPENDED') {
+        setInlineError("Your Rider account has been suspended.");
+        return;
+      }
+
       login(response.data.token);
       
       // Redirect based on role
       if (response.data.role === 'admin') {
         window.location.href = "/admin/dashboard";
+      } else if (response.data.role === 'rider') {
+        window.location.href = "/rider/dashboard";
       } else {
         navigate("/home");
       }
     } catch (err) {
       console.log(err);
       setInlineError(getApiErrorMessage(err));
-      // toast.error(getApiErrorMessage(err)); // unused
     } finally {
       setIsLoading(false);
     }

@@ -47,7 +47,8 @@ const CartPage = () => {
     return acc
   }, 0)
 
-  const delivery = cart.length * DELIVERY_CHARGE
+  const paidItems = cart.filter(item => item.type !== 'exchange')
+  const delivery = paidItems.length * DELIVERY_CHARGE
   const total = subtotal + delivery
 
   const handleCheckoutClick = () => {
@@ -195,21 +196,21 @@ const CartPage = () => {
                         </div>
                       )}
                       {item.type === 'exchange' && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                           <span style={{ fontSize: '1.4rem' }}>🔄</span>
                           <div>
                             <div style={{ fontWeight: 700, color: 'var(--secondary)', fontSize: '.95rem' }}>
-                              Exchange Data
+                              Book Exchange
                             </div>
                             <div style={{ fontSize: '.75rem', color: 'var(--text-muted)' }}>
-                              Exchange with other readers
+                              Offered: <strong>{item.offeredBookTitle || 'Your Book'}</strong>
                             </div>
                           </div>
                           <div style={{ marginLeft: '12px' }}>
-                            <div style={{ fontSize: '.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>Delivery Charge</div>
+                            <div style={{ fontSize: '.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>Price</div>
                             <div style={{ fontFamily: "'Playfair Display',serif", fontSize: '1.15rem',
                               fontWeight: 900, color: 'var(--secondary)' }}>
-                              Rs. 120
+                              Rs. 0 (Free)
                             </div>
                           </div>
                         </div>
@@ -284,7 +285,7 @@ const CartPage = () => {
                         </div>
                       </div>
                       <div className={`summary-item-price ${item.type === 'exchange' ? 'exchange' : ''}`} style={{ color: item.type === 'exchange' ? 'var(--secondary)' : '', fontWeight: item.type === 'exchange' ? '900' : '' }}>
-                        {item.type === 'exchange' ? 'Rs. 120 (Delivery Charges)' : `Rs. ${item.type === 'buy' ? Number(item.price || 0) : Number(item.rentPerWeek || 0)}`}
+                        {item.type === 'exchange' ? 'Rs. 0 (Free Exchange)' : `Rs. ${item.type === 'buy' ? Number(item.price || 0) : Number(item.rentPerWeek || 0)}`}
                       </div>
                     </div>
                   ))}

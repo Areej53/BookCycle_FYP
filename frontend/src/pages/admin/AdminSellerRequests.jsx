@@ -2,15 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../../api/client';
 import { 
   Store, 
-  CheckCircle, 
   XCircle, 
   Calendar,
   Mail,
   Clock,
-  ExternalLink,
   Search,
   Check,
-  AlertCircle
+  AlertCircle,
+  Eye,
+  X,
+  Phone,
+  MapPin
 } from 'lucide-react';
 
 const AdminSellerRequests = () => {
@@ -18,6 +20,7 @@ const AdminSellerRequests = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedSeller, setSelectedSeller] = useState(null);
 
   useEffect(() => {
     fetchSellerRequests();
@@ -89,7 +92,7 @@ const AdminSellerRequests = () => {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', height: '100%', overflow: 'auto' }}>
       
       {/* Description and search row */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
@@ -151,16 +154,16 @@ const AdminSellerRequests = () => {
           borderRadius: '16px',
           boxShadow: '0 4px 20px rgba(19, 73, 60, 0.05)',
           border: '1px solid rgba(19, 73, 60, 0.05)',
-          overflow: 'hidden'
+          overflow: 'auto',
+          maxHeight: '600px'
         }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '1000px' }}>
             <thead>
               <tr style={{ backgroundColor: '#FAF9F0', borderBottom: '1px solid rgba(19, 73, 60, 0.08)' }}>
                 <th style={{ padding: '16px 24px', fontWeight: '700', color: '#13493C', fontSize: '0.9rem' }}>Applicant Name</th>
-                <th style={{ padding: '16px 24px', fontWeight: '700', color: '#13493C', fontSize: '0.9rem' }}>Email Contact</th>
                 <th style={{ padding: '16px 24px', fontWeight: '700', color: '#13493C', fontSize: '0.9rem' }}>Join Date</th>
                 <th style={{ padding: '16px 24px', fontWeight: '700', color: '#13493C', fontSize: '0.9rem' }}>Application Date</th>
-                <th style={{ padding: '16px 24px', fontWeight: '700', color: '#13493C', fontSize: '0.9rem', textAlign: 'center' }}>Portfolio</th>
+                <th style={{ padding: '16px 24px', fontWeight: '700', color: '#13493C', fontSize: '0.9rem', textAlign: 'center' }}>View Details</th>
                 <th style={{ padding: '16px 24px', fontWeight: '700', color: '#13493C', fontSize: '0.9rem', textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
@@ -212,14 +215,6 @@ const AdminSellerRequests = () => {
                     </div>
                   </td>
 
-                  {/* Email */}
-                  <td style={{ padding: '16px 24px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#667F68', fontSize: '0.85rem' }}>
-                      <Mail size={14} />
-                      {seller.email}
-                    </div>
-                  </td>
-
                   {/* Join Date */}
                   <td style={{ padding: '16px 24px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#667F68', fontSize: '0.85rem' }}>
@@ -239,24 +234,26 @@ const AdminSellerRequests = () => {
                     </div>
                   </td>
 
-                  {/* Portfolio link */}
+                  {/* View Details */}
                   <td style={{ padding: '16px 24px', textAlign: 'center' }}>
-                    <a
-                      href={`https://example.com/portfolio/${seller.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => setSelectedSeller(seller)}
                       style={{
+                        padding: '6px 12px',
+                        backgroundColor: '#606C38',
+                        color: '#FAF9F0',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '4px',
-                        color: '#606C38',
-                        textDecoration: 'none',
-                        fontSize: '0.85rem',
+                        gap: '6px',
+                        fontSize: '0.8rem',
                         fontWeight: '600'
                       }}
                     >
-                      View link <ExternalLink size={12} />
-                    </a>
+                      <Eye size={14} /> View Details
+                    </button>
                   </td>
 
                   {/* Actions */}
@@ -280,7 +277,7 @@ const AdminSellerRequests = () => {
                           transition: 'opacity 0.2s'
                         }}
                       >
-                        <Check size={14} /> Approve Store
+                        <Check size={14} /> Approve
                       </button>
                       <button
                         onClick={() => handleReject(seller.id)}
@@ -302,7 +299,7 @@ const AdminSellerRequests = () => {
                         onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(192, 57, 43, 0.18)'}
                         onMouseOut={(e) => e.target.style.backgroundColor = 'rgba(192, 57, 43, 0.1)'}
                       >
-                        <XCircle size={14} /> Reject Application
+                        <XCircle size={14} /> Reject
                       </button>
                     </div>
                   </td>
@@ -310,6 +307,203 @@ const AdminSellerRequests = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* SELLER DETAILS MODAL */}
+      {selectedSeller && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2000,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: '#FFF',
+            borderRadius: '16px',
+            width: '100%',
+            maxWidth: '600px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              padding: '20px 24px',
+              borderBottom: '1px solid rgba(19, 73, 60, 0.1)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              backgroundColor: '#FAF9F0'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Store size={24} color="#13493C" />
+                <h3 style={{ margin: 0, color: '#13493C', fontFamily: "'Playfair Display', serif", fontSize: '1.25rem', fontWeight: '700' }}>
+                  Seller Application Details
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedSeller(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#13493C' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              
+              {/* Seller Info */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                padding: '16px',
+                backgroundColor: '#F7F6EF',
+                borderRadius: '12px'
+              }}>
+                <div style={{
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '50%',
+                  backgroundColor: '#BC6C25',
+                  color: '#FAF9F0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.5rem',
+                  fontWeight: 'bold'
+                }}>
+                  {selectedSeller.name?.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h4 style={{ margin: '0 0 4px', color: '#13493C', fontSize: '1.1rem', fontWeight: '700' }}>
+                    {selectedSeller.name}
+                  </h4>
+                  <span style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '0.75rem',
+                    backgroundColor: '#FDF7E7',
+                    color: '#B68222',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    fontWeight: 'bold'
+                  }}>
+                    <Clock size={10} /> Pending Verification
+                  </span>
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div style={{
+                padding: '16px',
+                backgroundColor: '#FFF',
+                borderRadius: '12px',
+                border: '1px solid rgba(19, 73, 60, 0.1)'
+              }}>
+                <h5 style={{ margin: '0 0 12px', color: '#13493C', fontSize: '0.95rem', fontWeight: '700' }}>
+                  Contact Information
+                </h5>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#667F68', fontSize: '0.9rem' }}>
+                    <Mail size={16} />
+                    <span>{selectedSeller.email}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#667F68', fontSize: '0.9rem' }}>
+                    <Phone size={16} />
+                    <span>{selectedSeller.phone || 'N/A'}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#667F68', fontSize: '0.9rem' }}>
+                    <MapPin size={16} />
+                    <span>{selectedSeller.address || selectedSeller.city || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dates */}
+              <div style={{
+                padding: '16px',
+                backgroundColor: '#FFF',
+                borderRadius: '12px',
+                border: '1px solid rgba(19, 73, 60, 0.1)'
+              }}>
+                <h5 style={{ margin: '0 0 12px', color: '#13493C', fontSize: '0.95rem', fontWeight: '700' }}>
+                  Important Dates
+                </h5>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#667F68', fontSize: '0.9rem' }}>
+                    <Calendar size={16} />
+                    <span><strong>Join Date:</strong> {new Date(selectedSeller.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#667F68', fontSize: '0.9rem' }}>
+                    <Clock size={16} />
+                    <span><strong>Application Date:</strong> {selectedSeller.sellerRequestDate 
+                      ? new Date(selectedSeller.sellerRequestDate).toLocaleDateString()
+                      : 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', paddingTop: '8px' }}>
+                <button
+                  onClick={() => {
+                    handleApprove(selectedSeller.id);
+                    setSelectedSeller(null);
+                  }}
+                  disabled={actionLoading === selectedSeller.id}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#13493C',
+                    color: '#FAF9F0',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: actionLoading === selectedSeller.id ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '0.9rem',
+                    fontWeight: '600'
+                  }}
+                >
+                  <Check size={16} /> Approve
+                </button>
+                <button
+                  onClick={() => {
+                    handleReject(selectedSeller.id);
+                    setSelectedSeller(null);
+                  }}
+                  disabled={actionLoading === selectedSeller.id}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: 'rgba(192, 57, 43, 0.1)',
+                    color: '#C0392B',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: actionLoading === selectedSeller.id ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '0.9rem',
+                    fontWeight: '600'
+                  }}
+                >
+                  <XCircle size={16} /> Reject
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

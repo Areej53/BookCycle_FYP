@@ -5,6 +5,9 @@ class Book extends Model {
   toJSON() {
     const values = { ...this.get() };
     values._id = values.id;
+    // Add sellerId as an alias to ownerId for cart compatibility
+    // Ensure it's a string, not an object
+    values.sellerId = typeof values.ownerId === 'object' ? values.ownerId.id || values.ownerId._id : values.ownerId;
     return values;
   }
 }

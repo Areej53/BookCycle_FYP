@@ -1,10 +1,6 @@
-const { Order, OrderItem, Notification, User, Book, Rent, Review, sequelize } = require("../models");
-
-const sendEmailMock = (to, subject, text) => {
-  console.log(`\n================= EMAIL =================`);
-  console.log(`TO: ${to}\nSUBJECT: ${subject}\n\n${text}`);
-  console.log(`===========================================\n`);
-};
+const { Order, OrderItem, Notification, User, Book, Rent, Review, DeliveryStatusHistory, RiderApplication, ExchangeRequest, PaymentAuditLog, sequelize } = require("../models");
+const { Op } = require("sequelize");
+const { notifyUserAndEmail, notifyAdminUsers } = require("../utils/notificationHelper");
 
 const normalizeOrderPayload = (payload = {}) => {
   const items = Array.isArray(payload.items) ? payload.items : [];
@@ -14,23 +10,18 @@ const normalizeOrderPayload = (payload = {}) => {
     type: item.type || "buy",
     price: Number(item.price) || 0,
     quantity: Number(item.quantity) || 1,
+    offeredBookId: item.offeredBookId || undefined,
+    offeredBookTitle: item.offeredBookTitle || undefined
   }));
-
-  const totalAmount =
-    payload.totalAmount != null
-      ? Number(payload.totalAmount) || 0
-      : normalizedItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   return {
     buyerId: payload.buyerId,
     sellerId: payload.sellerId,
     items: normalizedItems,
-    bookAmount: payload.bookAmount != null ? Number(payload.bookAmount) : undefined,
-    deliveryFee: payload.deliveryFee != null ? Number(payload.deliveryFee) : undefined,
-    totalAmount,
     shippingAddress: payload.shippingAddress,
     shippingPhone: payload.shippingPhone,
     shippingName: payload.shippingName,
+    trackingData: payload.trackingData || {},
     status: payload.status || "pending",
   };
 };
@@ -39,12 +30,133 @@ const createOrder = async (req, res) => {
   const payload = normalizeOrderPayload(req.body);
   payload.buyerId = payload.buyerId || req.user.id;
 
-  const hasRentItem = payload.items.some(item => String(item.type).toLowerCase() === 'rent');
-  payload.orderType = hasRentItem ? 'RENT' : 'BUY';
+  // Handle sellerId if it's an object (from Book owner association)
+  if (payload.sellerId && typeof payload.sellerId === 'object') {
+    payload.sellerId = payload.sellerId.id || payload.sellerId._id;
+  }
+
+  // Islamabad-only validation for buyer
+  if (payload.shippingAddress && !payload.shippingAddress.toLowerCase().includes('islamabad')) {
+    return res.status(400).json({ msg: "Sorry, we currently only deliver to Islamabad addresses." });
+  }
 
   if (!payload.sellerId || !payload.items.length) {
     return res.status(400).json({ msg: "sellerId and items are required." });
   }
+
+  const hasRentItem = payload.items.some(item => String(item.type).toLowerCase() === 'rent');
+  const hasExchangeItem = payload.items.some(item => String(item.type).toLowerCase() === 'exchange');
+  
+  if (hasRentItem) {
+    payload.orderType = 'RENT';
+  } else if (hasExchangeItem || req.body.orderType === 'EXCHANGE') {
+    payload.orderType = 'EXCHANGE';
+  } else {
+    payload.orderType = 'BUY';
+  }
+
+  // SERVER-SIDE VALIDATION OF PRICES & CALCULATIONS
+  // Never trust frontend totals - recompute using actual database values
+  let calculatedBookAmount = 0;
+  let calculatedSecurityDeposit = 0;
+  const validatedItems = [];
+
+  for (const item of payload.items) {
+    let verifiedPrice = 0;
+    let verifiedSecDep = 0;
+    let bookTitle = item.title;
+
+    if (item.bookId) {
+      const book = await Book.findByPk(item.bookId, {
+        include: [{ model: Rent, as: 'rentDetails' }]
+      });
+
+      if (!book) {
+        return res.status(404).json({ msg: `Book not found: ${item.title || item.bookId}` });
+      }
+
+      bookTitle = book.title;
+
+      // Ensure sellerId strictly matches the book's true registered owner (seller) from DB
+      if (book.ownerId) {
+        payload.sellerId = book.ownerId;
+      }
+
+      if (payload.orderType === 'BUY') {
+        verifiedPrice = Number(book.price) || 0;
+      } else if (payload.orderType === 'RENT') {
+        verifiedPrice = Number(book.rentDetails?.rentPrice || book.rentWeek || book.price) || 0;
+        verifiedSecDep = Number(book.securityDeposit) || 0;
+      } else if (payload.orderType === 'EXCHANGE') {
+        verifiedPrice = 0; // Pure exchange book price is 0
+      }
+    } else {
+      verifiedPrice = Number(item.price) || 0;
+    }
+
+    const qty = Number(item.quantity) || 1;
+    calculatedBookAmount += verifiedPrice * qty;
+    calculatedSecurityDeposit += verifiedSecDep * qty;
+
+    validatedItems.push({
+      bookId: item.bookId,
+      title: bookTitle,
+      type: item.type,
+      price: verifiedPrice,
+      quantity: qty,
+      offeredBookId: item.offeredBookId,
+      offeredBookTitle: item.offeredBookTitle
+    });
+  }
+
+  // Delivery charge calculation: Rs. 120 per non-exchange item (Islamabad delivery)
+  const paidItemsCount = validatedItems.filter(i => String(i.type).toLowerCase() !== 'exchange').length;
+  const calculatedDeliveryFee = paidItemsCount > 0 ? paidItemsCount * 120 : 0;
+  const calculatedTotalAmount = calculatedBookAmount + calculatedDeliveryFee + calculatedSecurityDeposit;
+
+  // Platform commission calculation (if configured via env, otherwise 0)
+  const commissionRate = Number(process.env.BOOKCYCLE_COMMISSION_PERCENT) || 0;
+  const calculatedCommission = commissionRate > 0 ? (calculatedBookAmount * commissionRate) / 100 : 0.00;
+
+  // Seller payable amount is the book/rental price (minus any platform commission)
+  const sellerPayable = Math.max(0, calculatedBookAmount - calculatedCommission);
+  // Rider earning is the delivery charge
+  const riderEarning = calculatedDeliveryFee;
+
+  // Duplicate order prevention: check if identical order created within last 15 seconds
+  const recentDuplicate = await Order.findOne({
+    where: {
+      buyerId: payload.buyerId,
+      sellerId: payload.sellerId,
+      totalAmount: calculatedTotalAmount,
+      status: { [Op.in]: ['pending', 'pending_seller'] },
+      createdAt: { [Op.gte]: new Date(Date.now() - 15000) }
+    }
+  });
+  if (recentDuplicate) {
+    return res.status(200).json({ order: recentDuplicate, msg: "Order already placed." });
+  }
+
+  payload.bookAmount = calculatedBookAmount;
+  payload.deliveryFee = calculatedDeliveryFee;
+  payload.totalAmount = calculatedTotalAmount;
+  payload.items = validatedItems;
+
+  // COD specific fields
+  payload.paymentMethod = 'COD';
+  payload.paymentStatus = 'COD_PENDING';
+  payload.codAmountDue = calculatedTotalAmount;
+  payload.codAmountCollected = 0.00;
+  payload.depositStatus = 'PENDING';
+  payload.depositAmount = 0.00;
+  payload.sellerPayableAmount = sellerPayable;
+  payload.sellerPayoutStatus = 'PENDING';
+  payload.riderEarningAmount = riderEarning;
+  payload.riderPayoutStatus = 'PENDING';
+  payload.platformCommission = calculatedCommission;
+  payload.securityDeposit = calculatedSecurityDeposit;
+  payload.securityDepositStatus = calculatedSecurityDeposit > 0 ? 'HELD' : 'NONE';
+  payload.hasDiscrepancy = false;
 
   payload.trackingData = {
     ...payload.trackingData,
@@ -56,7 +168,7 @@ const createOrder = async (req, res) => {
   try {
     const order = await Order.create(payload, { transaction: t });
 
-    const itemsToCreate = payload.items.map(item => ({
+    const itemsToCreate = validatedItems.map(item => ({
       orderId: order.id,
       bookId: item.bookId,
       title: item.title,
@@ -67,43 +179,164 @@ const createOrder = async (req, res) => {
 
     await OrderItem.bulkCreate(itemsToCreate, { transaction: t });
 
+    // Initial Payment Audit Log
+    await PaymentAuditLog.create({
+      orderId: order.id,
+      action: 'ORDER_CREATED',
+      amount: calculatedTotalAmount,
+      performedBy: payload.buyerId,
+      performedByRole: 'customer',
+      previousPaymentStatus: null,
+      newPaymentStatus: 'COD_PENDING',
+      note: `Order placed with Cash on Delivery (COD). Total Payable: Rs. ${calculatedTotalAmount} (Book: Rs. ${calculatedBookAmount}, Delivery: Rs. ${calculatedDeliveryFee}${calculatedSecurityDeposit > 0 ? ', Deposit: Rs. ' + calculatedSecurityDeposit : ''})`
+    }, { transaction: t });
+
     await t.commit();
 
+    // 1. RECORD HISTORY IN DB
+    try {
+      await DeliveryStatusHistory.create({
+        orderId: order.id,
+        status: 'CREATED',
+        updatedBy: payload.buyerId,
+        note: 'Order created by buyer'
+      });
+    } catch (histErr) {
+      console.error("Order creation history create error:", histErr);
+    }
+
+    // 2. NOTIFY SELLER, ADMIN, & BUYER AFTER SUCCESSFUL CREATION
     const buyerUser = await User.findByPk(payload.buyerId);
-    const buyerName = buyerUser ? buyerUser.name : "Buyer";
+    const buyerName = payload.shippingName || (buyerUser ? buyerUser.name : "Buyer");
+    const sellerUser = await User.findByPk(payload.sellerId);
+    const bookTitle = payload.items[0]?.title || "Book";
 
     if (payload.orderType === 'RENT') {
-      await Notification.create({
+      // SELLER
+      await notifyUserAndEmail({
         userId: payload.sellerId,
-        message: `You have received a new rental request for "${payload.items[0]?.title || "Book"}" from ${buyerName}.`,
+        userEmail: sellerUser?.email,
+        userPhone: sellerUser?.phone,
+        subject: `New Rental Request Received - Order #${order.id}`,
+        message: `New BookCycle rental request received for your book "${bookTitle}" from ${buyerName}.`,
         type: "order",
-        isRead: false,
+        orderId: order.id
       });
 
-      await Notification.create({
+      // ADMIN
+      await notifyAdminUsers({
+        subject: `New Rent Order #${order.id}`,
+        message: `New Rent Order #${order.id} has been placed.`,
+        orderId: order.id
+      });
+
+      // BUYER
+      await notifyUserAndEmail({
         userId: payload.buyerId,
-        message: `Your rental request for "${payload.items[0]?.title || "Book"}" has been placed successfully.`,
+        userEmail: buyerUser?.email,
+        userPhone: payload.shippingPhone || buyerUser?.phone,
+        subject: `Rental Request Placed - Order #${order.id}`,
+        message: `Your rental request for "${bookTitle}" has been placed successfully. Order #${order.id}.`,
         type: "order",
-        isRead: false,
+        orderId: order.id,
+        sendSmsFlag: true
+      });
+    } else if (payload.orderType === 'EXCHANGE') {
+      // Sync with ExchangeRequest table
+      try {
+        const reqBookId = payload.items[0]?.bookId;
+        const offBookId = payload.trackingData?.offeredBookId || payload.items[0]?.offeredBookId;
+        if (reqBookId && offBookId) {
+          const existingReq = await ExchangeRequest.findOne({
+            where: {
+              requesterId: payload.buyerId,
+              requestedBookId: reqBookId,
+              offeredBookId: offBookId,
+              status: { [Op.in]: ['Pending', 'Accepted'] }
+            }
+          });
+          if (!existingReq) {
+            await ExchangeRequest.create({
+              requesterId: payload.buyerId,
+              ownerId: payload.sellerId,
+              requestedBookId: reqBookId,
+              offeredBookId: offBookId,
+              status: 'Pending'
+            });
+          }
+        }
+      } catch (exReqErr) {
+        console.warn("ExchangeRequest sync note:", exReqErr.message);
+      }
+
+      // SELLER
+      await notifyUserAndEmail({
+        userId: payload.sellerId,
+        userEmail: sellerUser?.email,
+        userPhone: sellerUser?.phone,
+        subject: `New Exchange Request Received - Order #${order.id}`,
+        message: `New BookCycle exchange request received for "${bookTitle}" from ${buyerName}.`,
+        type: "exchange",
+        orderId: order.id
+      });
+
+      // ADMIN
+      await notifyAdminUsers({
+        subject: `New Exchange Order #${order.id}`,
+        message: `New Exchange Order #${order.id} has been created.`,
+        orderId: order.id
+      });
+
+      // BUYER
+      await notifyUserAndEmail({
+        userId: payload.buyerId,
+        userEmail: buyerUser?.email,
+        userPhone: payload.shippingPhone || buyerUser?.phone,
+        subject: `Exchange Request Sent - Order #${order.id}`,
+        message: `Your exchange request for "${bookTitle}" has been placed successfully. Order #${order.id}.`,
+        type: "exchange",
+        orderId: order.id,
+        sendSmsFlag: true
       });
     } else {
-      await Notification.create({
+      // SALE (BUY)
+      // SELLER
+      await notifyUserAndEmail({
         userId: payload.sellerId,
-        message: `New order received from ${payload.shippingName || "Buyer"}`,
+        userEmail: sellerUser?.email,
+        userPhone: sellerUser?.phone,
+        subject: `New Order Received - Order #${order.id}`,
+        message: `New BookCycle order received. Order #${order.id} has been placed for your book "${bookTitle}".`,
         type: "order",
-        isRead: false,
+        orderId: order.id
       });
 
-      await Notification.create({
+      // ADMIN
+      await notifyAdminUsers({
+        subject: `New Sale Order #${order.id}`,
+        message: `New Sale Order #${order.id} has been placed and requires processing.`,
+        orderId: order.id
+      });
+
+      // BUYER
+      await notifyUserAndEmail({
         userId: payload.buyerId,
-        message: "Order placed successfully",
+        userEmail: buyerUser?.email,
+        userPhone: payload.shippingPhone || buyerUser?.phone,
+        subject: `Order Placed Successfully - Order #${order.id}`,
+        message: `Your BookCycle order #${order.id} has been placed successfully.`,
         type: "order",
-        isRead: false,
+        orderId: order.id,
+        sendSmsFlag: true
       });
     }
 
     const completeOrder = await Order.findByPk(order.id, {
-      include: [{ model: OrderItem, as: 'items' }]
+      include: [
+        { model: OrderItem, as: 'items' },
+        { model: DeliveryStatusHistory, as: 'statusHistory' },
+        { model: PaymentAuditLog, as: 'paymentHistory' }
+      ]
     });
 
     return res.status(201).json({ order: completeOrder });
@@ -115,20 +348,36 @@ const createOrder = async (req, res) => {
 };
 
 const getOrders = async (req, res) => {
-  const { sellerId, buyerId } = req.query;
+  const { sellerId, buyerId, riderId } = req.query;
   const query = {};
 
-  const isValidId = id => typeof id === 'string' && id.length === 24;
+  const isValidId = id => typeof id === 'string' && id.length > 0;
   if (sellerId && isValidId(sellerId)) query.sellerId = sellerId;
   if (buyerId && isValidId(buyerId)) query.buyerId = buyerId;
+  if (riderId && isValidId(riderId)) query.riderId = riderId;
+
+  // Security role check if user authenticated
+  if (req.user) {
+    if (req.user.role === 'customer' && !query.sellerId) {
+      query.buyerId = req.user.id;
+    } else if (req.user.role === 'shopkeeper' && !query.buyerId) {
+      query.sellerId = req.user.id;
+    } else if (req.user.role === 'rider') {
+      query.riderId = req.user.id;
+    }
+  }
 
   const orders = await Order.findAll({
     where: query,
     order: [["createdAt", "DESC"]],
     include: [
-      { model: User, as: "buyer", attributes: ["name", "email"] },
-      { model: User, as: "seller", attributes: ["name", "email"] },
-      { model: OrderItem, as: "items" }
+      { model: User, as: "buyer", attributes: ["id", "name", "email", "phone", "address", "city"] },
+      { model: User, as: "seller", attributes: ["id", "name", "email", "phone", "address", "city", "pickupAddress"] },
+      { model: User, as: "rider", attributes: ["id", "name", "email", "phone"] },
+      { model: RiderApplication, as: "riderProfile", attributes: ["id", "fullName", "phone", "vehicleType", "vehicleNumber", "isRiderActive"] },
+      { model: OrderItem, as: "items" },
+      { model: DeliveryStatusHistory, as: "statusHistory" },
+      { model: PaymentAuditLog, as: "paymentHistory" }
     ]
   });
 
@@ -175,6 +424,18 @@ const updateOrderStatus = async (req, res) => {
     
     await order.save();
 
+    // Record History
+    try {
+      await DeliveryStatusHistory.create({
+        orderId: order.id,
+        status: status || 'UPDATED',
+        updatedBy: req.user?.id || 'system',
+        note: `Order status updated to ${status}`
+      });
+    } catch (histErr) {
+      console.error("Update order history failed:", histErr);
+    }
+
     const firstItem = order.items?.[0] || {};
     const bookTitle = firstItem.title || "Book";
 
@@ -188,23 +449,33 @@ const updateOrderStatus = async (req, res) => {
             if (order.orderType === "RENT") {
               const rent = await Rent.findOne({ where: { bookId: book.id } });
               if (rent) {
-                await rent.update({ status: "Reserved" }); // Paid and reserved (pending delivery)
+                await rent.update({ status: "Reserved" });
               }
             }
           }
         }
       }
       
-      if (order.orderType === "RENT") {
-        await Notification.create({
-          userId: order.buyerId,
-          message: `Your rental request for "${bookTitle}" has been approved by the seller.`,
-          type: "order_update",
-          orderId: order.id
-        });
-      } else {
-        await Notification.create({ userId: order.buyerId, message: "Your order has been accepted", type: "order_update", orderId: order.id });
-      }
+      const msg = order.orderType === "RENT"
+        ? `Your rental request for "${bookTitle}" has been approved by the seller.`
+        : `Your order #${order.id} has been accepted by the seller.`;
+
+      await notifyUserAndEmail({
+        userId: order.buyerId,
+        userEmail: order.buyer?.email,
+        userPhone: order.shippingPhone || order.buyer?.phone,
+        subject: `Order Accepted - #${order.id}`,
+        message: msg,
+        type: "order_update",
+        orderId: order.id
+      });
+
+      await notifyAdminUsers({
+        subject: `Order Accepted by Seller - #${order.id}`,
+        message: `Order #${order.id} accepted by seller ${order.seller?.name || ''}. Ready for rider assignment.`,
+        orderId: order.id
+      });
+
     } else if (status === "rejected") {
       if (order.orderType === "RENT") {
         for (const item of order.items) {
@@ -219,15 +490,16 @@ const updateOrderStatus = async (req, res) => {
             }
           }
         }
-        await Notification.create({
-          userId: order.buyerId,
-          message: `Your rental request for "${bookTitle}" has been rejected.`,
-          type: "order_update",
-          orderId: order.id
-        });
-      } else {
-        await Notification.create({ userId: order.buyerId, message: "Your order has been rejected", type: "order_update", orderId: order.id });
       }
+      
+      await notifyUserAndEmail({
+        userId: order.buyerId,
+        userEmail: order.buyer?.email,
+        subject: `Order Update - Order #${order.id}`,
+        message: `Your order #${order.id} for "${bookTitle}" has been rejected.`,
+        type: "order_update",
+        orderId: order.id
+      });
     } else if (status === "cancelled") {
       if (order.orderType === "RENT") {
         for (const item of order.items) {
@@ -243,46 +515,50 @@ const updateOrderStatus = async (req, res) => {
           }
         }
       }
-      await Notification.create({
+      await notifyUserAndEmail({
         userId: order.sellerId,
-        message: `Rental request for "${bookTitle}" was cancelled.`,
+        userEmail: order.seller?.email,
+        subject: `Order Cancelled - #${order.id}`,
+        message: `Order #${order.id} for "${bookTitle}" was cancelled.`,
         type: "order_update",
         orderId: order.id
       });
-      await Notification.create({
+      await notifyUserAndEmail({
         userId: order.buyerId,
-        message: `Your rental request for "${bookTitle}" has been cancelled.`,
+        userEmail: order.buyer?.email,
+        subject: `Order Cancelled - #${order.id}`,
+        message: `Your order #${order.id} for "${bookTitle}" has been cancelled.`,
         type: "order_update",
         orderId: order.id
       });
-    } else if (status === "out_for_delivery") {
-      const trackNo = order.trackingData?.trackingNumber || 'N/A';
-      await Notification.create({ userId: order.buyerId, message: `Your order is out for delivery. Tracking number: ${trackNo}`, type: "order_update", orderId: order.id });
-    } else if (status === "payment_submitted") {
-      if (order.orderType === "RENT") {
-        for (const item of order.items) {
-          if (item.bookId) {
-            const rent = await Rent.findOne({ where: { bookId: item.bookId } });
-            if (rent) {
-              await rent.update({ status: "Reserved" }); // Uploaded receipt, waiting approval
-            }
-          }
+
+      // COD payment audit tracking on cancellation
+      try {
+        if (order.paymentStatus === 'COD_COLLECTED' || order.paymentStatus === 'DEPOSITED') {
+          await PaymentAuditLog.create({
+            orderId: order.id,
+            action: 'ORDER_CANCELLED_AFTER_COLLECTION',
+            amount: Number(order.codAmountCollected) || 0,
+            performedBy: req.user?.id || 'system',
+            performedByRole: req.user?.role || 'system',
+            previousPaymentStatus: order.paymentStatus,
+            newPaymentStatus: order.paymentStatus,
+            note: `Order cancelled after cash collection of Rs. ${order.codAmountCollected}. Refund or reconciliation required.`
+          });
+        } else {
+          await PaymentAuditLog.create({
+            orderId: order.id,
+            action: 'ORDER_CANCELLED_BEFORE_COLLECTION',
+            amount: 0,
+            performedBy: req.user?.id || 'system',
+            performedByRole: req.user?.role || 'system',
+            previousPaymentStatus: order.paymentStatus,
+            newPaymentStatus: order.paymentStatus,
+            note: 'Order cancelled before cash collection. No cash was collected from customer.'
+          });
         }
-        await Notification.create({
-          userId: order.buyerId,
-          message: `Your payment receipt for rental "${bookTitle}" has been submitted.`,
-          type: "order_update",
-          orderId: order.id
-        });
-        await Notification.create({
-          userId: order.sellerId,
-          message: `Payment receipt uploaded by ${order.shippingName || "Buyer"} for rental "${bookTitle}".`,
-          type: "order_update",
-          orderId: order.id
-        });
-      } else {
-        await Notification.create({ userId: order.buyerId, message: "Your payment has been submitted", type: "order_update", orderId: order.id });
-        await Notification.create({ userId: order.sellerId, message: `${order.shippingName || (order.buyer && order.buyer.name) || "Buyer"} has submitted the payment`, type: "order_update", orderId: order.id });
+      } catch (cancelAuditErr) {
+        console.error("Cancellation audit log error:", cancelAuditErr);
       }
     } else if (status === "completed") {
       if (order.orderType === "RENT") {
@@ -313,14 +589,18 @@ const updateOrderStatus = async (req, res) => {
                 await book.update({ status: "Unavailable" });
               }
 
-              await Notification.create({
+              await notifyUserAndEmail({
                 userId: order.buyerId,
+                userEmail: order.buyer?.email,
+                subject: `Rental Started - #${order.id}`,
                 message: `Your rental for "${item.title}" has started! Active until ${endDate.toLocaleDateString()}.`,
                 type: "general"
               });
 
-              await Notification.create({
+              await notifyUserAndEmail({
                 userId: order.sellerId,
+                userEmail: order.seller?.email,
+                subject: `Rental Active - #${order.id}`,
                 message: `Rental has started for "${item.title}". Active until ${endDate.toLocaleDateString()}.`,
                 type: "general"
               });
@@ -328,8 +608,23 @@ const updateOrderStatus = async (req, res) => {
           }
         }
       } else {
-        await Notification.create({ userId: order.buyerId, message: "Your order is completed", type: "order_update", orderId: order.id });
-        await Notification.create({ userId: order.sellerId, message: "Order completed. Earnings added.", type: "order_update", orderId: order.id });
+        await notifyUserAndEmail({
+          userId: order.buyerId,
+          userEmail: order.buyer?.email,
+          subject: `Order Completed - #${order.id}`,
+          message: `Your order #${order.id} is completed. Thank you!`,
+          type: "order_update",
+          orderId: order.id
+        });
+
+        await notifyUserAndEmail({
+          userId: order.sellerId,
+          userEmail: order.seller?.email,
+          subject: `Order Earnings Added - #${order.id}`,
+          message: `Order #${order.id} completed. Earnings added.`,
+          type: "order_update",
+          orderId: order.id
+        });
         
         const earning = order.bookAmount != null ? Number(order.bookAmount) : Number(order.totalAmount);
         
@@ -339,31 +634,6 @@ const updateOrderStatus = async (req, res) => {
           seller.finance_monthlyEarnings = Number(seller.finance_monthlyEarnings || 0) + earning;
           seller.finance_completedOrdersRevenue = Number(seller.finance_completedOrdersRevenue || 0) + earning;
           await seller.save();
-        }
-      }
-    } else if (status === "complain") {
-      const buyer = await User.findByPk(order.buyerId);
-      if (buyer) {
-        buyer.complaintCount = (buyer.complaintCount || 0) + 1;
-        await buyer.save();
-        
-        order.status = "complain";
-        if (complainReason) order.complainReason = complainReason;
-        await order.save();
-        
-        await Notification.create({ userId: order.sellerId, message: "Your complaint has been received and will be reviewed.", type: "order_update", orderId: order.id });
-        const bookName = order.items?.[0]?.title || "Unknown Book";
-        const emailMessage = `Seller has raised a complaint on your order for '${bookName}': ${complainReason}`;
-        await Notification.create({ userId: order.buyerId, message: emailMessage, type: "complaint", orderId: order.id });
-        
-        if (buyer.email) {
-          sendEmailMock(buyer.email, "Notice: Complaint Received", emailMessage);
-        }
-        
-        if (buyer.complaintCount >= 3) {
-          buyer.isBlocked = true;
-          await buyer.save();
-          await Notification.create({ userId: order.buyerId, message: "Your account has been permanently blocked due to multiple complaints.", type: "system" });
         }
       }
     }

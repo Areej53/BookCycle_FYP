@@ -1,5 +1,6 @@
 const { ExchangeRequest, Book, User, Exchange, Notification, Order } = require('../models');
 const { Op } = require('sequelize');
+const { notifyUserAndEmail, notifyAdminUsers } = require('../utils/notificationHelper');
 
 const createExchangeRequest = async (req, res) => {
   const { requestedBookId, offeredBookId } = req.body;
@@ -62,18 +63,33 @@ const createExchangeRequest = async (req, res) => {
     status: 'Pending'
   });
 
-  // Notify owner
-  await Notification.create({
+  const ownerUser = await User.findByPk(requestedBook.ownerId);
+  const requesterUser = await User.findByPk(req.user.id);
+
+  // Notify owner/seller
+  await notifyUserAndEmail({
     userId: requestedBook.ownerId,
-    message: `You have received a new exchange request for "${requestedBook.title}".`,
-    type: "general"
+    userEmail: ownerUser?.email,
+    userPhone: ownerUser?.phone,
+    subject: `New Exchange Request Received`,
+    message: `New BookCycle exchange request received for "${requestedBook.title}".`,
+    type: "exchange"
+  });
+
+  // Notify admin
+  await notifyAdminUsers({
+    subject: `New Exchange Request Created`,
+    message: `New Exchange Order/Request #${exchangeRequest.id} has been created.`
   });
 
   // Notify requester
-  await Notification.create({
+  await notifyUserAndEmail({
     userId: req.user.id,
+    userEmail: requesterUser?.email,
+    userPhone: requesterUser?.phone,
+    subject: `Exchange Request Sent`,
     message: `Your exchange request for "${requestedBook.title}" has been sent.`,
-    type: "general"
+    type: "exchange"
   });
 
   res.status(201).json({ exchangeRequest });

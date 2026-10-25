@@ -22,7 +22,15 @@ const {
   getAllOrders,
   getExchangeRequests,
   getRecentActivities,
-  removeBooksByTitlePattern
+  removeBooksByTitlePattern,
+  recordCashDeposit,
+  resolveDiscrepancy,
+  recordSellerPayout,
+  recordRiderPayout,
+  resolveSecurityDeposit,
+  processRefund,
+  getOrderPaymentHistory,
+  getPaymentSummary
 } = require("../controllers/adminController");
 const adminAuthMiddleware = require("../middleware/adminAuth");
 
@@ -57,6 +65,16 @@ router.delete("/books/pattern/:pattern", adminAuthMiddleware, removeBooksByTitle
 
 // Orders
 router.get("/orders", adminAuthMiddleware, getAllOrders);
+
+// COD Payment Management
+router.post("/orders/:orderId/deposit", adminAuthMiddleware, recordCashDeposit);
+router.post("/orders/:orderId/resolve-discrepancy", adminAuthMiddleware, resolveDiscrepancy);
+router.post("/orders/:orderId/seller-payout", adminAuthMiddleware, recordSellerPayout);
+router.post("/orders/:orderId/rider-payout", adminAuthMiddleware, recordRiderPayout);
+router.post("/orders/:orderId/resolve-security-deposit", adminAuthMiddleware, resolveSecurityDeposit);
+router.post("/orders/:orderId/refund", adminAuthMiddleware, processRefund);
+router.get("/orders/:orderId/payment-history", adminAuthMiddleware, getOrderPaymentHistory);
+router.get("/payment-summary", adminAuthMiddleware, getPaymentSummary);
 
 // Exchange Requests
 router.get("/exchange-requests", adminAuthMiddleware, getExchangeRequests);

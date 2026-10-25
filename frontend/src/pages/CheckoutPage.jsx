@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useToast } from '../hooks/useToast'
@@ -8,6 +8,8 @@ import Toast from '../components/Toast'
 import TrackOrderModal from '../components/TrackOrderModal'
 import { useAuth } from '../context/AuthContext'
 import { DashboardApi } from '../services/api'
+import { Banknote } from 'lucide-react'
+import { formatOrderId } from '../utils/orderId'
 
 const PALETTE = {
   primary: '#13493C',
@@ -74,14 +76,17 @@ const CheckoutPage = () => {
   const [showTrackOrder, setShowTrackOrder] = useState(false)
   const [form, setForm] = useState({
     name: '', phone: '', area: '', street: '', landmark: '',
-    paymentMethod: 'easypaisa',
+    paymentMethod: 'COD',
     notes: '',
   })
 
   // Calculate totals from real cart data
   const subtotal = cart.reduce((a, i) => a + getItemCost(i), 0)
-  const delivery = cart.length * DELIVERY_CHARGE
-  const total = subtotal + delivery
+  const totalSecurityDeposit = cart.reduce((a, i) => a + (Number(i.securityDeposit) || 0), 0)
+  const paidCartItems = cart.filter(item => item.type !== 'exchange')
+  const delivery = paidCartItems.length * DELIVERY_CHARGE
+  const total = subtotal + delivery + totalSecurityDeposit
+  const isExchangeOnly = cart.length > 0 && cart.every(item => item.type === 'exchange')
 
   const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setErrors(e => ({ ...e, [k]: null })) }
   const ISLAMABAD_AREAS = [
@@ -91,6 +96,21 @@ const CheckoutPage = () => {
     'DHA Phase 1-2', 'Gulberg Greens', 'Bani Gala', 'Margalla Hills Area',
   ]
 
+  // Fetch user data and pre-fill form
+  useEffect(() => {
+    if (user) {
+      setForm({
+        name: user.name || '',
+        phone: user.phone || '',
+        area: user.city ? `${user.city}` : '',
+        street: user.address || '',
+        landmark: '',
+        paymentMethod: 'COD',
+        notes: '',
+      })
+    }
+  }, [user])
+
   const validate = () => {
     const e = {}
     if (!form.name.trim())    e.name = 'Full name is required.'
@@ -98,6 +118,16 @@ const CheckoutPage = () => {
       e.phone = 'Enter a valid Pakistani mobile number (e.g. 0300 1234567)'
     if (!form.area)           e.area = 'Select your area in Islamabad.'
     if (!form.street.trim())  e.street = 'Street address is required.'
+    
+    // Islamabad-only validation - check if area is in ISLAMABAD_AREAS or contains "islamabad"
+    const isIslamabadArea = ISLAMABAD_AREAS.some(area => 
+      form.area.toLowerCase().includes(area.toLowerCase()) || 
+      form.area.toLowerCase().includes('islamabad')
+    )
+    if (form.area && !isIslamabadArea) {
+      e.area = 'Sorry, we currently only deliver to Islamabad addresses.'
+    }
+    
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -109,47 +139,82 @@ const CheckoutPage = () => {
     }
     if (!validate()) { showToast('Please fix the errors before placing order', true); return }
     
+    if (!token || !user?.id) {
+      showToast('Please login to place an order', true)
+      navigate('/login')
+      return
+    }
+
     setSubmitting(true)
     try {
       const groupedBySeller = cart.reduce((acc, item) => {
         const sellerId = item.sellerId;
-        if (!sellerId) return acc;
+        if (!sellerId) {
+          console.warn('Item has no sellerId, skipping:', item.title);
+          return acc;
+        }
         if (!acc[sellerId]) acc[sellerId] = [];
         acc[sellerId].push(item);
         return acc;
       }, {});
 
+      if (Object.keys(groupedBySeller).length === 0) {
+        showToast('No valid items in cart (missing seller information)', true)
+        setSubmitting(false)
+        return
+      }
+
       const responses = await Promise.all(
-        Object.entries(groupedBySeller).map(([sellerId, items]) =>
-          DashboardApi.createOrder({
+        Object.entries(groupedBySeller).map(([sellerId, items]) => {
+          const isExchangeOrder = items.some(item => item.type === 'exchange');
+          const firstExchangeItem = items.find(item => item.type === 'exchange');
+          const bookAmount = items.reduce((sum, item) => sum + getItemCost(item), 0);
+          const securityDeposit = items.reduce((sum, item) => sum + (Number(item.securityDeposit) || 0), 0);
+          const paidItemCount = items.filter(item => item.type !== 'exchange').length;
+          const deliveryFee = paidItemCount * DELIVERY_CHARGE;
+          const totalAmount = bookAmount + deliveryFee + securityDeposit;
+
+          return DashboardApi.createOrder({
             token,
             payload: {
               buyerId: user?.id,
               sellerId,
               status: "pending_seller",
+              paymentMethod: "COD",
+              orderType: isExchangeOrder ? 'EXCHANGE' : (items.some(i => i.type === 'rent') ? 'RENT' : 'BUY'),
               items: items.map((item) => ({
                 bookId: item.id,
                 title: item.title,
                 type: item.type,
                 price: getItemCost(item),
                 quantity: 1,
+                offeredBookId: item.offeredBookId || undefined,
+                offeredBookTitle: item.offeredBookTitle || undefined
               })),
-              bookAmount: items.reduce((sum, item) => sum + getItemCost(item), 0),
-              deliveryFee: items.length * DELIVERY_CHARGE,
-              totalAmount: items.reduce((sum, item) => sum + getItemCost(item), 0) + (items.length * DELIVERY_CHARGE),
+              bookAmount,
+              securityDeposit,
+              deliveryFee,
+              totalAmount,
+              trackingData: isExchangeOrder && firstExchangeItem ? {
+                offeredBookId: firstExchangeItem.offeredBookId,
+                offeredBookTitle: firstExchangeItem.offeredBookTitle,
+                exchangeMessage: firstExchangeItem.exchangeMessage || form.notes || ''
+              } : undefined,
               shippingAddress: `${form.street}, ${form.landmark ? form.landmark + ', ' : ''}${form.area}, Islamabad`,
               shippingPhone: form.phone,
               shippingName: form.name,
             },
-          })
-        )
+          });
+        })
       );
 
       clearCart()
       setPlacedOrders(responses.map(r => r.order))
-      showToast("Order further proceed hoga after seller acceptance")
+      showToast(isExchangeOnly ? "Exchange request sent to seller!" : "Order further proceed hoga after seller acceptance")
     } catch (err) {
-      showToast("Order placement failed. Please try again.", true)
+      console.error('Order placement error:', err)
+      const errorMsg = err.response?.data?.msg || err.message || "Order placement failed. Please try again."
+      showToast(errorMsg, true)
     } finally {
       setSubmitting(false)
     }
@@ -189,7 +254,7 @@ const CheckoutPage = () => {
             borderRadius: 16, padding: '16px 24px', marginBottom: 28, fontSize: '.84rem', color: PALETTE.muted }}>
             <div style={{ fontWeight: 700, color: PALETTE.primary, marginBottom: 4 }}>Order Tracking / Reference</div>
             <code style={{ fontFamily: 'monospace', color: PALETTE.cta, fontSize: '1rem' }}>
-              #{trackingNo}
+              {formatOrderId(trackingNo)}
             </code>
           </div>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -336,38 +401,62 @@ const CheckoutPage = () => {
 
             {/* ── SECTION 2: Payment Method ── */}
             <div style={{ animation: 'fadeUp .45s ease .18s both' }}>
-              <SectionCard title="Payment Method" subtitle="Choose how you'd like to pay" step={2}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {[
-                    { val: 'easypaisa', label: 'Easypaisa',    sub: 'Send to the seller\'s EasyPaisa number'            },
-                  ].map(opt => (
-                    <div key={opt.val}
-                      onClick={() => set('paymentMethod', opt.val)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px',
-                        borderRadius: 12, cursor: 'pointer', transition: 'all .15s',
-                        border: `2px solid ${form.paymentMethod === opt.val ? PALETTE.cta : PALETTE.border}`,
-                        background: form.paymentMethod === opt.val ? 'rgba(188,108,37,.04)' : PALETTE.bg }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 9,
-                        background: form.paymentMethod === opt.val ? 'rgba(188,108,37,.12)' : 'rgba(19,73,60,.05)',
-                        display: 'grid', placeItems: 'center', fontSize: '1.1rem', flexShrink: 0 }}>
-                        {opt.icon}
+              <SectionCard title={isExchangeOnly ? "Payment (Free Exchange)" : "Payment Method"} subtitle={isExchangeOnly ? "No payment required for exchange order" : "Choose how you'd like to pay"} step={2}>
+                {isExchangeOnly ? (
+                  <div style={{
+                    padding: '18px 20px',
+                    borderRadius: 14,
+                    background: 'rgba(45,106,79,.08)',
+                    border: '1.5px solid rgba(45,106,79,.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 14
+                  }}>
+                    <div style={{ width: 42, height: 42, borderRadius: 10, background: 'rgba(45,106,79,.15)', display: 'grid', placeItems: 'center', fontSize: '1.4rem', flexShrink: 0 }}>
+                      🔄
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '.95rem', color: '#2d6a4f', marginBottom: 3 }}>
+                        Book Exchange Request · Rs. 0 (Free)
                       </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 700, fontSize: '.88rem',
-                          color: form.paymentMethod === opt.val ? PALETTE.cta : PALETTE.primary }}>{opt.label}</div>
-                        <div style={{ fontSize: '.74rem', color: PALETTE.muted }}>{opt.sub}</div>
-                      </div>
-                      <div style={{ width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
-                        border: `2px solid ${form.paymentMethod === opt.val ? PALETTE.cta : PALETTE.border}`,
-                        background: form.paymentMethod === opt.val ? PALETTE.cta : 'transparent',
-                        display: 'grid', placeItems: 'center' }}>
-                        {form.paymentMethod === opt.val && (
-                          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff' }} />
-                        )}
+                      <div style={{ fontSize: '.8rem', color: PALETTE.muted, lineHeight: 1.5 }}>
+                        Koi charges nahi hain. Sirf upar apni delivery information enter karein. Seller ke accept karne ke baad rider delivery aur exchange book collection handle karega.
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {[
+                      { val: 'COD', label: 'Cash on Delivery', sub: 'Pay cash when rider delivers your order', icon: <Banknote size={20} /> },
+                    ].map(opt => (
+                      <div key={opt.val}
+                        onClick={() => set('paymentMethod', opt.val)}
+                        style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px',
+                          borderRadius: 12, cursor: 'pointer', transition: 'all .15s',
+                          border: `2px solid ${form.paymentMethod === opt.val ? PALETTE.cta : PALETTE.border}`,
+                          background: form.paymentMethod === opt.val ? 'rgba(188,108,37,.04)' : PALETTE.bg }}>
+                        <div style={{ width: 36, height: 36, borderRadius: 9,
+                          background: form.paymentMethod === opt.val ? 'rgba(188,108,37,.12)' : 'rgba(19,73,60,.05)',
+                          display: 'grid', placeItems: 'center', fontSize: '1.1rem', flexShrink: 0 }}>
+                          {opt.icon}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 700, fontSize: '.88rem',
+                            color: form.paymentMethod === opt.val ? PALETTE.cta : PALETTE.primary }}>{opt.label}</div>
+                          <div style={{ fontSize: '.74rem', color: PALETTE.muted }}>{opt.sub}</div>
+                        </div>
+                        <div style={{ width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
+                          border: `2px solid ${form.paymentMethod === opt.val ? PALETTE.cta : PALETTE.border}`,
+                          background: form.paymentMethod === opt.val ? PALETTE.cta : 'transparent',
+                          display: 'grid', placeItems: 'center' }}>
+                          {form.paymentMethod === opt.val && (
+                            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff' }} />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </SectionCard>
             </div>
           </div>
@@ -409,7 +498,7 @@ const CheckoutPage = () => {
                       </div>
                       <div style={{ fontWeight: 700, fontSize: '.85rem', flexShrink: 0,
                         color: item.type === 'exchange' ? '#2d6a4f' : PALETTE.cta }}>
-                        {item.type === 'exchange' ? 'Rs. 120 (Delivery Charges)' : `Rs. ${getItemCost(item)}`}
+                        {item.type === 'exchange' ? 'Rs. 0 (Free)' : `Rs. ${getItemCost(item)}`}
                       </div>
                     </div>
                   ))
@@ -426,13 +515,20 @@ const CheckoutPage = () => {
                       {delivery > 0 ? `Rs. ${delivery}` : 'Free'}
                     </span>
                   </div>
+
+                  {totalSecurityDeposit > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
+                      <span style={{ fontSize: '.82rem', color: '#4338CA' }}>Refundable Security Deposit (Rent)</span>
+                      <span style={{ fontWeight: 700, fontSize: '.82rem', color: '#4338CA' }}>Rs. {totalSecurityDeposit}</span>
+                    </div>
+                  )}
                   
                   <div style={{ height: 2,
                     background: `linear-gradient(90deg,${PALETTE.accent},${PALETTE.cta})`,
                     borderRadius: 2, margin: '10px 0' }} />
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
                     <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, color: PALETTE.primary }}>
-                      Total Amount
+                      Total Amount (COD)
                     </span>
                     <span style={{ fontFamily: "'Playfair Display',serif", fontSize: '1.3rem',
                       fontWeight: 900, color: PALETTE.cta }}>Rs. {total}</span>
@@ -451,9 +547,9 @@ const CheckoutPage = () => {
                       <span style={{ display: 'inline-block', width: 16, height: 16, border: '2px solid rgba(255,255,255,.4)',
                         borderTopColor: '#fff', borderRadius: '50%',
                         animation: 'spin 0.7s linear infinite' }} />
-                      Placing Order…
+                      {isExchangeOnly ? 'Sending Request…' : 'Placing Order…'}
                     </>
-                  ) : '✓ Place Order'}
+                  ) : (isExchangeOnly ? '✓ Send Exchange Request' : '✓ Place Order (Cash on Delivery)')}
                 </button>
                 <div style={{ textAlign: 'center', fontSize: '.75rem', fontWeight: 600, color: PALETTE.cta, marginTop: 10 }}>
                   Order will proceed after seller acceptance.

@@ -8,6 +8,10 @@ const SellerRequestPage = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
+  const [formData, setFormData] = useState({
+    address: '',
+    phone: ''
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,20 +37,29 @@ const SellerRequestPage = () => {
   };
 
   const handleSubmitRequest = async () => {
+    if (!formData.address.trim() || !formData.phone.trim()) {
+      setMessage('Please provide address and phone number.');
+      return;
+    }
+
     try {
       setSubmitting(true);
       setMessage('');
       console.log('Submitting seller request...');
-      const response = await api.post('/seller-requests/request');
+      const response = await api.post('/seller-requests/request', {
+        city: 'Islamabad',
+        address: formData.address,
+        phone: formData.phone
+      });
       console.log('Seller request response:', response.data);
-      
+
       // Success - update status and show success message
       setSellerStatus('pending');
       setMessage('Your seller approval request has been submitted successfully!');
     } catch (error) {
       console.error('Failed to submit request:', error);
       const errorMsg = error.response?.data?.msg || error.message || 'Failed to submit request. Please try again.';
-      
+
       if (errorMsg.includes('already pending') || errorMsg.includes('pending approval')) {
         setSellerStatus('pending');
         setMessage('Your seller request is currently pending admin approval.');
@@ -147,12 +160,13 @@ const SellerRequestPage = () => {
           badge: 'SELLER ONBOARDING',
           badgeBg: '#EAF8F2',
           badgeColor: '#13493C',
-          title: 'Request Seller Permission',
+          title: 'Become a Seller',
           description: 'Before listing books on BookCycle, your seller account must be approved by the administrator. Your request will be reviewed within approximately 1-3 working days.',
           showDetails: false,
           showButton: true,
-          buttonText: 'Send Seller Approval Request',
-          buttonAction: handleSubmitRequest
+          buttonText: 'Submit Seller Application',
+          buttonAction: handleSubmitRequest,
+          showForm: true
         };
     }
   };
@@ -212,16 +226,97 @@ const SellerRequestPage = () => {
             {config.title}
           </h1>
           
-          <p style={{ 
-            margin: '0 auto', 
+          <p style={{
+            margin: '0 auto',
             maxWidth: '600px',
-            fontSize: '1.05rem', 
+            fontSize: '1.05rem',
             color: '#555',
             lineHeight: '1.6'
           }}>
             {config.description}
           </p>
         </div>
+
+        {/* Form for Address and Phone */}
+        {config.showForm && (
+          <div style={{
+            backgroundColor: '#fafafa',
+            borderRadius: '14px',
+            padding: '24px',
+            marginBottom: '24px',
+            border: '1px solid #eaeaea'
+          }}>
+            <h3 style={{ margin: '0 0 20px', fontSize: '1rem', color: '#333', fontWeight: '700' }}>
+              Seller Information
+            </h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '600', color: '#333', marginBottom: '8px' }}>
+                  City
+                </label>
+                <div style={{
+                  width: '100%',
+                  padding: '12px 14px',
+                  border: '1.5px solid #e5e7eb',
+                  borderRadius: '8px',
+                  fontSize: '0.95rem',
+                  backgroundColor: '#f0f0f0',
+                  color: '#666'
+                }}>
+                  Islamabad (Service area)
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '600', color: '#333', marginBottom: '8px' }}>
+                  Address *
+                </label>
+                <textarea
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  placeholder="Enter your address where riders can collect books"
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    border: '1.5px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '0.95rem',
+                    outline: 'none',
+                    resize: 'vertical',
+                    transition: 'border-color 0.2s'
+                  }}
+                  onFocus={(e) => e.currentTarget.style.borderColor = '#13493C'}
+                  onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '600', color: '#333', marginBottom: '8px' }}>
+                  Phone Number *
+                </label>
+                <input
+                  type="text"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="e.g. 0300 1234567"
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    border: '1.5px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '0.95rem',
+                    outline: 'none',
+                    transition: 'border-color 0.2s'
+                  }}
+                  onFocus={(e) => e.currentTarget.style.borderColor = '#13493C'}
+                  onBlur={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {message && (
           <div style={{

@@ -24,6 +24,8 @@ const AdminLayout = () => {
   const menuItems = [
     { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard Overview' },
     { path: '/admin/seller-requests', icon: Store, label: 'Seller Requests' },
+    { path: '/admin/rider-requests', icon: Truck, label: 'Rider Request' },
+    { path: '/admin/riders', icon: Truck, label: 'Approved Riders' },
     { path: '/admin/users', icon: Users, label: 'Users' },
     { path: '/admin/sellers', icon: Store, label: 'Sellers' },
     { path: '/admin/books?tab=sell', icon: BookOpen, label: 'Sell Listings' },

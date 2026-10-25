@@ -15,8 +15,12 @@ import {
   FileText,
   Package,
   RefreshCw,
-  DollarSign
+  DollarSign,
+  Banknote,
+  Clock
 } from 'lucide-react';
+import RentalFlipCountdown from '../../components/RentalFlipCountdown';
+import { formatOrderId } from '../../utils/orderId';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -377,6 +381,149 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+      {/* Active Book Rentals & Live Countdown Tracker */}
+      <div style={{
+        backgroundColor: '#FFFFFF',
+        borderRadius: '16px',
+        padding: '24px',
+        boxShadow: '0 4px 20px rgba(19, 73, 60, 0.04)',
+        border: '1px solid rgba(19, 73, 60, 0.05)',
+        borderTop: '3px solid #13493C'
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '16px',
+          borderBottom: '1px solid rgba(19, 73, 60, 0.06)',
+          paddingBottom: '16px',
+          marginBottom: '20px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(19, 73, 60, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#13493C'
+            }}>
+              <Clock size={20} />
+            </div>
+            <div>
+              <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: '700', color: '#13493C', fontFamily: "'Playfair Display', serif" }}>
+                Active Book Rentals & Live Countdown
+              </h4>
+              <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#667F68' }}>
+                Monitor ongoing rental periods, remaining time, and return progress in real time.
+              </p>
+            </div>
+          </div>
+
+          <a href="/admin/orders" style={{
+            fontSize: '0.85rem',
+            fontWeight: '700',
+            color: '#13493C',
+            textDecoration: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px'
+          }}>
+            Manage in Orders <ArrowRight size={14} />
+          </a>
+        </div>
+
+        {stats?.activeRentals && stats.activeRentals.length > 0 ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+            {stats.activeRentals.map(rental => {
+              const bookItem = rental.items?.[0];
+              const rentalInfo = bookItem?.rentalInfo || rental.rentalInfo;
+              const isEnded = rentalInfo?.isExpired;
+
+              return (
+                <div key={rental.id} style={{
+                  backgroundColor: '#FAF9F0',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  border: '1.5px solid rgba(19, 73, 60, 0.15)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '14px',
+                  boxShadow: '0 2px 8px rgba(19, 73, 60, 0.04)'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                      {bookItem?.book?.image ? (
+                        <img 
+                          src={bookItem.book.image} 
+                          alt={bookItem.book.title} 
+                          style={{ width: '42px', height: '56px', objectFit: 'cover', borderRadius: '4px', border: '1px solid rgba(19, 73, 60, 0.1)' }} 
+                        />
+                      ) : (
+                        <div style={{ width: '42px', height: '56px', backgroundColor: '#EBE9D8', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <BookOpen size={20} color="#13493C" />
+                        </div>
+                      )}
+                      <div>
+                        <div style={{ fontWeight: '700', color: '#13493C', fontSize: '0.9rem', lineHeight: 1.3 }}>
+                          {bookItem?.book?.title || bookItem?.title || 'Rented Book'}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#667F68', marginTop: '2px' }}>
+                          Order {formatOrderId(rental.id)} • Duration: {rentalInfo?.rentalDuration || 'Standard'}
+                        </div>
+                      </div>
+                    </div>
+                    <span style={{
+                      fontSize: '0.7rem',
+                      fontWeight: '800',
+                      padding: '3px 8px',
+                      borderRadius: '12px',
+                      backgroundColor: isEnded ? '#FFEBEE' : '#E8F5E9',
+                      color: isEnded ? '#C62828' : '#2E7D32',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {isEnded ? 'Rental Ended' : (rental.deliveryStatus || 'RENTAL_PERIOD_ACTIVE').replace(/_/g, ' ')}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.8rem', color: '#13493C', padding: '10px', backgroundColor: '#FFFFFF', borderRadius: '8px' }}>
+                    <div><strong>Customer:</strong> {rental.buyer?.name || 'Customer'}</div>
+                    <div><strong>Contact:</strong> {rental.buyer?.phone || 'N/A'}</div>
+                    <div><strong>Start:</strong> {rentalInfo?.rentalStartDate ? new Date(rentalInfo.rentalStartDate).toLocaleDateString() : 'Active'}</div>
+                    <div><strong>End:</strong> {rentalInfo?.rentalEndDate ? new Date(rentalInfo.rentalEndDate).toLocaleDateString() : 'N/A'}</div>
+                  </div>
+
+                  {rentalInfo?.rentalEndDate && (
+                    <div style={{
+                      padding: '12px',
+                      backgroundColor: '#FFFFFF',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(19, 73, 60, 0.1)',
+                      display: 'flex',
+                      justifyContent: 'center'
+                    }}>
+                      <RentalFlipCountdown 
+                        endDate={rentalInfo.rentalEndDate} 
+                        size="compact"
+                        showTitle={true}
+                        title="Remaining Rental Period"
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{ padding: '24px', textAlign: 'center', color: '#667F68', fontSize: '0.88rem' }}>
+            No active book rentals currently in progress.
+          </div>
+        )}
+      </div>
+
       {/* 3. Books by Category Section (Bottom card panel matching mockup) */}
       <div style={{
         backgroundColor: '#FFFFFF',
@@ -633,7 +780,7 @@ const AdminDashboard = () => {
                     border: '1px solid rgba(19, 73, 60, 0.08)'
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                      <DollarSign size={18} style={{ color: '#13493C' }} />
+                      <Banknote size={18} style={{ color: '#13493C' }} />
                       <h6 style={{ margin: 0, fontSize: '0.9rem', fontWeight: '700', color: '#13493C' }}>
                         Sell Books ({seller.sellCount || 0})
                       </h6>

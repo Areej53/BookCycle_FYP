@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { PALETTE } from '../constants';
 
 export default function ExchangeRequestModal({ isOpen, onClose, requestedBook }) {
+    const navigate = useNavigate();
     const { user, token } = useAuth();
+    const { addExchangeToCart } = useCart();
     const [userExchangeBooks, setUserExchangeBooks] = useState([]);
     const [selectedBookId, setSelectedBookId] = useState('');
     const [loading, setLoading] = useState(false);
@@ -20,13 +24,41 @@ export default function ExchangeRequestModal({ isOpen, onClose, requestedBook })
     const fetchUserExchangeBooks = async () => {
         setLoading(true);
         try {
+            const currentUid = user?.id || user?._id;
             const response = await api.get('/exchange', { 
                 headers: { Authorization: `Bearer ${token}` },
-                params: { userId: user.id }
+                params: { userId: currentUid, sellerId: currentUid }
             });
-            const availableBooks = (response.data.books || []).filter(
-                book => book.exchangeDetails?.status === 'Available' && book._id !== requestedBook?._id
-            );
+            const rawList = response.data?.books || response.data?.exchanges || [];
+            const reqId = requestedBook?.id || requestedBook?._id;
+
+            const availableBooks = rawList.map(item => {
+                if (item.book && !item.title) {
+                    return {
+                        ...item.book,
+                        id: item.book.id || item.bookId || item.id,
+                        _id: item.book.id || item.bookId || item.id,
+                        exchangeDetails: {
+                            id: item.id,
+                            status: item.status,
+                            lookingFor: item.lookingFor
+                        }
+                    };
+                }
+                return {
+                    ...item,
+                    id: item.id || item._id,
+                    _id: item.id || item._id
+                };
+            }).filter(book => {
+                const bookId = book.id || book._id;
+                const isDiff = String(bookId) !== String(reqId);
+                const isAvail = (book.exchangeDetails?.status === 'Available') || 
+                                (book.status === 'Available') || 
+                                (!book.status && !book.exchangeDetails?.status);
+                return isDiff && isAvail;
+            });
+
             setUserExchangeBooks(availableBooks);
         } catch (err) {
             console.error('Failed to fetch user exchange books:', err);
@@ -41,26 +73,42 @@ export default function ExchangeRequestModal({ isOpen, onClose, requestedBook })
             return;
         }
 
+        const offeredBook = userExchangeBooks.find(b => String(b.id || b._id) === String(selectedBookId));
+        if (!offeredBook) {
+            setMessage('Selected book not found');
+            return;
+        }
+
         setSubmitting(true);
         try {
-            const response = await api.post('/exchange-requests', {
-                requestedBookId: requestedBook._id,
-                offeredBookId: selectedBookId,
-                message: message || ''
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            
-            if (response.data.success) {
-                setMessage('Exchange request sent successfully!');
+            // Also notify exchange-requests API if available
+            try {
+                await api.post('/exchange-requests', {
+                    requestedBookId: requestedBook.id || requestedBook._id,
+                    offeredBookId: offeredBook.id || offeredBook._id,
+                    message: message || ''
+                }, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+            } catch (apiErr) {
+                console.log('Exchange request creation note:', apiErr.message);
+            }
+
+            // Add exchange book to cart with Rs. 0 and redirect to checkout
+            const added = addExchangeToCart(requestedBook, offeredBook, message);
+            if (added) {
+                setMessage('Exchange item added to cart! Proceeding to enter delivery details...');
                 setTimeout(() => {
                     onClose();
                     setSelectedBookId('');
                     setMessage('');
-                }, 1500);
+                    navigate('/checkout');
+                }, 700);
+            } else {
+                setMessage('Could not add to cart.');
             }
         } catch (err) {
-            setMessage(err.response?.data?.msg || 'Failed to send exchange request');
+            setMessage(err.response?.data?.msg || err.message || 'Failed to send exchange request');
         } finally {
             setSubmitting(false);
         }
@@ -168,56 +216,60 @@ export default function ExchangeRequestModal({ isOpen, onClose, requestedBook })
                         </div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            {userExchangeBooks.map(book => (
-                                <div 
-                                    key={book._id}
-                                    onClick={() => setSelectedBookId(book._id)}
-                                    style={{
-                                        display: 'flex',
-                                        gap: '12px',
-                                        padding: '12px',
-                                        borderRadius: 10,
-                                        border: selectedBookId === book._id ? `2px solid ${PALETTE.primary}` : `1px solid ${PALETTE.border}`,
-                                        background: selectedBookId === book._id ? 'rgba(19,73,60,0.05)' : PALETTE.bg,
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s'
-                                    }}
-                                >
-                                    <img 
-                                        src={getImageUrl(book)} 
-                                        alt={book.title}
-                                        style={{ width: '50px', height: '70px', objectFit: 'cover', borderRadius: 6 }}
-                                    />
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontWeight: 700, fontSize: '0.85rem', color: PALETTE.text }}>
-                                            {book.title}
-                                        </div>
-                                        <div style={{ fontSize: '0.8rem', color: PALETTE.muted }}>
-                                            {book.author} · {book.condition}
-                                        </div>
-                                        {book.exchangeDetails?.lookingFor && (
-                                            <div style={{ fontSize: '0.75rem', color: PALETTE.accent, marginTop: '4px' }}>
-                                                Looking for: {book.exchangeDetails.lookingFor}
+                            {userExchangeBooks.map(book => {
+                                const bId = book.id || book._id;
+                                const isSelected = String(selectedBookId) === String(bId);
+                                return (
+                                    <div 
+                                        key={bId}
+                                        onClick={() => setSelectedBookId(bId)}
+                                        style={{
+                                            display: 'flex',
+                                            gap: '12px',
+                                            padding: '12px',
+                                            borderRadius: 10,
+                                            border: isSelected ? `2px solid ${PALETTE.primary}` : `1px solid ${PALETTE.border}`,
+                                            background: isSelected ? 'rgba(19,73,60,0.05)' : PALETTE.bg,
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        <img 
+                                            src={getImageUrl(book)} 
+                                            alt={book.title}
+                                            style={{ width: '50px', height: '70px', objectFit: 'cover', borderRadius: 6 }}
+                                        />
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: PALETTE.text }}>
+                                                {book.title}
                                             </div>
-                                        )}
+                                            <div style={{ fontSize: '0.8rem', color: PALETTE.muted }}>
+                                                {book.author} · {book.condition || 'Used/Good'}
+                                            </div>
+                                            {book.exchangeDetails?.lookingFor && (
+                                                <div style={{ fontSize: '0.75rem', color: PALETTE.accent, marginTop: '4px' }}>
+                                                    Looking for: {book.exchangeDetails.lookingFor}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div style={{ 
+                                            width: '20px', 
+                                            height: '20px', 
+                                            borderRadius: '50%', 
+                                            border: isSelected ? `2px solid ${PALETTE.primary}` : `2px solid ${PALETTE.border}`,
+                                            background: isSelected ? PALETTE.primary : 'transparent',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            flexShrink: 0
+                                        }}>
+                                            {isSelected && (
+                                                <span style={{ color: '#fff', fontSize: '0.75rem' }}>✓</span>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div style={{ 
-                                        width: '20px', 
-                                        height: '20px', 
-                                        borderRadius: '50%', 
-                                        border: selectedBookId === book._id ? `2px solid ${PALETTE.primary}` : `2px solid ${PALETTE.border}`,
-                                        background: selectedBookId === book._id ? PALETTE.primary : 'transparent',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        flexShrink: 0
-                                    }}>
-                                        {selectedBookId === book._id && (
-                                            <span style={{ color: '#fff', fontSize: '0.75rem' }}>✓</span>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
@@ -245,7 +297,7 @@ export default function ExchangeRequestModal({ isOpen, onClose, requestedBook })
                     />
                 </div>
 
-                {message && !message.includes('successfully') && (
+                {message && !message.includes('successfully') && !message.includes('Redirecting') && (
                     <div style={{ 
                         color: message.includes('Failed') || message.includes('Please') ? PALETTE.cta : PALETTE.primary,
                         fontSize: '0.85rem',
@@ -289,7 +341,7 @@ export default function ExchangeRequestModal({ isOpen, onClose, requestedBook })
                             opacity: submitting || !selectedBookId ? 0.6 : 1
                         }}
                     >
-                        {submitting ? 'Sending...' : 'Send Request'}
+                        {submitting ? 'Adding to Cart...' : 'Proceed to Exchange'}
                     </button>
                 </div>
             </div>
