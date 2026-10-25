@@ -308,7 +308,7 @@ const BuyerPurchasesPanel = ({ purchases, onTrack, onReview, emptyMessage, onRec
           <div style={{ width: 40, height: 52, borderRadius: 6, overflow: 'hidden', flexShrink: 0 }}>
             <img src={b.img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ flex: 1, minWidth: 0, marginRight: 12 }}>
             <div style={{
               fontWeight: 700, fontSize: '.84rem', color: '#13493C',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
@@ -320,8 +320,8 @@ const BuyerPurchasesPanel = ({ purchases, onTrack, onReview, emptyMessage, onRec
               </div>
             )}
             {b.status === "out_for_delivery" && onTrack && (
-              <button 
-                onClick={(e) => { e.stopPropagation(); onTrack(b); }} 
+              <button
+                onClick={(e) => { e.stopPropagation(); onTrack(b); }}
                 style={{ marginTop: 6, background: 'rgba(188,108,37,.1)', border: '1px solid #BC6C25', color: '#BC6C25', fontSize: '.7rem', padding: '2px 8px', borderRadius: 50, cursor: 'pointer', fontWeight: 600 }}>
                 Track Order
               </button>
@@ -339,11 +339,13 @@ const BuyerPurchasesPanel = ({ purchases, onTrack, onReview, emptyMessage, onRec
               </span>
             )}
           </div>
-          <div style={{ fontWeight: 700, fontSize: '.82rem', color: '#BC6C25' }}>{b.price}</div>
-          <span style={{
-            fontSize: '.68rem', fontWeight: 700, padding: '3px 9px',
-            borderRadius: 50, background: s.bg, color: s.color, whiteSpace: 'nowrap'
-          }}>{s.l}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: '.82rem', color: '#BC6C25' }}>{b.price}</div>
+            <span style={{
+              fontSize: '.68rem', fontWeight: 700, padding: '3px 9px',
+              borderRadius: 50, background: s.bg, color: s.color, whiteSpace: 'nowrap'
+            }}>{s.l}</span>
+          </div>
         </div>
       )
     })}

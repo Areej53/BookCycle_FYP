@@ -85,7 +85,7 @@ api.interceptors.request.use((config) => {
 // A lightweight HTTP GET cache to eliminate DB load during rapid page navigations
 const getCache = new Map();
 const ongoingGets = new Map();
-const CACHE_TTL_MS = 0; // Disabled for troubleshooting
+const CACHE_TTL_MS = 10 * 1000; // 10 seconds — short cache to balance perf + freshness
 
 const originalGet = api.get;
 

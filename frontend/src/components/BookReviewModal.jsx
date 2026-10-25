@@ -24,7 +24,7 @@ const RATING_LABELS = {
   5: '5 Stars — Excellent!',
 };
 
-const BookReviewModal = ({ bookId, bookTitle, onClose, onSubmitted }) => {
+const BookReviewModal = ({ bookId, bookTitle, sellerName, onClose, onSubmitted }) => {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState('');
@@ -149,7 +149,7 @@ const BookReviewModal = ({ bookId, bookTitle, onClose, onSubmitted }) => {
                 overflow: 'hidden',
                 textOverflow: 'ellipsis'
               }}>
-                {bookTitle ? `Book: "${bookTitle}"` : 'Share your feedback'}
+                {sellerName ? `Rating for seller: "${sellerName}"` : bookTitle ? `Book: "${bookTitle}"` : 'Share your feedback'}
               </div>
             </div>
           </div>

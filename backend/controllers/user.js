@@ -156,17 +156,47 @@ const forgotPassword = async (req, res) => {
     `${resetLink}\n\n` +
     `If you did not request this, please ignore this email and your password will remain unchanged.\n`;
 
+  const htmlMessage = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #333;">Password Reset Request</h2>
+      <p style="color: #666;">You are receiving this email because a password reset request was made for your account.</p>
+      <p style="color: #666;">Please click on the following link or paste it into your browser to complete the process:</p>
+      <p style="margin: 20px 0;">
+        <a href="${resetLink}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Reset Password</a>
+      </p>
+      <p style="color: #666; font-size: 12px;">If the button doesn't work, copy and paste this link into your browser:</p>
+      <p style="color: #666; word-break: break-all; font-size: 12px;">${resetLink}</p>
+      <p style="color: #999; font-size: 12px; margin-top: 30px;">If you did not request this, please ignore this email and your password will remain unchanged.</p>
+    </div>
+  `;
+
   try {
     await sendEmail({
       email: user.email,
-      subject: "Password Reset Request",
+      subject: "Password Reset Request - BookCycle",
       message: message,
+      html: htmlMessage,
     });
     
+    console.log(`Password reset email sent successfully to: ${user.email}`);
     return res.status(200).json({ msg: "Password reset email sent successfully" });
   } catch (err) {
-    console.error("Email send error:", err);
-    return res.status(500).json({ msg: "Unable to send email. Please try again" });
+    console.error("Email send error for user:", user.email);
+    console.error("Full error details:", err);
+    
+    // Provide more specific error message based on error type
+    let errorMessage = "Unable to send email. Please try again";
+    if (err.code === 'EAUTH') {
+      errorMessage = "Email authentication failed. Please check SMTP credentials.";
+    } else if (err.code === 'ECONNECTION') {
+      errorMessage = "Could not connect to email server. Please try again later.";
+    } else if (err.code === 'EMESSAGE') {
+      errorMessage = "Email message format error.";
+    } else if (err.responseCode === 550 || err.responseCode === 553) {
+      errorMessage = "Email address rejected by server.";
+    }
+    
+    return res.status(500).json({ msg: errorMessage });
   }
 };
 

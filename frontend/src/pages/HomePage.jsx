@@ -424,11 +424,11 @@ export default function HomePage() {
             </div>
             <div className="book-seller" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
               <span>Seller: {b.sellerName}</span>
-              {b.sellerRating?.displayRating !== 'No ratings' && (
+              {b.bookRating?.reviewsCount > 0 && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                   <span style={{ color: '#FFD700' }}>★</span>
-                  <span>{b.sellerRating?.displayRating}</span>
-                  {b.sellerRating?.reviewsCount > 0 && <span>({b.sellerRating?.reviewsCount})</span>}
+                  <span>{b.bookRating?.displayRating}/5</span>
+                  <span>({b.bookRating?.reviewsCount})</span>
                 </span>
               )}
             </div>
@@ -718,11 +718,11 @@ export default function HomePage() {
               </div>
               <div className="book-seller" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
                 <span>Seller: {b.sellerName}</span>
-                {b.sellerRating?.displayRating !== 'No ratings' && (
+                {b.bookRating?.reviewsCount > 0 && (
                   <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                     <span style={{ color: '#FFD700' }}>★</span>
-                    <span>{b.sellerRating?.displayRating}</span>
-                    {b.sellerRating?.reviewsCount > 0 && <span>({b.sellerRating?.reviewsCount})</span>}
+                    <span>{b.bookRating?.displayRating}/5</span>
+                    <span>({b.bookRating?.reviewsCount})</span>
                   </span>
                 )}
               </div>
@@ -826,11 +826,11 @@ export default function HomePage() {
             </div>
             <div className="book-seller" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
               <span>Seller: {b.sellerName}</span>
-              {b.sellerRating?.displayRating !== 'No ratings' && (
+              {b.bookRating?.reviewsCount > 0 && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                   <span style={{ color: '#FFD700' }}>★</span>
-                  <span>{b.sellerRating?.displayRating}</span>
-                  {b.sellerRating?.reviewsCount > 0 && <span>({b.sellerRating?.reviewsCount})</span>}
+                  <span>{b.bookRating?.displayRating}/5</span>
+                  <span>({b.bookRating?.reviewsCount})</span>
                 </span>
               )}
             </div>
@@ -951,10 +951,10 @@ export default function HomePage() {
           </div>
           <div className="top-book-seller" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>
             <span>Seller: {b.sellerName}</span>
-            {b.sellerRating?.displayRating !== 'No ratings' && (
+            {b.bookRating?.reviewsCount > 0 && (
               <span style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: '4px' }}>
                 <span style={{ color: '#FFD700' }}>★</span>
-                <span>{b.sellerRating?.displayRating}</span>
+                <span>{b.bookRating?.displayRating}/5</span>
               </span>
             )}
           </div>
@@ -983,10 +983,10 @@ export default function HomePage() {
           </div>
           <div className="top-book-seller" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>
             <span>Seller: {b.sellerName}</span>
-            {b.sellerRating?.displayRating !== 'No ratings' && (
+            {b.bookRating?.reviewsCount > 0 && (
               <span style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: '4px' }}>
                 <span style={{ color: '#FFD700' }}>★</span>
-                <span>{b.sellerRating?.displayRating}</span>
+                <span>{b.bookRating?.displayRating}/5</span>
               </span>
             )}
           </div>

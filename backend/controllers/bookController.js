@@ -1,4 +1,4 @@
-const { Book, User, UserViewedBook, Rent, Exchange } = require('../models');
+const { Book, User, UserViewedBook, Rent, Exchange, BookReview } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../db/connectPostgres');
 const fs = require('fs');
@@ -57,24 +57,69 @@ const calculateBayesianRating = (seller) => {
   };
 };
 
-// Helper function to calculate book rating (simple average for books)
-const calculateBookRating = (book) => {
-  if (!book || book.reviewsCount === 0) {
-    return {
-      displayRating: 0,
-      calculatedRating: 0,
-      reviewsCount: 0,
-      starRating: 0
-    };
+// ── Seller rating batch helper ────────────────────────────────────────────
+// Fetches review count and average rating (1-5 scale) for every seller in the
+// given sellerIds array using a single aggregate query.
+// Returns a Map<String(sellerId), { reviewCount, avgRating }>.
+const fetchSellerRatingStats = async (sellerIds) => {
+  if (!sellerIds || sellerIds.length === 0) return new Map();
+
+  // Pull all book_reviews for all books owned by any of these sellers
+  const reviews = await BookReview.findAll({
+    attributes: ['rating'],
+    include: [{
+      model: Book,
+      as: 'book',
+      attributes: ['ownerId'],
+      where: { ownerId: { [Op.in]: sellerIds } },
+      required: true
+    }],
+    raw: true
+  });
+
+  // Build per-seller aggregates
+  const agg = {};
+  reviews.forEach(r => {
+    const sid = String(r['book.ownerId']);
+    if (!agg[sid]) agg[sid] = { count: 0, sum: 0 };
+    agg[sid].count++;
+    agg[sid].sum += Number(r.rating);
+  });
+
+  const map = new Map();
+  Object.entries(agg).forEach(([sid, { count, sum }]) => {
+    map.set(sid, {
+      reviewCount: count,
+      avgRating: count > 0 ? Number((sum / count).toFixed(2)) : 0
+    });
+  });
+  return map;
+};
+
+// Simple owner attributes — no subqueries needed; stats come from fetchSellerRatingStats
+const ownerAttributes = ['id', 'name', 'email', 'phone', 'reviewsCount', 'ratingsSum'];
+
+// Helper function to calculate book rating from the seller stats map.
+// Reads the seller's ACTUAL review count and average rating computed live
+// from the book_reviews table via fetchSellerRatingStats.
+const calculateBookRating = (book, sellerStatsMap) => {
+  const ownerId = book.ownerId || book.owner?.id;
+  const stats = sellerStatsMap && ownerId
+    ? sellerStatsMap.get(String(ownerId))
+    : null;
+
+  const reviewCount = stats?.reviewCount || 0;
+  const avgRating   = stats?.avgRating   || 0; // 1-5 scale
+
+  if (reviewCount === 0) {
+    return { displayRating: 0, calculatedRating: 0, reviewsCount: 0, starRating: 0 };
   }
 
-  const averageRating = book.ratingsSum / book.reviewsCount;
-  
   return {
-    displayRating: averageRating.toFixed(1),
-    calculatedRating: averageRating,
-    reviewsCount: book.reviewsCount,
-    starRating: Math.round(averageRating) // For 1-5 star display
+    displayRating: avgRating.toFixed(1),
+    calculatedRating: avgRating,
+    reviewsCount: reviewCount,
+    starRating: Math.round(avgRating)  // integer 1-5 for star fill
   };
 };
 
@@ -143,27 +188,30 @@ const getAllBooks = async (req, res) => {
     // For Rent books, only show if they have an Available rent record
     // For Exchange books, only show if they have an Available exchange record
     // For Sell books, show normally
-    if (!whereClause[Op.and]) whereClause[Op.and] = [];
-    whereClause[Op.and].push(
-      sequelize.where(
-        sequelize.literal(`(
-          "Book"."exchangeType" != 'Rent' OR 
-          EXISTS (
-            SELECT 1 FROM rents 
-            WHERE rents."bookId" = "Book"."id" 
-            AND rents.status = 'Available'
-          )
-        ) AND (
-          "Book"."exchangeType" != 'Exchange' OR 
-          EXISTS (
-            SELECT 1 FROM exchanges 
-            WHERE exchanges."bookId" = "Book"."id" 
-            AND exchanges.status = 'Available'
-          )
-        )`),
-        true
-      )
-    );
+    // Only apply this strict filtering if type filter is not 'all' or if specific types are requested
+    if (type && type !== 'all') {
+      if (!whereClause[Op.and]) whereClause[Op.and] = [];
+      whereClause[Op.and].push(
+        sequelize.where(
+          sequelize.literal(`(
+            "Book"."exchangeType" != 'Rent' OR 
+            EXISTS (
+              SELECT 1 FROM rents 
+              WHERE rents."bookId" = "Book"."id" 
+              AND rents.status = 'Available'
+            )
+          ) AND (
+            "Book"."exchangeType" != 'Exchange' OR 
+            EXISTS (
+              SELECT 1 FROM exchanges 
+              WHERE exchanges."bookId" = "Book"."id" 
+              AND exchanges.status = 'Available'
+            )
+          )`),
+          true
+        )
+      );
+    }
   }
 
   // Parse Sorting
@@ -184,44 +232,44 @@ const getAllBooks = async (req, res) => {
     }
   }
 
+
   if (sort === 'random') {
-    const allBooks = await Book.findAll({
+    // Use PostgreSQL native RANDOM() with LIMIT applied at DB level
+    const randomBooks = await Book.findAll({
       where: whereClause,
       attributes: { exclude: ['pdf'] },
       include: [
-        { model: User, as: 'owner', attributes: ['name', 'reviewsCount', 'ratingsSum', 'email', 'phone'] },
+        { model: User, as: 'owner', attributes: ownerAttributes },
         { model: Rent, as: 'rentDetails' },
         { model: Exchange, as: 'exchangeDetails' }
-      ]
+      ],
+      order: sequelize.random(),
+      limit: limitNum || 20
     });
-    
-    // Add computed seller ratings and book ratings to each book
-    const booksWithRatings = allBooks.map(book => {
+
+    // Batch-fetch seller rating stats for all unique sellers in one query
+    const sellerIds = [...new Set(randomBooks.map(b => b.ownerId).filter(Boolean))];
+    const sellerStatsMap = await fetchSellerRatingStats(sellerIds);
+
+    const books = randomBooks.map(book => {
       const bookData = book.toJSON();
-      if (bookData.owner) {
-        bookData.sellerRating = calculateBayesianRating(bookData.owner);
-      } else {
-        bookData.sellerRating = {
-          displayRating: 'No ratings',
-          calculatedRating: 0,
-          reviewsCount: 0
-        };
-      }
-      // Add book rating
-      bookData.bookRating = calculateBookRating(bookData);
+      bookData.sellerRating = bookData.owner
+        ? calculateBayesianRating(bookData.owner)
+        : { displayRating: 'No ratings', calculatedRating: 0, reviewsCount: 0 };
+      bookData.bookRating = calculateBookRating(bookData, sellerStatsMap);
       return bookData;
     });
-    
-    const shuffled = booksWithRatings.sort(() => 0.5 - Math.random());
-    const books = limitNum ? shuffled.slice(0, limitNum) : shuffled;
+
     return res.status(200).json({ books, count: books.length });
   }
+
+
 
   const books = await Book.findAll({
     where: whereClause,
     attributes: { exclude: ['pdf'] },
     include: [
-      { model: User, as: 'owner', attributes: ['name', 'reviewsCount', 'ratingsSum', 'email', 'phone'] },
+      { model: User, as: 'owner', attributes: ownerAttributes },
       { model: Rent, as: 'rentDetails' },
       { model: Exchange, as: 'exchangeDetails' }
     ],
@@ -229,20 +277,17 @@ const getAllBooks = async (req, res) => {
     limit: limitNum
   });
 
+  // Batch-fetch seller rating stats for all unique sellers in one query
+  const sellerIds = [...new Set(books.map(b => b.ownerId).filter(Boolean))];
+  const sellerStatsMap = await fetchSellerRatingStats(sellerIds);
+
   // Add computed seller ratings and book ratings to each book
   const booksWithRatings = books.map(book => {
     const bookData = book.toJSON();
-    if (bookData.owner) {
-      bookData.sellerRating = calculateBayesianRating(bookData.owner);
-    } else {
-      bookData.sellerRating = {
-        displayRating: 'No ratings',
-        calculatedRating: 0,
-        reviewsCount: 0
-      };
-    }
-    // Add book rating
-    bookData.bookRating = calculateBookRating(bookData);
+    bookData.sellerRating = bookData.owner
+      ? calculateBayesianRating(bookData.owner)
+      : { displayRating: 'No ratings', calculatedRating: 0, reviewsCount: 0 };
+    bookData.bookRating = calculateBookRating(bookData, sellerStatsMap);
     return bookData;
   });
 
@@ -254,7 +299,7 @@ const getBook = async (req, res) => {
   const book = await Book.findByPk(id, {
     attributes: { exclude: ['pdf'] },
     include: [
-      { model: User, as: 'owner', attributes: ['id', 'name', 'email', 'phone', 'reviewsCount', 'ratingsSum'] },
+      { model: User, as: 'owner', attributes: ownerAttributes },
       { model: Rent, as: 'rentDetails' },
       { model: Exchange, as: 'exchangeDetails' }
     ]
@@ -291,17 +336,15 @@ const getBook = async (req, res) => {
 
   // Add computed seller rating and book rating to the book
   const bookData = book.toJSON();
-  if (bookData.owner) {
-    bookData.sellerRating = calculateBayesianRating(bookData.owner);
-  } else {
-    bookData.sellerRating = {
-      displayRating: 'No ratings',
-      calculatedRating: 0,
-      reviewsCount: 0
-    };
-  }
-  // Add book rating
-  bookData.bookRating = calculateBookRating(bookData);
+  bookData.sellerRating = bookData.owner
+    ? calculateBayesianRating(bookData.owner)
+    : { displayRating: 'No ratings', calculatedRating: 0, reviewsCount: 0 };
+
+  // Fetch seller rating stats live from book_reviews
+  const sellerStatsMap = await fetchSellerRatingStats(
+    bookData.owner ? [bookData.owner.id || bookData.ownerId] : []
+  );
+  bookData.bookRating = calculateBookRating(bookData, sellerStatsMap);
 
   res.status(200).json({ book: bookData });
 };

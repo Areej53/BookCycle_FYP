@@ -24,6 +24,13 @@ const sendEmail = async (options) => {
         rejectUnauthorized: false
       }
     });
+
+    try {
+      await transporter.verify();
+      console.log("SMTP Gmail connection verified successfully");
+    } catch (verifyError) {
+      console.warn("SMTP connection verification notice:", verifyError.message);
+    }
   } else if (host) {
     console.log(`[Email] Using custom SMTP host: ${host}:${port}`);
     transporter = nodemailer.createTransport({
@@ -38,6 +45,13 @@ const sendEmail = async (options) => {
         rejectUnauthorized: false
       }
     });
+
+    try {
+      await transporter.verify();
+      console.log("SMTP server connection verified successfully");
+    } catch (verifyError) {
+      console.warn("SMTP connection verification notice:", verifyError.message);
+    }
   } else {
     console.log(`[Email] No SMTP config, using test account`);
     // Generate test SMTP service account from ethereal.email if no settings provided
@@ -67,6 +81,11 @@ const sendEmail = async (options) => {
     subject: options.subject,
     text: options.message,
     html: options.html,
+    headers: {
+      'X-Priority': '1',
+      'X-MSMail-Priority': 'High',
+      'Importance': 'High'
+    }
   };
 
   console.log(`[Email] Attempting to send to: ${recipient}, Subject: ${options.subject}`);
