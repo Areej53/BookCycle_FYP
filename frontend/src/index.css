@@ -27,7 +27,7 @@
 
 body {
   font-family: "Poppins", sans-serif;
-  height: 100vh;
+  min-height: 100vh;
   background-color: var(--color-bg);
   color: var(--color-text);
 }
@@ -44,7 +44,7 @@ body {
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
-  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-dark); overflow-x: hidden; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-dark); }
 
   /* â”€â”€ NAVBAR â”€â”€ */
   nav {
@@ -800,7 +800,7 @@ body {
   .badge-count { position: static !important; display: inline-flex; align-items: center; justify-content: center; height: 18px; margin-left: 8px; }
 
   /* Navbar reset to support drawer */
-  nav { height: 76px !important; padding: 0 5% !important; flex-direction: row !important; gap: 0 !important; border-bottom: 1px solid rgba(221,161,94,.4) !important; justify-content: space-between !important; }
+  nav:not(.h-navbar) { height: 76px !important; padding: 0 5% !important; flex-direction: row !important; gap: 0 !important; border-bottom: 1px solid rgba(221,161,94,.4) !important; justify-content: space-between !important; }
   
   .nav-links {
     position: absolute; top: 76px; left: 0; right: 0;
@@ -863,7 +863,6 @@ body {
   .HomePage .sidebar { display: none !important; }
 
   /* Prevent horizontal overflow on general elements safely */
-  html, body { overflow-x: hidden !important; }
   * { box-sizing: border-box !important; }
 }
 

@@ -19,6 +19,9 @@ const TrackOrderModal = ({ isOpen, onClose, orderId }) => {
     <div style={{
       position: 'fixed',
       top: 0, left: 0, right: 0, bottom: 0,
+      padding: 16,
+      boxSizing: 'border-box',
+      overflowY: 'auto',
       background: 'rgba(0,0,0,0.5)',
       display: 'flex',
       alignItems: 'center',
@@ -30,7 +33,10 @@ const TrackOrderModal = ({ isOpen, onClose, orderId }) => {
         padding: '30px',
         borderRadius: '16px',
         maxWidth: '450px',
-        width: '90%',
+        width: '100%',
+        maxHeight: 'calc(100dvh - 32px)',
+        overflowY: 'auto',
+        boxSizing: 'border-box',
         boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
         animation: 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
       }}>

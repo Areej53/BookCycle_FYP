@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -14,10 +14,18 @@ import {
 import { useAuth } from '../context/AuthContext';
 
 const RiderLayout = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => !window.matchMedia('(max-width: 768px)').matches);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+
+  useEffect(() => {
+    const mobileQuery = window.matchMedia('(max-width: 768px)');
+    const syncSidebar = () => setSidebarOpen(!mobileQuery.matches);
+    syncSidebar();
+    mobileQuery.addEventListener('change', syncSidebar);
+    return () => mobileQuery.removeEventListener('change', syncSidebar);
+  }, []);
 
   const menuItems = [
     { path: '/rider/dashboard', icon: LayoutDashboard, label: 'Dashboard Overview' },
@@ -33,9 +41,9 @@ const RiderLayout = () => {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#FAF9F0', fontFamily: "'Inter', 'Poppins', sans-serif" }}>
+    <div className="rider-shell" style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#FAF9F0', fontFamily: "'Inter', 'Poppins', sans-serif" }}>
       {/* Sidebar container */}
-      <aside style={{
+      <aside className={`rider-sidebar${sidebarOpen ? ' is-open' : ''}`} aria-label="Rider navigation" style={{
         width: sidebarOpen ? '260px' : '75px',
         backgroundColor: '#13493C',
         color: '#FAF9F0',
@@ -73,7 +81,10 @@ const RiderLayout = () => {
               </div>
             )}
             <button
+              type="button"
               onClick={() => setSidebarOpen(!sidebarOpen)}
+              aria-label={sidebarOpen ? 'Collapse rider sidebar' : 'Expand rider sidebar'}
+              aria-expanded={sidebarOpen}
               style={{
                 background: 'none',
                 border: 'none',
@@ -164,6 +175,7 @@ const RiderLayout = () => {
               <Link
                 key={item.path}
                 to={item.path}
+                onClick={() => { if (window.matchMedia('(max-width: 768px)').matches) setSidebarOpen(false); }}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -234,8 +246,10 @@ const RiderLayout = () => {
         </div>
       </aside>
 
+      {sidebarOpen && <button type="button" className="rider-sidebar-backdrop" aria-label="Close rider navigation" onClick={() => setSidebarOpen(false)} />}
+
       {/* Main Content */}
-      <main style={{
+      <main className="rider-main" style={{
         marginLeft: sidebarOpen ? '260px' : '75px',
         flex: 1,
         transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -244,6 +258,9 @@ const RiderLayout = () => {
         flexDirection: 'column',
         minHeight: '100vh',
       }}>
+        <button type="button" className="rider-mobile-menu" aria-label="Open rider navigation" onClick={() => setSidebarOpen(true)}>
+          <Menu size={22} aria-hidden="true" />
+        </button>
         {/* Header */}
         <header style={{
           backgroundColor: '#FFFFFF',

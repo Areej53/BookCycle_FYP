@@ -1858,8 +1858,8 @@ const DashboardPage = () => {
 
     {/* EDIT BOOK MODAL OVERLAY */}
     {editingBook && (
-      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20000 }}>
-        <div style={{ background: '#FFFFFF', borderRadius: 18, padding: 20, minWidth: 320, maxWidth: 420, border: '1px solid rgba(19, 73, 60, 0.05)', boxShadow: '0 12px 30px rgba(0,0,0,0.15)' }}>
+      <div style={{ position: 'fixed', inset: 0, padding: 16, boxSizing: 'border-box', overflowY: 'auto', background: 'rgba(0,0,0,.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20000 }}>
+        <div style={{ width: '100%', minWidth: 0, maxWidth: 420, maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto', boxSizing: 'border-box', background: '#FFFFFF', borderRadius: 18, padding: 20, border: '1px solid rgba(19, 73, 60, 0.05)', boxShadow: '0 12px 30px rgba(0,0,0,0.15)' }}>
           <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.1rem', fontWeight: 700, color: '#13493C', marginBottom: 12 }}>
             Edit Book Details
           </div>
@@ -1963,10 +1963,10 @@ const DashboardPage = () => {
 
     {/* RECEIPT VIEW MODAL */}
     {selectedReceipt && (
-      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 30000 }} onClick={() => setSelectedReceipt(null)}>
-        <div style={{ position: 'relative', background: '#fff', padding: 8, borderRadius: 12, maxWidth: '90vw', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+      <div style={{ position: 'fixed', inset: 0, padding: 24, boxSizing: 'border-box', overflow: 'auto', background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 30000 }} onClick={() => setSelectedReceipt(null)}>
+        <div style={{ position: 'relative', background: '#fff', padding: 8, borderRadius: 12, maxWidth: '100%', maxHeight: '100%', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
           <button onClick={() => setSelectedReceipt(null)} style={{ position: 'absolute', top: -16, right: -16, background: '#fff', border: 'none', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontWeight: 900, color: '#000', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', zIndex: 30001 }}>✕</button>
-          <img src={selectedReceipt} alt="Receipt" style={{ maxWidth: '100%', maxHeight: 'calc(90vh - 16px)', objectFit: 'contain', borderRadius: 8 }} />
+          <img src={selectedReceipt} alt="Receipt" style={{ maxWidth: '100%', maxHeight: 'calc(100dvh - 64px)', objectFit: 'contain', borderRadius: 8 }} />
         </div>
       </div>
     )}

@@ -25,7 +25,7 @@ const styles = `
 
   /* Navbar */
   .h-navbar { background:var(--primary); display:flex; align-items:center; justify-content:space-between; padding:0 5%; height:76px; box-shadow:0 2px 20px rgba(19,73,60,.35); position:sticky; top:0; z-index:100; border-bottom:1.5px solid rgba(221,161,94,.45); }
-  .h-logo { display:flex; align-items:center; gap:8px; cursor:pointer; text-decoration:none; }
+  .h-logo { display:flex; align-items:center; gap:8px; cursor:pointer; text-decoration:none; background:none; border:0; padding:0; }
   .h-logo-icon { width:52px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .h-logo-icon img { width:100%; height:100%; object-fit:contain; display:block; }
   .h-logo-text { font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:700; color:var(--bg); }
@@ -40,6 +40,7 @@ const styles = `
   .h-nav-links a:hover { color: #fff; }
   .h-nav-cta { background: var(--accent); color: var(--primary) !important; padding: 8px 20px; border-radius: 50px; font-weight: 700; transition: all 0.2s; }
   .h-nav-cta:hover { background: var(--cta); color: #fff !important; transform: translateY(-1px); }
+  .h-menu-toggle { display:none; align-items:center; justify-content:center; width:44px; height:44px; flex:0 0 44px; border:1px solid rgba(255,250,224,.28); border-radius:10px; background:rgba(255,250,224,.08); color:#fff; cursor:pointer; }
   .h-btn-ghost { background:transparent; border:1.5px solid rgba(255,250,224,.35); color:var(--bg); padding:8px 18px; border-radius:8px; font-weight:600; font-size:.87rem; cursor:pointer; transition:all .15s; font-family:'DM Sans',sans-serif; }
   .h-btn-ghost:hover { background:rgba(255,250,224,.1); border-color:rgba(255,250,224,.6); }
   .h-btn-solid { background:var(--accent); color:var(--primary); padding:8px 20px; border-radius:8px; font-weight:700; font-size:.87rem; border:none; cursor:pointer; transition:all .15s; font-family:'DM Sans',sans-serif; }
@@ -196,6 +197,60 @@ const styles = `
   /* Toast */
   .h-toast { position:fixed; bottom:28px; right:28px; z-index:9999; background:var(--primary); color:var(--bg); padding:11px 18px; border-radius:11px; font-size:.88rem; font-weight:500; display:flex; align-items:center; gap:8px; box-shadow:0 6px 24px rgba(19,73,60,.3); transform:translateY(60px); opacity:0; pointer-events:none; transition:transform .3s cubic-bezier(.34,1.56,.64,1), opacity .3s; font-family:'DM Sans',sans-serif; }
   .h-toast.show { transform:translateY(0); opacity:1; }
+
+  @media (max-width: 900px) {
+    .h-navbar { height:68px; padding-inline:clamp(14px,4vw,28px); gap:12px; }
+    .h-logo { min-width:0; }
+    .h-logo-icon { width:44px; height:44px; }
+    .h-logo-text { font-size:1.25rem; white-space:nowrap; }
+    .h-menu-toggle { display:inline-flex; }
+    .h-nav-links { display:none; position:absolute; top:calc(100% + 1px); left:0; right:0; z-index:101; flex-direction:column; align-items:stretch; gap:4px; padding:10px clamp(14px,4vw,28px) 16px; background:var(--primary); border-bottom:2px solid rgba(221,161,94,.6); box-shadow:0 12px 24px rgba(0,0,0,.22); max-height:calc(100vh - 68px); overflow-y:auto; }
+    .h-nav-links.is-open { display:flex; }
+    .h-nav-links li { width:100%; }
+    .h-nav-link, .h-nav-cta { display:flex; align-items:center; justify-content:flex-start; width:100%; min-height:44px; padding:10px 12px; text-align:left; }
+    .h-nav-cta { justify-content:center; }
+    .h-hero { padding:clamp(28px,6vw,52px) 5% 56px; }
+    .h-hero-inner { grid-template-columns:minmax(0,1fr); gap:28px; }
+    .h-hero-inner > * { min-width:0; }
+    .h-hero-title { font-size:clamp(2rem,7vw,2.8rem); }
+    .h-hero-sub { max-width:60ch; }
+    .h-hero-visual { width:100%; min-width:0; }
+    .h-books-stack { width:min(100%,420px); grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .h-book-thumb img { height:clamp(120px,38vw,180px); }
+    .h-hero-stats { flex-wrap:wrap; gap:16px 24px; }
+    .h-section { padding:clamp(40px,7vw,64px) 5%; }
+    .h-books-grid { grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr)); }
+    .h-how-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+    .h-free-box { grid-template-columns:minmax(0,1fr); gap:24px; padding:clamp(24px,5vw,40px); }
+    .h-value-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .h-footer-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:28px; }
+    .h-footer-grid > :first-child { grid-column:1 / -1; }
+    .h-popup-box { max-height:calc(100dvh - 32px); overflow-y:auto; }
+  }
+
+  @media (max-width: 480px) {
+    .h-hero-title { font-size:clamp(1.85rem,8vw,2.25rem); }
+    .h-hero-btns { flex-direction:column; align-items:stretch; }
+    .h-hero-btns button { width:100%; min-height:46px; }
+    .h-hero-stats { justify-content:space-between; gap:12px; }
+    .h-stat-num { font-size:1.35rem; }
+    .h-stat-label { max-width:9ch; }
+    .h-section-head { align-items:flex-start; flex-direction:column; gap:10px; }
+    .h-see-all { min-height:44px; padding:8px 0; text-align:left; }
+    .h-books-grid { grid-template-columns:minmax(0,1fr); }
+    .h-how-grid, .h-value-grid { grid-template-columns:minmax(0,1fr); }
+    .h-how-card, .h-value-card { padding:22px 18px; }
+    .h-free-box { border-radius:18px; }
+    .h-free-books-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .h-free-mini { min-width:0; }
+    .h-footer { padding:40px 5% 24px; }
+    .h-footer-grid { grid-template-columns:minmax(0,1fr); gap:22px; }
+    .h-footer-grid > :first-child { grid-column:auto; }
+    .h-footer-bottom { align-items:flex-start; flex-direction:column; }
+    .h-footer-bottom-links { flex-wrap:wrap; gap:10px 16px; }
+    .h-toast { left:16px; right:16px; bottom:16px; }
+    .h-popup-box { padding:28px 20px; }
+  }
 `;
 
 const FEATURED_BOOKS = [
@@ -240,6 +295,7 @@ const FREE_BOOKS = [
 
 export default function Home({ onNavigate }) {
   const [showPopup, setShowPopup] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [toast, setToast] = useState({ show: false, msg: "" });
   const [featuredBooks, setFeaturedBooks] = useState([]);
   const [recentBooks, setRecentBooks] = useState([]);
@@ -247,6 +303,15 @@ export default function Home({ onNavigate }) {
   const navigate = useNavigate();
   const { cart, addToCart } = useCart();
   const cartCount = cart ? cart.length : 0;
+
+  useEffect(() => {
+    if (!isMenuOpen) return undefined;
+    const handleKeyDown = event => {
+      if (event.key === 'Escape') setIsMenuOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMenuOpen]);
 
   const getImageUrl = (imagePath) => {
     if (!imagePath) return 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80';
@@ -331,18 +396,24 @@ export default function Home({ onNavigate }) {
 
         {/* Navbar */}
         <nav className="h-navbar">
-          <div className="h-logo" onClick={() => navigate('/home')}>
+          <button type="button" className="h-logo" onClick={() => navigate('/home')} aria-label="BookCycle home">
             <div className="h-logo-icon">
                 <img src={IMAGES.img_0} alt="BookCycle" />
             </div>
             <span className="h-logo-text">BookCycle</span>
-          </div>
+          </button>
 
-          <ul className="h-nav-links">
-            <li><button className="h-nav-link" onClick={() => navigate('/explore')}>Explore</button></li>
-            <li><button className="h-nav-link" onClick={() => navigate('/seller')}>Sell</button></li>
+          <button type="button" className="h-menu-toggle" aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={isMenuOpen} aria-controls="home-navigation" onClick={() => setIsMenuOpen(open => !open)}>
+            <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              {isMenuOpen ? <><path d="M18 6 6 18" /><path d="m6 6 12 12" /></> : <><path d="M4 6h16" /><path d="M4 12h16" /><path d="M4 18h16" /></>}
+            </svg>
+          </button>
+
+          <ul id="home-navigation" className={`h-nav-links${isMenuOpen ? " is-open" : ""}`}>
+            <li><button className="h-nav-link" onClick={() => { setIsMenuOpen(false); navigate('/explore'); }}>Explore</button></li>
+            <li><button className="h-nav-link" onClick={() => { setIsMenuOpen(false); navigate('/seller'); }}>Sell</button></li>
             <li>
-                <button className="h-nav-link" onClick={() => navigate('/cart')} style={{ position: 'relative', display: 'flex', alignItems: 'center', padding: '7px 10px' }}>
+                <button className="h-nav-link" onClick={() => { setIsMenuOpen(false); navigate('/cart'); }} style={{ position: 'relative', display: 'flex', alignItems: 'center', padding: '7px 10px' }}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                     {cartCount > 0 && (
                         <span style={{ 
@@ -354,7 +425,7 @@ export default function Home({ onNavigate }) {
                     )}
                 </button>
             </li>
-            <li><button className="h-nav-cta" onClick={() => onNavigate?.("login")}>Login</button></li>
+            <li><button className="h-nav-cta" onClick={() => { setIsMenuOpen(false); onNavigate?.("login"); }}>Login</button></li>
           </ul>
         </nav>
 

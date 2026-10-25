@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -12,14 +12,21 @@ import {
   ShoppingCart,
   Truck,
   DollarSign,
-  BarChart3,
-  RefreshCw
+  BarChart3
 } from 'lucide-react';
 
 const AdminLayout = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => !window.matchMedia('(max-width: 768px)').matches);
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const mobileQuery = window.matchMedia('(max-width: 768px)');
+    const syncSidebar = () => setSidebarOpen(!mobileQuery.matches);
+    syncSidebar();
+    mobileQuery.addEventListener('change', syncSidebar);
+    return () => mobileQuery.removeEventListener('change', syncSidebar);
+  }, []);
 
   const menuItems = [
     { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard Overview' },
@@ -44,9 +51,9 @@ const AdminLayout = () => {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#FAF9F0', fontFamily: "'Inter', 'Poppins', sans-serif" }}>
+    <div className="admin-shell" style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#FAF9F0', fontFamily: "'Inter', 'Poppins', sans-serif" }}>
       {/* Sidebar container */}
-      <aside style={{
+      <aside className={`admin-sidebar${sidebarOpen ? ' is-open' : ''}`} aria-label="Admin navigation" style={{
         width: sidebarOpen ? '260px' : '75px',
         backgroundColor: '#13493C',
         color: '#FAF9F0',
@@ -84,7 +91,10 @@ const AdminLayout = () => {
               </div>
             )}
             <button
+              type="button"
               onClick={() => setSidebarOpen(!sidebarOpen)}
+              aria-label={sidebarOpen ? 'Collapse admin sidebar' : 'Expand admin sidebar'}
+              aria-expanded={sidebarOpen}
               style={{
                 background: 'none',
                 border: 'none',
@@ -180,6 +190,7 @@ const AdminLayout = () => {
                 <Link
                   key={item.path}
                   to={item.path}
+                  onClick={() => { if (window.matchMedia('(max-width: 768px)').matches) setSidebarOpen(false); }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -251,8 +262,10 @@ const AdminLayout = () => {
         </div>
       </aside>
 
+      {sidebarOpen && <button type="button" className="admin-sidebar-backdrop" aria-label="Close admin navigation" onClick={() => setSidebarOpen(false)} />}
+
       {/* Main Content */}
-      <main style={{
+      <main className="admin-main" style={{
         marginLeft: sidebarOpen ? '260px' : '75px',
         flex: 1,
         transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -261,6 +274,9 @@ const AdminLayout = () => {
         flexDirection: 'column',
         minHeight: '100vh',
       }}>
+        <button type="button" className="admin-mobile-menu" aria-label="Open admin navigation" onClick={() => setSidebarOpen(true)}>
+          <Menu size={22} aria-hidden="true" />
+        </button>
         {/* Header */}
         <header style={{
           backgroundColor: '#FFFFFF',

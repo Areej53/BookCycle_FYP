@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -34,12 +34,21 @@ export default function Navbar() {
     textDecoration: 'none'
   });
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const toggleMenu = () => setIsMenuOpen(open => !open);
   const closeMenu = () => setIsMenuOpen(false);
+
+  useEffect(() => {
+    if (!isMenuOpen) return undefined;
+    const handleKeyDown = event => {
+      if (event.key === 'Escape') closeMenu();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMenuOpen]);
 
   return (
     <>
-      <nav style={{
+      <nav className="site-navbar" style={{
         position: 'sticky', top: 0, zIndex: 10000,
         background: 'var(--primary)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -52,11 +61,11 @@ export default function Navbar() {
           BookCycle
         </Link>
         
-        <div className="hamburger" onClick={toggleMenu} style={{ cursor: 'pointer', color: 'var(--bg)' }}>
+        <button type="button" className="hamburger" onClick={toggleMenu} aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'} aria-expanded={isMenuOpen} aria-controls="site-navigation" style={{ cursor: 'pointer', color: 'var(--bg)' }}>
           {isMenuOpen ? <FiX size={28} /> : <FiMenu size={28} />}
-        </div>
+        </button>
  
-        <ul className={`nav-links ${isMenuOpen ? 'open' : ''}`}>
+        <ul id="site-navigation" className={`nav-links ${isMenuOpen ? 'open' : ''}`}>
           {!isHome && <li><Link to="/home" style={getLinkStyle(false)} onClick={closeMenu}>Home</Link></li>}
           <li><Link to="/explore" style={getLinkStyle(isExplore)} onClick={closeMenu}>Buy</Link></li>
           <li><Link to="/explore?tab=rent" style={getLinkStyle(isRent)} onClick={closeMenu}>Rent</Link></li>

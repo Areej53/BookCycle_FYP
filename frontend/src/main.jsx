@@ -8,8 +8,8 @@ import { OrdersProvider } from './context/OrdersContext.jsx'
 import { NotificationProvider } from './context/NotificationContext.jsx'
 import 'react-toastify/dist/ReactToastify.css';
 import './index.css'
-import "./responsive.css";
 import "./marketplace.css";
+import "./responsive.css";
 
 
 ReactDOM.createRoot(document.getElementById('root')).render(

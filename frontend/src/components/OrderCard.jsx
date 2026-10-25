@@ -295,8 +295,8 @@ const OrderCard = ({ order }) => {
       )}
 
       {isComplainModalOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setIsComplainModalOpen(false)}>
-          <div style={{ background: '#fff', padding: 24, borderRadius: 16, width: 320, boxShadow: '0 10px 40px rgba(0,0,0,.2)' }} onClick={e => e.stopPropagation()}>
+        <div style={{ position: 'fixed', inset: 0, padding: 16, boxSizing: 'border-box', overflowY: 'auto', background: 'rgba(0,0,0,.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setIsComplainModalOpen(false)}>
+          <div style={{ background: '#fff', padding: 24, borderRadius: 16, width: '100%', maxWidth: 320, maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto', boxSizing: 'border-box', boxShadow: '0 10px 40px rgba(0,0,0,.2)' }} onClick={e => e.stopPropagation()}>
             <h3 style={{ marginTop: 0, marginBottom: 12, color: PALETTE.primary, fontSize: '1.1rem' }}>Submit Complaint</h3>
             <p style={{ fontSize: '.85rem', color: PALETTE.muted, marginBottom: 16 }}>
               Why are you submitting this complaint?
